@@ -1191,7 +1191,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .kandidat-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--mensa-dunkelblau);
     color: white;
@@ -1204,9 +1204,22 @@ body.dark-mode .dark-mode-toggle:hover {
     color: var(--mensa-dunkelblau);
 }
 
+.kandidat-foto {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .kandidat-name {
     font-weight: 600;
     font-size: 0.9rem;
+    flex: 1;
 }
 
 .beitrag-count {

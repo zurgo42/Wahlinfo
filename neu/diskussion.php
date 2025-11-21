@@ -59,6 +59,21 @@ foreach ($alleKommentare as $k) {
 }
 
 /**
+ * Generiert Foto-Dateiname aus Name
+ */
+function getFotoDateiname($name) {
+    // Name bereinigen: Leerzeichen entfernen, Umlaute beibehalten
+    $name = trim($name);
+    $parts = explode(' ', $name);
+    if (count($parts) >= 2) {
+        $vorname = strtolower($parts[0]);
+        $nachname = ucfirst(strtolower($parts[count($parts) - 1]));
+        return $vorname . $nachname . '_75.jpg';
+    }
+    return 'keinFoto.jpg';
+}
+
+/**
  * Kürzt Text für kompakte Darstellung
  */
 function kurzText($text, $maxLen) {
@@ -152,11 +167,70 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
 
     <!-- Kandidaten mit ihren Diskussionen -->
     <div class="kandidaten-diskussion">
+        <?php
+        // Allgemeine Fragen als Pseudo-Kandidat hinzufügen
+        $allgemeineFragenId = 97;
+        $allgemeineThreads = $kommentareNachKandidat[$allgemeineFragenId] ?? [];
+        $allgemeineAnzahl = count($allgemeineThreads);
+        foreach ($allgemeineThreads as $thread) {
+            $allgemeineAnzahl += countAntwortenRekursiv($thread['Knr'], $antwortenNachBezug);
+        }
+        ?>
+
+        <!-- Allgemeine Fragen zuerst -->
+        <div class="kandidat-section">
+            <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $allgemeineFragenId; ?>)">
+                <span class="kandidat-foto">§</span>
+                <span class="kandidat-name">Allgemeine Fragen &amp; Diskussion</span>
+                <span class="beitrag-count"><?php echo $allgemeineAnzahl; ?> Beiträge</span>
+                <span class="toggle-icon" id="icon-<?php echo $allgemeineFragenId; ?>">▼</span>
+            </div>
+
+            <div class="kandidat-threads" id="threads-<?php echo $allgemeineFragenId; ?>" style="display:none;">
+                <?php if (empty($allgemeineThreads)): ?>
+                    <p class="no-data">Noch keine allgemeinen Beiträge.</p>
+                <?php else: ?>
+                    <?php foreach ($allgemeineThreads as $thread):
+                        $knr = $thread['Knr'];
+                    ?>
+                        <div class="thread">
+                            <div class="beitrag-kompakt">
+                                <div class="beitrag-meta">
+                                    <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
+                                    <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
+                                </div>
+                                <?php
+                                $beitragText = $thread['These'] ?? '';
+                                $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
+                                ?>
+                                <div class="kommentar-text" id="text-<?php echo $knr; ?>">
+                                    <?php echo $kurzBeitrag; ?>
+                                    <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
+                                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $knr; ?>); return false;">mehr</a>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
+                                    <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
+                                    <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
+                                </div>
+                            </div>
+                            <?php if (isset($antwortenNachBezug[$knr])): ?>
+                                <div class="antworten-liste">
+                                    <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge); ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <?php foreach ($kandidaten as $kand):
             $kandId = (int)$kand['Knr'];
             // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
             $theseParts = explode('<br>', $kand['These'] ?? '');
-            $kandName = escape(trim($theseParts[0]));
+            $kandName = trim($theseParts[0]);
+            $fotoDatei = getFotoDateiname($kandName);
             $threads = $kommentareNachKandidat[$kandId] ?? [];
             $anzahlBeitraege = count($threads);
 
@@ -167,7 +241,8 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
         ?>
             <div class="kandidat-section">
                 <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $kandId; ?>)">
-                    <span class="kandidat-name"><?php echo $kandName; ?></span>
+                    <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='../img/keinFoto.jpg'">
+                    <span class="kandidat-name"><?php echo escape($kandName); ?></span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
                     <span class="toggle-icon" id="icon-<?php echo $kandId; ?>">▼</span>
                 </div>
