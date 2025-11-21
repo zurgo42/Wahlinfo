@@ -234,8 +234,16 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <p class="section-note">Einige Anforderungen, die für die ehrenamtliche Arbeit im Verein hilfreich sein könnten, wurden den Kandidaten vorgelegt.</p>
 
         <?php
-        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY Nr");
-        if ($anfQuery && $anfQuery->num_rows > 0):
+        // Alle Anforderungen laden
+        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY id");
+        $anforderungen = [];
+        if ($anfQuery) {
+            while ($row = $anfQuery->fetch_assoc()) {
+                $anforderungen[] = $row;
+            }
+        }
+
+        if (count($anforderungen) > 0):
         ?>
 
         <!-- Allgemeine Fragen (1-8) -->
@@ -243,11 +251,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <div class="anforderungen-grid">
             <?php
             $hasAllgemein = false;
-            $nr = 0;
-            while ($anf = $anfQuery->fetch_assoc()):
-                $nr++;
-                if ($nr > 8) break;
-
+            for ($i = 0; $i < min(8, count($anforderungen)); $i++):
+                $anf = $anforderungen[$i];
+                $nr = $i + 1;
                 $afeld = "a$nr";
                 $antwort = '';
 
@@ -268,14 +274,14 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                     <div class="antwort"><?php echo escape($antwort); ?></div>
                 <?php endif; ?>
             </div>
-            <?php endwhile; ?>
+            <?php endfor; ?>
         </div>
 
         <?php if (!$hasAllgemein): ?>
             <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>
         <?php endif; ?>
 
-        <?php if ($isVorstand): ?>
+        <?php if ($isVorstand && count($anforderungen) > 8): ?>
         <!-- Kompetenzen/Erfahrungen (9-15) - nur für Vorstand -->
         <h3>Kompetenzen/Erfahrungen</h3>
         <p class="section-note">
@@ -289,13 +295,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <div class="anforderungen-grid">
             <?php
             $hasKompetenz = false;
-            $anfQuery2 = dbQuery("SELECT * FROM anforderungenwahl WHERE id > 8 ORDER BY Nr");
-            $nr = 8;
-            if ($anfQuery2):
-            while ($anf = $anfQuery2->fetch_assoc()):
-                $nr++;
-                if ($nr > 15) break;
-
+            for ($i = 8; $i < min(15, count($anforderungen)); $i++):
+                $anf = $anforderungen[$i];
+                $nr = $i + 1;
                 $afeld = "a$nr";
                 $bewertung = '';
                 $bemerkung = '';
@@ -332,8 +334,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                     </div>
                 <?php endif; ?>
             </div>
-            <?php endwhile;
-            endif; ?>
+            <?php endfor; ?>
         </div>
 
         <?php if (!$hasKompetenz): ?>
@@ -342,7 +343,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
         <?php endif; // Ende $isVorstand ?>
 
-        <?php endif; // Ende $anfQuery ?>
+        <?php endif; // Ende count($anforderungen) ?>
     </div>
 
 </div>
