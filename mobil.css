@@ -1,0 +1,125 @@
+/* Umfrage-Seiten */
+ {font-family: Verdana, Arial, Helvetica, sans-serif; 
+ text-align: left; font-weight: normal;color: #0a1f6e;}
+/*body { margin: 0px;}*/
+#header {width: 100%; height: 113px; z-index:1;
+	position:relative; top: 0px; left: 0px; right: 15px; 
+	padding: 0; margin: 0; background: white;}
+#headerBG {width: 100%; height:113px; z-index:2;
+	position:relative; left: 0px; right: 10px;       
+	margin: 0; padding: 0; background: #c00;}
+#headerR2 {width: 100%; height:102px; z-index:3;
+	position:relative; top:10px;right: 10px;
+	margin: 0 0 0 0; padding: 0;
+	background-image:url('logo_mensa.png');
+	background-position:right; background-repeat:no-repeat;}
+#headerR1 { }
+#headerTITEL {width: 100%; height:102px; z-index:4;
+	position:relative; top: 13px; left: 22px;
+	margin: 0; padding: 0;
+	background-image:url('logo_text_www.png');
+    background-position:left; background-repeat:no-repeat;}
+#headerSLOGAN {padding-left: 220px; padding-top: 5px;
+	font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 42px;
+	font-weight: normal; text-align: left; color: #FFFFFF;}
+
+h1 {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 42px; 
+	font-weight: bold; color: #0a1f6e; text-align: left;
+	margin: 10px 10px 15px 0px;}
+h2 {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px; 
+	font-weight: bold; color: #0a1f6e; text-align: left;
+	margin: 10px 10px 15px 0px;}
+h3 {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 20px;
+	font-weight: bold; color: #0a1f6e; text-align: left;
+	margin: 10px 10px 15px 0px;}
+li {padding-bottom:5px;}
+
+.text1b {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: bold; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text1n {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: normal; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text2b {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 24px;
+	font-weight: bold; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text2n {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 24px;
+	font-weight: normal; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text3b {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 20px;
+	font-weight: bold; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text3n {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 20px;
+	font-weight: normal; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text4b {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 16px;
+	font-weight: bold; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text4n {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 16px;
+	font-weight: normal; color: #0a1f6e; text-align: left;line-height: 1.5;}
+.text4r {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 16px;
+	font-weight: normal; color: #0a1f6e; text-align: right;line-height: 1.5;}
+.center {text-align: center;} 
+.rechts {text-align: right;}
+
+.textdisc {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 16px;
+	font-weight: normal; color: #0a1f6e; text-align: center;}
+
+.fa50 {color: black;}
+.fa51 {color: green;}
+.fa52 {color: blue;}
+.fa53 {color: #ccc000;} // mittelrot
+.fa54 {color: orange;}
+.fa55 {color: red;}
+.fa56 {color: #3366CC;}  // helleres blau
+.fa57 {color: #990000;}  // dunkelrot
+.fa58 {color: #0a1f6e;}
+.fa59 {color: #E8E8E8;}
+.backp {background-color: #E8E8E8; }
+
+a:link {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: bold; color: #0a1f6e; text-align: left; text-decoration: none;}
+a:visited {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: bold; color: #0a1f6e; text-align: left;}
+a:hover {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: bold; color: #0a1f6e; text-align: left; text-decoration: underline;}
+a:active {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 30px;
+	font-weight: bold; color: #0a1f6e; text-align: left;}
+
+table, tr, td {border-collapse: collapse; margin-left: 5px; margin-right: 5px;
+empty-cells: show; font-size: 100%; border: none;;}
+table.mit, tr.mit, td.mit {border: 1px  #0a1f6e solid; padding: 5px;}
+table.hell, tr.hell, td.hell {background-color: #FAFAFA;}
+td.nurlinks {border-left: 1px #0a1f6e solid; padding: 5px;}
+td.nurunten {border-bottom: 1px #0a1f6e solid; padding: 5px;}
+tr.rahmen, td.rahmen {border-left: 1px #0a1f6e solid; border-right: 1px #0a1f6e solid;}
+table.rh, tr.rh, td.rh {border: 1px  #ffffff solid;}
+td.linksohne {border-left: 0px white solid;}
+td.rechtsohne {border-right: 0px white solid;}
+
+
+.menu {position:relative; width:120px; text-decoration: none; top:1px; padding:16px; 
+	background-color: #FAFAFA; box-shadow:1px 1px 2px rgba(0,0,0,0.5) inset; }
+.menu:hover {position:relative; top:1px; box-shadow:2px 2px 4px rgba(0,0,0,1) inset;}
+
+.button:active, button:active {position:relative; top:1px; box-shadow:1px 1px 2px rgba(0,0,0,0.4) inset;}
+.button:hover, button:hover {background-color: #f9f9f9}
+.button.blue, button.blue {background-color: #33c; color: white;}    
+.button.blue:hover, button.blue:hover {background-color: #44e;}    
+.button.red, button.red {background-color: #c00; color: white; font-size: 16px;}    
+
+.dot {border-bottom-style: dotted;}
+
+input.tooltip, a.tooltip:link, a.tooltip:visited, a.tooltip:active  {
+  position: relative; padding-top: 4px;
+	font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px;
+	font-weight: bold; color: #0a1f6e; text-align: left; z-index: 10;}
+input.tooltip:hover {color: #0000ff; background: transparent;}
+input.tooltip span {display: none; text-decoration: none;}
+input.tooltip:hover span {display: block; position: absolute;
+  top: 25px; left: 50px; width: 500px; z-index: 10;
+  color: #000000; border:1px solid #000000; background: #99ffff;
+  font: 10px Verdana, sans-serif; text-align: left;
+  padding: 5px;}
+
+
+div.balken {width:170px; height:12px;
+	position: relative; top: 0px; left:600px;
+	padding:1px;
+	border:1px solid blue; background-color: white;}
+div.fortschritt { height:12px; width:75%; /* Fortschritt */
+	font-size: 9px; vertical-align: top; background-color: #99BBDD;	
+	color: #EEF3F9;}

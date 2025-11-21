@@ -1,0 +1,4 @@
+Session on
+Require ldap-group cn=auch ohne ANB: MinD-MIGS,ou=auch_ohne_anb,ou=login,ou=groups,dc=mensa,dc=de
+Require ldap-group cn=auch ohne ANB: MIGS-Gast,ou=auch_ohne_anb,ou=login,ou=groups,dc=mensa,dc=de
+Require ldap-group cn=auch ohne ANB: Z_Aktive_mit_NDA,ou=auch_ohne_anb,ou=login,ou=groups,dc=mensa,dc=de
