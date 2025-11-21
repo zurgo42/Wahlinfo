@@ -15,8 +15,8 @@ if (empty($zeige)) {
     exit;
 }
 
-// Tabelle wählen
-$kandidatenTable = USE_SPIELWIESE ? TABLE_SPIELWIESE : TABLE_KANDIDATEN;
+// Tabelle wählen basierend auf Stichtag
+$kandidatenTable = getKandidatenTable();
 
 // Kandidaten-Daten abrufen
 $conn = getDbConnection();

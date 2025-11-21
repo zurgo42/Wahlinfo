@@ -11,8 +11,8 @@ $pageTitle = 'Ergänzende Wahlinformation';
 // Header einbinden
 include 'includes/header.php';
 
-// Tabelle wählen: Spielwiese (Vorbereitungsphase) oder echte Kandidaten
-$kandidatenTable = USE_SPIELWIESE ? TABLE_SPIELWIESE : TABLE_KANDIDATEN;
+// Tabelle wählen basierend auf Stichtag
+$kandidatenTable = getKandidatenTable();
 
 // Alle Ämter abrufen (nur id >= 1, da amt0 nicht existiert)
 $aemterQuery = dbQuery("SELECT * FROM " . TABLE_AEMTER . " WHERE id >= 1 ORDER BY id");
