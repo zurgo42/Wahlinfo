@@ -1373,53 +1373,53 @@ body.dark-mode .kandidat-section.allgemein .kandidat-header:hover {
     font-size: 0.7rem;
 }
 
-/* Neue Frage Button */
-.neue-frage-section {
+/* Neu-Badge */
+.neu-badge {
+    background: var(--mensa-gelb);
+    color: #333;
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: var(--spacing-xs);
+}
+
+body.dark-mode .neu-badge {
+    background: var(--mensa-hellgelb);
+    color: #1a1a2e;
+}
+
+/* Neue Frage als Textzeile */
+.neue-frage-zeile {
     margin-top: var(--spacing-md);
     padding-top: var(--spacing-md);
     border-top: 1px solid var(--border-color);
-}
-
-.neue-frage-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    background: var(--mensa-heller);
-    border: 1px solid var(--mensa-dunkelblau);
     color: var(--mensa-dunkelblau);
     font-size: 0.85rem;
     cursor: pointer;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
     transition: var(--transition);
-    width: 100%;
-    text-align: left;
 }
 
-.neue-frage-btn:hover {
-    background: var(--mensa-hellblau);
-}
-
-.neue-frage-btn .mini-foto {
-    width: 24px;
-    height: 24px;
-    border-radius: var(--radius-sm);
-    object-fit: cover;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-body.dark-mode .neue-frage-btn {
-    background: var(--bg-card);
-    border-color: var(--mensa-hellblau);
+.neue-frage-zeile:hover {
     color: var(--mensa-hellblau);
 }
 
-body.dark-mode .neue-frage-btn:hover {
-    background: var(--mensa-dunkelblau);
+.neue-frage-zeile .inline-foto {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    object-fit: cover;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+body.dark-mode .neue-frage-zeile {
+    color: var(--mensa-hellblau);
+}
+
+body.dark-mode .neue-frage-zeile:hover {
+    color: var(--mensa-hellgelb);
 }
 
 @media (max-width: 480px) {

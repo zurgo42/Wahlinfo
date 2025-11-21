@@ -14,6 +14,21 @@ $pageTitle = 'Diskussion';
 
 // Konfiguration
 $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
+$neueBeitraegeAnzahl = 10; // Anzahl der als "neu" markierten Beiträge
+
+/**
+ * Gibt den Autorennamen zurück, mit MNr als Fallback
+ */
+function getAutorName($kommentar) {
+    $vorname = trim($kommentar['AutorVorname'] ?? '');
+    $name = trim($kommentar['AutorName'] ?? '');
+    if ($vorname !== '' || $name !== '') {
+        return trim($vorname . ' ' . $name);
+    }
+    // Fallback: MNr anzeigen
+    $mnr = $kommentar['Mnr'] ?? '';
+    return $mnr ? "MNr $mnr" : 'Unbekannt';
+}
 
 // =============================================================================
 // DATEN LADEN
@@ -70,6 +85,25 @@ foreach ($alleKommentare as $k) {
     }
 }
 
+// Die letzten N Beiträge als "neu" markieren
+$neueKnrs = [];
+$sortierteKommentare = $alleKommentare;
+usort($sortierteKommentare, function($a, $b) {
+    return strtotime($b['Datum']) - strtotime($a['Datum']);
+});
+for ($i = 0; $i < min($neueBeitraegeAnzahl, count($sortierteKommentare)); $i++) {
+    $neueKnrs[$sortierteKommentare[$i]['Knr']] = true;
+}
+
+// Pseudo-Kandidat für "Allgemeine Fragen" erstellen
+$allgemeineFragenId = 97;
+$kandidaten[] = [
+    'Knr' => $allgemeineFragenId,
+    'These' => 'Allgemeine Fragen & Diskussion',
+    'mnummer' => '',
+    'istAllgemein' => true
+];
+
 /**
  * Kürzt Text für kompakte Darstellung
  */
@@ -106,7 +140,7 @@ function countAntwortenRekursiv($knr, $antwortenNachBezug) {
 /**
  * Zeigt Antworten rekursiv an
  */
-function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tiefe = 0) {
+function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe = 0) {
     if (!isset($antwortenNachBezug[$knr])) {
         return;
     }
@@ -114,12 +148,14 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
     foreach ($antwortenNachBezug[$knr] as $antwort):
         $aKnr = $antwort['Knr'];
         $einrueckung = min($tiefe * 15, 45);
+        $istNeu = isset($neueKnrs[$aKnr]);
     ?>
         <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;">
             <div class="beitrag-meta">
-                <span class="autor"><?php echo escape(($antwort['AutorVorname'] ?? '') . ' ' . ($antwort['AutorName'] ?? '')); ?></span>
+                <span class="autor"><?php echo escape(getAutorName($antwort)); ?></span>
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
                 <span class="beitrag-id">#<?php echo $aKnr; ?></span>
+                <?php if ($istNeu): ?><span class="neu-badge">neu</span><?php endif; ?>
             </div>
             <?php
             // Text steht in These, nicht in Kommentar
@@ -151,7 +187,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
         </div>
         <?php
         // Rekursiv weitere Antworten anzeigen (als Geschwister, nicht verschachtelt)
-        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $tiefe + 1);
+        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe + 1);
         ?>
     <?php
     endforeach;
@@ -175,42 +211,67 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
     <div class="kandidaten-diskussion">
         <?php foreach ($kandidaten as $kand):
             $kandId = (int)$kand['Knr'];
-            // ID 97 wird separat als "Allgemeine Fragen" angezeigt
-            if ($kandId === 97) continue;
-            // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
-            $theseParts = explode('<br>', $kand['These'] ?? '');
-            $kandName = trim($theseParts[0]);
-            // Foto aus kandidatenwahl per mnummer
-            $mnummer = $kand['mnummer'] ?? '';
-            $fotoDatei = $fotoNachMnummer[$mnummer] ?? 'keinFoto.jpg';
+            $istAllgemein = !empty($kand['istAllgemein']);
+
+            // Name und Foto bestimmen
+            if ($istAllgemein) {
+                $kandName = 'Allgemeine Fragen & Diskussion';
+                $fotoDatei = '';
+            } else {
+                // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
+                $theseParts = explode('<br>', $kand['These'] ?? '');
+                $kandName = trim($theseParts[0]);
+                $mnummer = $kand['mnummer'] ?? '';
+                $fotoDatei = $fotoNachMnummer[$mnummer] ?? 'keinFoto.jpg';
+            }
+
             $threads = $kommentareNachKandidat[$kandId] ?? [];
             $anzahlBeitraege = count($threads);
 
-            // Antworten rekursiv zählen
+            // Antworten rekursiv zählen und prüfen ob neue Beiträge vorhanden
+            $hatNeueBeitraege = false;
             foreach ($threads as $thread) {
                 $anzahlBeitraege += countAntwortenRekursiv($thread['Knr'], $antwortenNachBezug);
+                if (isset($neueKnrs[$thread['Knr']])) {
+                    $hatNeueBeitraege = true;
+                }
+                // Auch in Antworten prüfen
+                if (isset($antwortenNachBezug[$thread['Knr']])) {
+                    foreach ($antwortenNachBezug[$thread['Knr']] as $ant) {
+                        if (isset($neueKnrs[$ant['Knr']])) {
+                            $hatNeueBeitraege = true;
+                        }
+                    }
+                }
             }
         ?>
-            <div class="kandidat-section">
+            <div class="kandidat-section<?php echo $istAllgemein ? ' allgemein' : ''; ?>">
                 <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $kandId; ?>)">
-                    <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='../img/keinFoto.jpg'">
+                    <?php if ($istAllgemein): ?>
+                        <span class="kandidat-foto">👥</span>
+                    <?php else: ?>
+                        <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='../img/keinFoto.jpg'">
+                    <?php endif; ?>
                     <span class="kandidat-name"><?php echo escape($kandName); ?></span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
-                    <span class="toggle-icon" id="icon-<?php echo $kandId; ?>">▼</span>
+                    <?php if ($hatNeueBeitraege): ?><span class="neu-badge">neu</span><?php endif; ?>
+                    <span class="toggle-icon" id="icon-<?php echo $kandId; ?>"><?php echo $hatNeueBeitraege ? '▲' : '▼'; ?></span>
                 </div>
 
-                <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:none;">
+                <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:<?php echo $hatNeueBeitraege ? 'block' : 'none'; ?>">
                     <?php if (!empty($threads)): ?>
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
+                            $threadIstNeu = isset($neueKnrs[$knr]);
                         ?>
                             <div class="thread">
                                 <!-- Haupt-Beitrag -->
                                 <div class="beitrag-kompakt">
                                     <div class="beitrag-meta">
-                                        <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
+                                        <span class="autor"><?php echo escape(getAutorName($thread)); ?></span>
                                         <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
                                         <span class="beitrag-id">#<?php echo $knr; ?></span>
+                                        <?php if ($threadIstNeu): ?><span class="neu-badge">neu</span><?php endif; ?>
                                     </div>
                                     <?php
                                     // Text steht in These, nicht in Kommentar
@@ -240,7 +301,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                 <!-- Antworten rekursiv -->
                                 <?php if (isset($antwortenNachBezug[$knr])): ?>
                                     <div class="antworten-liste">
-                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge); ?>
+                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -248,98 +309,21 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                     <?php endif; ?>
 
                     <!-- Neue Frage stellen -->
-                    <div class="neue-frage-section">
-                        <button class="neue-frage-btn" onclick="zeigeNeueFrageForm(<?php echo $kandId; ?>)">
-                            <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="mini-foto" onerror="this.src='../img/keinFoto.jpg'">
-                            Selbst eine Frage an <?php echo escape($kandName); ?> stellen
-                        </button>
-                        <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
-                            <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Ihre Frage..."></textarea>
-                            <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
-                            <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
-                        </div>
+                    <div class="neue-frage-zeile" onclick="zeigeNeueFrageForm(<?php echo $kandId; ?>)">
+                        <?php if ($istAllgemein): ?>
+                            Selbst eine <span class="inline-foto">👥</span> allgemeine Frage stellen
+                        <?php else: ?>
+                            Selbst eine Frage an <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="inline-foto" onerror="this.src='../img/keinFoto.jpg'"> <?php echo escape($kandName); ?> stellen
+                        <?php endif; ?>
+                    </div>
+                    <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
+                        <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Ihre Frage..."></textarea>
+                        <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
+                        <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
                     </div>
                 </div>
             </div>
         <?php endforeach; ?>
-
-        <?php
-        // Allgemeine Fragen als letzte Rubrik
-        $allgemeineFragenId = 97;
-        $allgemeineThreads = $kommentareNachKandidat[$allgemeineFragenId] ?? [];
-        $allgemeineAnzahl = count($allgemeineThreads);
-        foreach ($allgemeineThreads as $thread) {
-            $allgemeineAnzahl += countAntwortenRekursiv($thread['Knr'], $antwortenNachBezug);
-        }
-        ?>
-
-        <!-- Allgemeine Fragen & Diskussion -->
-        <div class="kandidat-section allgemein">
-            <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $allgemeineFragenId; ?>)">
-                <span class="kandidat-foto">👥</span>
-                <span class="kandidat-name">Allgemeine Fragen &amp; Diskussion</span>
-                <span class="beitrag-count"><?php echo $allgemeineAnzahl; ?> Beiträge</span>
-                <span class="toggle-icon" id="icon-<?php echo $allgemeineFragenId; ?>">▼</span>
-            </div>
-
-            <div class="kandidat-threads" id="threads-<?php echo $allgemeineFragenId; ?>" style="display:none;">
-                <?php if (!empty($allgemeineThreads)): ?>
-                    <?php foreach ($allgemeineThreads as $thread):
-                        $knr = $thread['Knr'];
-                    ?>
-                        <div class="thread">
-                            <div class="beitrag-kompakt">
-                                <div class="beitrag-meta">
-                                    <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
-                                    <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
-                                    <span class="beitrag-id">#<?php echo $knr; ?></span>
-                                </div>
-                                <?php
-                                $beitragText = $thread['These'] ?? '';
-                                $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
-                                ?>
-                                <div class="kommentar-text" id="text-<?php echo $knr; ?>">
-                                    <?php echo $kurzBeitrag; ?>
-                                    <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
-                                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $knr; ?>); return false;">mehr</a>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
-                                    <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
-                                    <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
-                                </div>
-                                <div class="antwort-action">
-                                    <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
-                                </div>
-                                <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
-                                    <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Ihre Antwort..."></textarea>
-                                    <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
-                                    <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
-                                </div>
-                            </div>
-                            <?php if (isset($antwortenNachBezug[$knr])): ?>
-                                <div class="antworten-liste">
-                                    <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge); ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-
-                <!-- Neue allgemeine Frage stellen -->
-                <div class="neue-frage-section">
-                    <button class="neue-frage-btn" onclick="zeigeNeueFrageForm(<?php echo $allgemeineFragenId; ?>)">
-                        <span class="mini-foto">👥</span>
-                        Selbst eine allgemeine Frage stellen
-                    </button>
-                    <div class="antwort-form-inline" id="neue-frage-form-<?php echo $allgemeineFragenId; ?>">
-                        <textarea id="neue-frage-text-<?php echo $allgemeineFragenId; ?>" placeholder="Ihre Frage..."></textarea>
-                        <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $allgemeineFragenId; ?>)">Absenden</button>
-                        <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $allgemeineFragenId; ?>)">Abbrechen</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </main>
 
