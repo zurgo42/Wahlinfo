@@ -109,13 +109,14 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
             </div>
             <?php
-            $kommentarText = $antwort['Kommentar'] ?? '';
-            $kurzKommentar = kurzText($kommentarText, $kurzTextLaenge);
+            // Text steht in These, nicht in Kommentar
+            $beitragText = $antwort['These'] ?? '';
+            $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
             ?>
             <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
-                <?php if ($kurzKommentar !== ''): ?>
-                    <?php echo $kurzKommentar; ?>
-                    <?php if (strlen($kommentarText) > $kurzTextLaenge): ?>
+                <?php if ($kurzBeitrag !== ''): ?>
+                    <?php echo $kurzBeitrag; ?>
+                    <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
                         <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
                     <?php endif; ?>
                 <?php else: ?>
@@ -123,7 +124,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                 <?php endif; ?>
             </div>
             <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                <?php echo nl2br(escape(decodeEntities($kommentarText))); ?>
+                <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
             </div>
         </div>
@@ -185,17 +186,19 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                         <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
                                         <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
                                     </div>
-                                    <?php if (!empty($thread['These'])): ?>
-                                        <div class="these-kurz"><?php echo escape(decodeEntities($thread['These'])); ?></div>
-                                    <?php endif; ?>
+                                    <?php
+                                    // Text steht in These, nicht in Kommentar
+                                    $beitragText = $thread['These'] ?? '';
+                                    $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
+                                    ?>
                                     <div class="kommentar-text" id="text-<?php echo $knr; ?>">
-                                        <?php echo kurzText($thread['Kommentar'], $kurzTextLaenge); ?>
-                                        <?php if (strlen($thread['Kommentar']) > $kurzTextLaenge): ?>
+                                        <?php echo $kurzBeitrag; ?>
+                                        <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
                                             <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $knr; ?>); return false;">mehr</a>
                                         <?php endif; ?>
                                     </div>
                                     <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
-                                        <?php echo nl2br(escape(decodeEntities($thread['Kommentar']))); ?>
+                                        <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                                         <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
                                     </div>
                                 </div>
