@@ -8,6 +8,9 @@ require_once 'includes/config.php';
 
 $pageTitle = 'Ergänzende Wahlinformation';
 
+// Eingeloggte M-Nr vom SSO (simuliert für Tests)
+$userMnr = $_GET['user'] ?? null;
+
 // Header einbinden
 include 'includes/header.php';
 
@@ -71,7 +74,15 @@ foreach ($aemter as $amt) {
         ?>
 
         <article class="candidate-card">
-            <a href="einzeln.php?zeige=<?php echo urlencode($mnummer); ?>&amp;amt=<?php echo $amtId; ?>">
+            <?php
+            // Eigene Karte -> eingabe.php, sonst -> einzeln.php
+            if ($userMnr && $userMnr === $kandidat['mnummer']) {
+                $link = "eingabe.php?mnr=" . urlencode($mnummer);
+            } else {
+                $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId;
+            }
+            ?>
+            <a href="<?php echo $link; ?>">
                 <div class="card-image">
                     <?php if (!empty($bildfile)): ?>
                         <img src="../img/<?php echo escape($bildfile); ?>" alt="Foto von <?php echo $vorname . ' ' . $name; ?>">
