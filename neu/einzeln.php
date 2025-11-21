@@ -240,41 +240,36 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
         <!-- Allgemeine Fragen (1-8) -->
         <h3>Allgemeine Fragen</h3>
-        <table class="anforderungen-table">
-            <thead>
-                <tr>
-                    <th class="nr">Nr</th>
-                    <th>Frage</th>
-                    <th>Antwort</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $hasAllgemein = false;
-                $nr = 0;
-                while ($anf = $anfQuery->fetch_assoc()):
-                    $nr++;
-                    if ($nr > 8) break; // Nur Fragen 1-8
+        <div class="anforderungen-grid">
+            <?php
+            $hasAllgemein = false;
+            $nr = 0;
+            while ($anf = $anfQuery->fetch_assoc()):
+                $nr++;
+                if ($nr > 8) break;
 
-                    $afeld = "a$nr";
-                    $antwort = '';
+                $afeld = "a$nr";
+                $antwort = '';
 
-                    if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
-                        $hasAllgemein = true;
-                        $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = " . (int)$kand[$afeld]);
-                        if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                            $antwort = $bem['bem'];
-                        }
+                if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
+                    $hasAllgemein = true;
+                    $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = " . (int)$kand[$afeld]);
+                    if ($bemResult && $bem = $bemResult->fetch_assoc()) {
+                        $antwort = decodeEntities($bem['bem']);
                     }
-                ?>
-                <tr>
-                    <td class="nr"><?php echo $nr; ?></td>
-                    <td><?php echo escape($anf['Anforderung']); ?></td>
-                    <td><?php echo !empty($antwort) ? escape($antwort) : '-'; ?></td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+                }
+            ?>
+            <div class="anforderung-card">
+                <div class="frage">
+                    <span class="nr"><?php echo $nr; ?></span>
+                    <?php echo decodeEntities($anf['Anforderung']); ?>
+                </div>
+                <?php if (!empty($antwort)): ?>
+                    <div class="antwort"><?php echo escape($antwort); ?></div>
+                <?php endif; ?>
+            </div>
+            <?php endwhile; ?>
+        </div>
 
         <?php if (!$hasAllgemein): ?>
             <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>
@@ -291,56 +286,55 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
             <?php endfor; ?>
         </p>
 
-        <table class="anforderungen-table">
-            <thead>
-                <tr>
-                    <th class="nr">Nr</th>
-                    <th>Kompetenz</th>
-                    <th>Bewertung</th>
-                    <th>Bemerkung</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $hasKompetenz = false;
-                // Restliche Anforderungen (9-15) lesen
-                $anfQuery2 = dbQuery("SELECT * FROM anforderungenwahl WHERE id > 8 ORDER BY Nr");
-                $nr = 8;
-                if ($anfQuery2):
-                while ($anf = $anfQuery2->fetch_assoc()):
-                    $nr++;
-                    if ($nr > 15) break;
+        <div class="anforderungen-grid">
+            <?php
+            $hasKompetenz = false;
+            $anfQuery2 = dbQuery("SELECT * FROM anforderungenwahl WHERE id > 8 ORDER BY Nr");
+            $nr = 8;
+            if ($anfQuery2):
+            while ($anf = $anfQuery2->fetch_assoc()):
+                $nr++;
+                if ($nr > 15) break;
 
-                    $afeld = "a$nr";
-                    $bewertung = '';
-                    $bemerkung = '';
+                $afeld = "a$nr";
+                $bewertung = '';
+                $bemerkung = '';
 
-                    if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
-                        $hasKompetenz = true;
-                        $wert = $kand[$afeld];
-                        if ($wert > 10000) {
-                            $k = round($wert / 10000);
-                            $bemId = $wert - ($k * 10000);
-                            $bewertung = $skala5a[$k] ?? $k;
-                            if ($bemId > 0) {
-                                $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
-                                if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                                    $bemerkung = $bem['bem'];
-                                }
+                if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
+                    $hasKompetenz = true;
+                    $wert = $kand[$afeld];
+                    if ($wert > 10000) {
+                        $k = round($wert / 10000);
+                        $bemId = $wert - ($k * 10000);
+                        $bewertung = $skala5a[$k] ?? $k;
+                        if ($bemId > 0) {
+                            $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
+                            if ($bemResult && $bem = $bemResult->fetch_assoc()) {
+                                $bemerkung = decodeEntities($bem['bem']);
                             }
                         }
                     }
-                ?>
-                <tr>
-                    <td class="nr"><?php echo $nr; ?></td>
-                    <td><?php echo escape($anf['Anforderung']); ?></td>
-                    <td><?php echo !empty($bewertung) ? escape($bewertung) : '-'; ?></td>
-                    <td><?php echo !empty($bemerkung) ? escape($bemerkung) : ''; ?></td>
-                </tr>
-                <?php endwhile;
-                endif; ?>
-            </tbody>
-        </table>
+                }
+            ?>
+            <div class="anforderung-card">
+                <div class="frage">
+                    <span class="nr"><?php echo $nr; ?></span>
+                    <?php echo decodeEntities($anf['Anforderung']); ?>
+                </div>
+                <?php if (!empty($bewertung) || !empty($bemerkung)): ?>
+                    <div class="antwort">
+                        <?php if (!empty($bewertung)): ?>
+                            <span class="bewertung"><?php echo escape($bewertung); ?></span>
+                        <?php endif; ?>
+                        <?php if (!empty($bemerkung)): ?>
+                            <?php echo escape($bemerkung); ?>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php endwhile;
+            endif; ?>
+        </div>
 
         <?php if (!$hasKompetenz): ?>
             <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>

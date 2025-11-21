@@ -348,23 +348,32 @@ body {
     }
 
     .card-image {
-        min-height: 70px;
+        min-height: 80px;
     }
 
     .card-image img {
-        max-height: 60px;
+        max-height: 75px;
     }
 
     .card-title {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
     }
 
     .card-subtitle {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     .amt-header {
         font-size: 0.85rem;
+    }
+
+    .info-banner {
+        font-size: 0.75rem;
+        padding: var(--spacing-xs);
+    }
+
+    .info-banner p {
+        margin-bottom: 2px;
     }
 }
 
@@ -507,6 +516,55 @@ body {
     font-style: italic;
 }
 
+/* Anforderungen als Cards */
+.anforderungen-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xs);
+}
+
+.anforderung-card {
+    background: var(--mensa-grau);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    font-size: 0.8rem;
+}
+
+.anforderung-card .frage {
+    font-weight: 600;
+    color: var(--mensa-dunkelblau);
+    margin-bottom: var(--spacing-xs);
+}
+
+.anforderung-card .frage .nr {
+    display: inline-block;
+    background: var(--mensa-dunkelblau);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 0.7rem;
+    margin-right: var(--spacing-xs);
+}
+
+.anforderung-card .antwort {
+    color: var(--mensa-anthrazit);
+    padding-left: 28px;
+}
+
+.anforderung-card .bewertung {
+    display: inline-block;
+    background: var(--mensa-hellgelb);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    margin-right: var(--spacing-xs);
+}
+
+/* Legacy table support */
 .anforderungen-table {
     width: 100%;
     border-collapse: collapse;

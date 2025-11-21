@@ -65,6 +65,12 @@ function escape($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+// HTML-Entities dekodieren (für alte Daten mit &auml; etc.)
+function decodeEntities($str) {
+    if ($str === null) return '';
+    return html_entity_decode($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
 // Tabellennamen
 define('TABLE_AEMTER', 'aemterwahl');
 define('TABLE_KANDIDATEN', 'kandidatenwahl');
