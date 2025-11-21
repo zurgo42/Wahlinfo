@@ -173,13 +173,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80px;
+    min-height: 100px;
     background: linear-gradient(135deg, var(--mensa-grau) 0%, var(--white) 100%);
 }
 
 .card-image img {
     max-width: 100%;
-    max-height: 70px;
+    max-height: 90px;
     width: auto;
     height: auto;
     object-fit: contain;
