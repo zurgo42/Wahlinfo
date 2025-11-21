@@ -46,6 +46,9 @@ if (empty($text)) {
 // Text bereinigen (HTML-Entities für Sonderzeichen)
 $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 
+// IP-Adresse kürzen (Spalte ist limitiert)
+$ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 15);
+
 try {
     // Prüfen ob Benutzer in Teilnehmer-Tabelle existiert
     $teilnehmer = dbFetchOne(
@@ -58,13 +61,13 @@ try {
         dbExecute(
             "INSERT INTO " . TABLE_TEILNEHMER . " (Mnr, Vorname, Name, Erstzugriff, Letzter, IP)
              VALUES (?, ?, ?, NOW(), NOW(), ?)",
-            [$userMnr, 'Teilnehmer', $userMnr, $_SERVER['REMOTE_ADDR'] ?? '']
+            [$userMnr, 'Teilnehmer', $userMnr, $ip]
         );
     } else {
         // Letzten Zugriff aktualisieren
         dbExecute(
             "UPDATE " . TABLE_TEILNEHMER . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
-            [$_SERVER['REMOTE_ADDR'] ?? '', $userMnr]
+            [$ip, $userMnr]
         );
     }
 
@@ -83,7 +86,7 @@ try {
         $text,
         $bezug,
         $userMnr,
-        $_SERVER['REMOTE_ADDR'] ?? '',
+        $ip,
         'web'
     ]);
 

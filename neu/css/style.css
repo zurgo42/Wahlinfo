@@ -1193,19 +1193,23 @@ body.dark-mode .dark-mode-toggle:hover {
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--mensa-dunkelblau);
-    color: white;
+    background: var(--mensa-heller);
+    color: var(--mensa-anthrazit);
     cursor: pointer;
     transition: var(--transition);
 }
 
 .kandidat-header:hover {
     background: var(--mensa-hellblau);
-    color: var(--mensa-anthrazit);
+}
+
+body.dark-mode .kandidat-header {
+    background: #1a3a5a;
+    color: var(--text-primary);
 }
 
 body.dark-mode .kandidat-header:hover {
-    color: #1a1a2e;
+    background: #2a4a6a;
 }
 
 .kandidat-foto {
@@ -1223,22 +1227,21 @@ body.dark-mode .kandidat-header:hover {
     margin-bottom: calc(-1 * var(--spacing-sm));
 }
 
-/* Allgemeine Fragen - andere Farbe */
+/* Allgemeine Fragen - leicht andere Farbe */
 .kandidat-section.allgemein .kandidat-header {
-    background: var(--mensa-anthrazit);
+    background: var(--mensa-grau);
 }
 
 .kandidat-section.allgemein .kandidat-header:hover {
-    background: var(--mensa-grau);
-    color: var(--mensa-anthrazit);
+    background: #d0d0d0;
 }
 
 body.dark-mode .kandidat-section.allgemein .kandidat-header {
-    background: #3a5a7a;
+    background: #2a3a4a;
 }
 
 body.dark-mode .kandidat-section.allgemein .kandidat-header:hover {
-    background: var(--mensa-hellblau);
+    background: #3a4a5a;
 }
 
 .kandidat-name {
