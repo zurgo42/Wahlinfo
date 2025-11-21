@@ -28,7 +28,7 @@ $messageType = ''; // 'success' oder 'error'
 
 // Prüfe ob Editieren erlaubt ist
 $editingAllowed = isEditingAllowed();
-$deadlineFormatted = date('d.m.Y, H:i', strtotime(DEADLINE));
+$deadlineFormatted = date('d.m.Y, H:i', strtotime(DEADLINE_EDITIEREN));
 
 // Formular wurde abgeschickt
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $editingAllowed) {

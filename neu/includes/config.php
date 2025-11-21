@@ -13,8 +13,13 @@ define('DB_USER', 'wahl');
 define('DB_PASS', 'Cho8odoo');
 define('DB_NAME', 'wahl');
 
-// Stichtag für Editierung und Tabellenwechsel
-define('DEADLINE', '2025-12-31 23:59:59');
+// Stichtage
+// 1. Ab wann echte Kandidaten statt Spielwiese angezeigt werden
+define('DEADLINE_KANDIDATEN', '2025-12-01 00:00:00');
+
+// 2. Bis wann Kandidaten ihre Daten editieren dürfen
+//    Danach: kein Editieren mehr, einzeln.php wird öffentlich
+define('DEADLINE_EDITIEREN', '2025-12-31 23:59:59');
 
 // Tabellennamen
 define('TABLE_AEMTER', 'aemterwahl');
@@ -53,24 +58,32 @@ function getPdo() {
 // =============================================================================
 
 /**
- * Prüft ob der Stichtag überschritten ist
+ * Prüft ob echte Kandidaten angezeigt werden sollen (statt Spielwiese)
  */
-function isDeadlinePassed() {
-    return time() > strtotime(DEADLINE);
+function showRealKandidaten() {
+    return time() >= strtotime(DEADLINE_KANDIDATEN);
 }
 
 /**
  * Prüft ob Editieren noch erlaubt ist
  */
 function isEditingAllowed() {
-    return !isDeadlinePassed();
+    return time() <= strtotime(DEADLINE_EDITIEREN);
 }
 
 /**
- * Gibt die aktive Kandidaten-Tabelle zurück (basierend auf Stichtag)
+ * Prüft ob einzeln.php öffentlich zugänglich ist
+ * (erst nach dem Editier-Stichtag)
+ */
+function isDetailViewPublic() {
+    return time() > strtotime(DEADLINE_EDITIEREN);
+}
+
+/**
+ * Gibt die aktive Kandidaten-Tabelle zurück
  */
 function getKandidatenTable() {
-    return isDeadlinePassed() ? TABLE_KANDIDATEN : TABLE_SPIELWIESE;
+    return showRealKandidaten() ? TABLE_KANDIDATEN : TABLE_SPIELWIESE;
 }
 
 // =============================================================================

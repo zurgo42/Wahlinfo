@@ -15,6 +15,20 @@ if (empty($zeige)) {
     exit;
 }
 
+// Prüfen ob Detailansicht erlaubt ist
+// Vor dem Editier-Stichtag: nur eigene Daten (Kandidat selbst)
+// Nach dem Editier-Stichtag: für alle öffentlich
+$userMnr = $_GET['user'] ?? null; // Käme vom SSO
+if (!isDetailViewPublic() && $userMnr !== $zeige) {
+    $pageTitle = 'Noch nicht verfügbar';
+    include 'includes/header.php';
+    echo '<div class="alert alert-warning">Die Kandidatenprofile sind noch nicht öffentlich zugänglich.</div>';
+    echo '<p>Die Profile werden ab ' . date('d.m.Y, H:i', strtotime(DEADLINE_EDITIEREN)) . ' Uhr freigeschaltet.</p>';
+    echo '<a href="index.php" class="btn">Zurück zur Übersicht</a>';
+    include 'includes/footer.php';
+    exit;
+}
+
 // Tabelle wählen basierend auf Stichtag
 $kandidatenTable = getKandidatenTable();
 
