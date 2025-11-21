@@ -118,6 +118,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
             <div class="beitrag-meta">
                 <span class="autor"><?php echo escape(($antwort['AutorVorname'] ?? '') . ' ' . ($antwort['AutorName'] ?? '')); ?></span>
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
+                <span class="beitrag-id">#<?php echo $aKnr; ?></span>
             </div>
             <?php
             // Text steht in These, nicht in Kommentar
@@ -137,6 +138,14 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
             <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
                 <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
+            </div>
+            <div class="antwort-action">
+                <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
+            </div>
+            <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
+                <textarea id="antwort-text-<?php echo $aKnr; ?>" placeholder="Ihre Antwort..."></textarea>
+                <button class="btn btn-small" onclick="sendeAntwort(<?php echo $aKnr; ?>)">Absenden</button>
+                <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $aKnr; ?>)">Abbrechen</button>
             </div>
         </div>
         <?php
@@ -200,6 +209,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                     <div class="beitrag-meta">
                                         <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
                                         <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
+                                        <span class="beitrag-id">#<?php echo $knr; ?></span>
                                     </div>
                                     <?php
                                     // Text steht in These, nicht in Kommentar
@@ -215,6 +225,14 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                     <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
                                         <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                                         <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
+                                    </div>
+                                    <div class="antwort-action">
+                                        <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
+                                    </div>
+                                    <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
+                                        <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Ihre Antwort..."></textarea>
+                                        <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
+                                        <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
                                     </div>
                                 </div>
 
@@ -262,6 +280,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                 <div class="beitrag-meta">
                                     <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
                                     <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
+                                    <span class="beitrag-id">#<?php echo $knr; ?></span>
                                 </div>
                                 <?php
                                 $beitragText = $thread['These'] ?? '';
@@ -276,6 +295,14 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                                 <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
                                     <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                                     <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
+                                </div>
+                                <div class="antwort-action">
+                                    <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
+                                </div>
+                                <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
+                                    <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Ihre Antwort..."></textarea>
+                                    <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
+                                    <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
                                 </div>
                             </div>
                             <?php if (isset($antwortenNachBezug[$knr])): ?>
@@ -312,6 +339,47 @@ function zeigeVoll(knr) {
 function zeigeKurz(knr) {
     document.getElementById('text-' + knr).style.display = 'block';
     document.getElementById('voll-' + knr).style.display = 'none';
+}
+
+function zeigeAntwortForm(knr) {
+    // Alle anderen Formulare schließen
+    document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
+        form.style.display = 'none';
+    });
+    document.getElementById('antwort-form-' + knr).style.display = 'block';
+    document.getElementById('antwort-text-' + knr).focus();
+}
+
+function versteckeAntwortForm(knr) {
+    document.getElementById('antwort-form-' + knr).style.display = 'none';
+}
+
+function sendeAntwort(bezugKnr) {
+    var text = document.getElementById('antwort-text-' + bezugKnr).value.trim();
+    if (!text) {
+        alert('Bitte geben Sie einen Text ein.');
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('bezug', bezugKnr);
+    formData.append('text', text);
+
+    fetch('antwort_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Speichern: ' + error);
+    });
 }
 </script>
 
