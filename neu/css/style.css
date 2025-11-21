@@ -1425,6 +1425,52 @@ body.dark-mode .neue-frage-zeile:hover {
     color: var(--mensa-hellgelb);
 }
 
+/* Eingabe-Formular Styles */
+.eingabe-textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.team-select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.team-select option:disabled {
+    color: #999;
+    font-style: italic;
+}
+
+.photo-upload {
+    margin-top: var(--spacing-sm);
+    text-align: center;
+}
+
+.form-actions {
+    margin-top: var(--spacing-lg);
+    text-align: center;
+}
+
+body.dark-mode .eingabe-textarea,
+body.dark-mode .team-select {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
 @media (max-width: 480px) {
     .kandidat-header {
         padding: var(--spacing-xs) var(--spacing-sm);

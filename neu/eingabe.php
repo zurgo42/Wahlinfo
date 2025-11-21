@@ -17,6 +17,25 @@ $deadlineFormatted = date('d.m.Y, H:i', strtotime(DEADLINE_EDITIEREN));
 $message = '';
 $messageType = '';
 
+/**
+ * Protokolliert Änderungen in einer Log-Datei
+ */
+function logChange($mnr, $action, $details = '') {
+    $logFile = __DIR__ . '/logs/eingabe_' . date('Y-m') . '.log';
+    $logDir = dirname($logFile);
+
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0755, true);
+    }
+
+    $timestamp = date('Y-m-d H:i:s');
+    $ip = substr($_SERVER['REMOTE_ADDR'] ?? 'unknown', 0, 45);
+    $logEntry = sprintf("[%s] MNr: %s | IP: %s | %s | %s\n",
+        $timestamp, $mnr, $ip, $action, $details);
+
+    file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+}
+
 // =============================================================================
 // FORMULAR VERARBEITUNG
 // =============================================================================
@@ -39,37 +58,63 @@ function processFormSubmission($mnr, $postData, $files) {
         $pdo = getPdo();
         $pdo->beginTransaction();
 
-        // Grunddaten aktualisieren
-        $sql = "UPDATE $table SET
-            hplink = ?, videolink = ?,
-            team1 = ?, team2 = ?, team3 = ?, team4 = ?, team5 = ?
-            WHERE mnummer = ?";
+        $changedFields = [];
 
-        $params = [
-            $postData['hplink'] ?? '',
-            $postData['videolink'] ?? '',
-            $postData['team1'] ?? '',
-            $postData['team2'] ?? '',
-            $postData['team3'] ?? '',
-            $postData['team4'] ?? '',
-            $postData['team5'] ?? '',
-            $mnr
-        ];
+        // Grunddaten aktualisieren
+        $newHplink = $postData['hplink'] ?? '';
+        $newVideolink = $postData['videolink'] ?? '';
+
+        if ($newHplink !== ($kandidat['hplink'] ?? '')) {
+            $changedFields[] = "hplink: " . ($kandidat['hplink'] ?? '') . " -> " . $newHplink;
+        }
+        if ($newVideolink !== ($kandidat['videolink'] ?? '')) {
+            $changedFields[] = "videolink: " . ($kandidat['videolink'] ?? '') . " -> " . $newVideolink;
+        }
+
+        $sql = "UPDATE $table SET hplink = ?, videolink = ?, ";
+        $params = [$newHplink, $newVideolink];
+
+        // Team-Präferenzen
+        for ($i = 1; $i <= 5; $i++) {
+            $newTeam = $postData["team$i"] ?? '';
+            $oldTeam = $kandidat["team$i"] ?? '';
+            if ($newTeam !== $oldTeam) {
+                $changedFields[] = "team$i: $oldTeam -> $newTeam";
+            }
+            $sql .= "team$i = ?, ";
+            $params[] = $newTeam;
+        }
+
+        $sql = rtrim($sql, ', ') . " WHERE mnummer = ?";
+        $params[] = $mnr;
 
         dbExecute($sql, $params);
 
-        // Antworten speichern (a1-a26)
+        // Antworten speichern (a1-a26) - IMMER neue ID erstellen!
         for ($i = 1; $i <= 26; $i++) {
             $fieldName = "a$i";
             if (isset($postData[$fieldName])) {
                 $antwortText = trim($postData[$fieldName]);
-                $existingId = $kandidat[$fieldName] ?? 0;
+                $oldId = $kandidat[$fieldName] ?? 0;
+
+                // Alte Antwort zum Vergleich holen
+                $oldText = '';
+                if ($oldId > 0) {
+                    $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldId]);
+                    $oldText = $oldBem ? $oldBem['bem'] : '';
+                }
 
                 if (!empty($antwortText)) {
-                    $bemId = saveBemerkung($antwortText, $existingId);
+                    // IMMER neue Bemerkung erstellen (alte bleibt erhalten)
+                    $bemId = createNewBemerkung($antwortText);
                     dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$bemId, $mnr]);
-                } elseif ($existingId > 0) {
+
+                    if ($antwortText !== $oldText) {
+                        $changedFields[] = "$fieldName: neue ID $bemId";
+                    }
+                } elseif ($oldId > 0) {
                     dbExecute("UPDATE $table SET $fieldName = 0 WHERE mnummer = ?", [$mnr]);
+                    $changedFields[] = "$fieldName: gelöscht (war ID $oldId)";
                 }
             }
         }
@@ -80,25 +125,31 @@ function processFormSubmission($mnr, $postData, $files) {
             if ($photoResult['error']) {
                 throw new Exception($photoResult['message']);
             }
+            $changedFields[] = "bildfile: neues Foto hochgeladen";
         }
 
         $pdo->commit();
+
+        // Änderungen loggen
+        if (!empty($changedFields)) {
+            logChange($mnr, 'UPDATE', implode('; ', $changedFields));
+        }
+
         return ['type' => 'success', 'message' => 'Daten erfolgreich gespeichert.'];
 
     } catch (Exception $e) {
         $pdo->rollBack();
+        logChange($mnr, 'ERROR', $e->getMessage());
         return ['type' => 'error', 'message' => 'Fehler: ' . $e->getMessage()];
     }
 }
 
-function saveBemerkung($text, $existingId = 0) {
-    if ($existingId > 0) {
-        dbExecute("UPDATE " . TABLE_BEMERKUNGEN . " SET bem = ? WHERE id = ?", [$text, $existingId]);
-        return $existingId;
-    } else {
-        dbExecute("INSERT INTO " . TABLE_BEMERKUNGEN . " (bem) VALUES (?)", [$text]);
-        return dbLastInsertId();
-    }
+/**
+ * Erstellt IMMER eine neue Bemerkung (überschreibt nie alte)
+ */
+function createNewBemerkung($text) {
+    dbExecute("INSERT INTO " . TABLE_BEMERKUNGEN . " (bem) VALUES (?)", [$text]);
+    return dbLastInsertId();
 }
 
 function processPhotoUpload($file, $mnr, $table) {
@@ -131,6 +182,7 @@ function processPhotoUpload($file, $mnr, $table) {
 
 $kand = null;
 $antworten = [];
+$vorstandsKandidaten = [];
 
 if ($userMnr) {
     $kandidatenTable = getKandidatenTable();
@@ -147,6 +199,15 @@ if ($userMnr) {
                 $antworten[$i] = '';
             }
         }
+
+        // Kandidaten mit Wahlziel Vorstand laden (für Team-Auswahl)
+        $vorstandsKandidaten = dbFetchAll(
+            "SELECT mnummer, vorname, name FROM $kandidatenTable
+             WHERE (amt1 = '1' OR amt2 = '1' OR amt3 = '1')
+             AND mnummer != ?
+             ORDER BY name, vorname",
+            [$userMnr]
+        );
     }
 }
 
@@ -266,29 +327,45 @@ include __DIR__ . '/includes/header.php';
 
                 <!-- Team-Präferenzen -->
                 <h3>Bevorzugte Zusammenarbeit</h3>
-                <p class="section-note">Mit welchen Mitkandidaten würdest du am liebsten zusammenarbeiten? (M-Nr eingeben)</p>
+                <p class="section-note">Mit welchen Mitkandidaten für den Vorstand würdest du am liebsten zusammenarbeiten?</p>
 
                 <?php
-                $kandidatenTable = getKandidatenTable();
+                // Bereits ausgewählte Team-M-Nummern sammeln
+                $selectedTeams = [];
+                for ($i = 1; $i <= 5; $i++) {
+                    $tm = $kand["team$i"] ?? '';
+                    if (!empty($tm)) $selectedTeams[] = $tm;
+                }
+
                 for ($i = 1; $i <= 5; $i++):
                     $teamMnr = $kand["team$i"] ?? '';
                     $teamName = '';
                     if (!empty($teamMnr) && strlen($teamMnr) > 2) {
-                        $teamMember = dbFetchOne("SELECT vorname, name FROM $kandidatenTable WHERE mnummer = ?", [$teamMnr]);
-                        if ($teamMember) {
-                            $teamName = $teamMember['vorname'] . ' ' . $teamMember['name'];
+                        foreach ($vorstandsKandidaten as $vk) {
+                            if ($vk['mnummer'] === $teamMnr) {
+                                $teamName = $vk['vorname'] . ' ' . $vk['name'];
+                                break;
+                            }
                         }
                     }
                 ?>
                     <div class="form-row team-row">
                         <label for="team<?php echo $i; ?>"><?php echo $i; ?>. Präferenz</label>
                         <?php if ($editingAllowed): ?>
-                            <input type="text" id="team<?php echo $i; ?>" name="team<?php echo $i; ?>"
-                                   value="<?php echo escape($teamMnr); ?>"
-                                   placeholder="M-Nr" class="team-input">
-                            <?php if ($teamName): ?>
-                                <span class="team-name"><?php echo escape($teamName); ?></span>
-                            <?php endif; ?>
+                            <select id="team<?php echo $i; ?>" name="team<?php echo $i; ?>" class="team-select">
+                                <option value="">-- keine Auswahl --</option>
+                                <?php foreach ($vorstandsKandidaten as $vk):
+                                    $isSelected = ($vk['mnummer'] === $teamMnr);
+                                    $isUsed = in_array($vk['mnummer'], $selectedTeams) && !$isSelected;
+                                ?>
+                                    <option value="<?php echo escape($vk['mnummer']); ?>"
+                                            <?php echo $isSelected ? 'selected' : ''; ?>
+                                            <?php echo $isUsed ? 'disabled' : ''; ?>>
+                                        <?php echo escape($vk['name'] . ', ' . $vk['vorname']); ?>
+                                        <?php echo $isUsed ? ' (bereits gewählt)' : ''; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         <?php else: ?>
                             <?php if ($teamName): ?>
                                 <span><?php echo escape($teamName); ?></span>
@@ -324,7 +401,7 @@ include __DIR__ . '/includes/header.php';
                                 <?php echo decodeEntities($anf['Anforderung'] ?? ''); ?>
                             </div>
                             <?php if ($editingAllowed): ?>
-                                <textarea name="a<?php echo $nr; ?>" rows="3"
+                                <textarea name="a<?php echo $nr; ?>" rows="6" class="eingabe-textarea"
                                           placeholder="Deine Antwort..."><?php echo escape($antworten[$nr] ?? ''); ?></textarea>
                             <?php else: ?>
                                 <?php if (!empty($antworten[$nr])): ?>
@@ -354,7 +431,7 @@ include __DIR__ . '/includes/header.php';
                                 <?php echo decodeEntities($anf['Anforderung'] ?? ''); ?>
                             </div>
                             <?php if ($editingAllowed): ?>
-                                <textarea name="a<?php echo $nr; ?>" rows="3"
+                                <textarea name="a<?php echo $nr; ?>" rows="6" class="eingabe-textarea"
                                           placeholder="Deine Antwort..."><?php echo escape($antworten[$nr] ?? ''); ?></textarea>
                             <?php else: ?>
                                 <?php if (!empty($antworten[$nr])): ?>
