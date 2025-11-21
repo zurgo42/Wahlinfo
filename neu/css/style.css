@@ -1201,7 +1201,11 @@ body.dark-mode .dark-mode-toggle:hover {
 
 .kandidat-header:hover {
     background: var(--mensa-hellblau);
-    color: var(--mensa-dunkelblau);
+    color: var(--mensa-anthrazit);
+}
+
+body.dark-mode .kandidat-header:hover {
+    color: #1a1a2e;
 }
 
 .kandidat-foto {
