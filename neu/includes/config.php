@@ -1,6 +1,7 @@
 <?php
 /**
  * Datenbank-Konfiguration für Wahlinfo
+ * PDO-basiert mit Stichtag-Handling
  */
 
 // Error Reporting (für Produktion anpassen)
@@ -12,7 +13,113 @@ define('DB_USER', 'wahl');
 define('DB_PASS', 'Cho8odoo');
 define('DB_NAME', 'wahl');
 
-// Datenbank-Verbindung herstellen
+// Stichtag für Editierung und Tabellenwechsel
+define('DEADLINE', '2025-12-31 23:59:59');
+
+// Tabellennamen
+define('TABLE_AEMTER', 'aemterwahl');
+define('TABLE_KANDIDATEN', 'kandidatenwahl');
+define('TABLE_SPIELWIESE', 'spielwiesewahl');
+define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
+define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
+
+// =============================================================================
+// PDO Datenbank-Verbindung
+// =============================================================================
+
+function getPdo() {
+    static $pdo = null;
+
+    if ($pdo === null) {
+        $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+
+        try {
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            die('Datenbankverbindung fehlgeschlagen: ' . $e->getMessage());
+        }
+    }
+
+    return $pdo;
+}
+
+// =============================================================================
+// Stichtag-Funktionen
+// =============================================================================
+
+/**
+ * Prüft ob der Stichtag überschritten ist
+ */
+function isDeadlinePassed() {
+    return time() > strtotime(DEADLINE);
+}
+
+/**
+ * Prüft ob Editieren noch erlaubt ist
+ */
+function isEditingAllowed() {
+    return !isDeadlinePassed();
+}
+
+/**
+ * Gibt die aktive Kandidaten-Tabelle zurück (basierend auf Stichtag)
+ */
+function getKandidatenTable() {
+    return isDeadlinePassed() ? TABLE_KANDIDATEN : TABLE_SPIELWIESE;
+}
+
+// =============================================================================
+// Datenbank-Hilfsfunktionen
+// =============================================================================
+
+/**
+ * Führt eine SELECT-Query aus und gibt alle Ergebnisse zurück
+ */
+function dbFetchAll($sql, $params = []) {
+    $pdo = getPdo();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Führt eine SELECT-Query aus und gibt eine Zeile zurück
+ */
+function dbFetchOne($sql, $params = []) {
+    $pdo = getPdo();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetch();
+}
+
+/**
+ * Führt eine INSERT/UPDATE/DELETE-Query aus
+ */
+function dbExecute($sql, $params = []) {
+    $pdo = getPdo();
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute($params);
+}
+
+/**
+ * Gibt die ID des zuletzt eingefügten Datensatzes zurück
+ */
+function dbLastInsertId() {
+    return getPdo()->lastInsertId();
+}
+
+// =============================================================================
+// Legacy-Kompatibilität (für bestehende Seiten)
+// =============================================================================
+
+/**
+ * @deprecated Verwende dbFetchAll() oder dbFetchOne()
+ */
 function getDbConnection() {
     static $conn = null;
 
@@ -29,8 +136,10 @@ function getDbConnection() {
     return $conn;
 }
 
-// Prepared Statement Helper
-function dbQuery($sql, $params = array()) {
+/**
+ * @deprecated Verwende dbFetchAll() oder dbExecute()
+ */
+function dbQuery($sql, $params = []) {
     $conn = getDbConnection();
 
     if (empty($params)) {
@@ -60,23 +169,23 @@ function dbQuery($sql, $params = array()) {
     return $stmt->get_result();
 }
 
-// Sicherheitsfunktionen
+// =============================================================================
+// Sicherheits- und Hilfsfunktionen
+// =============================================================================
+
+/**
+ * Escaped einen String für HTML-Ausgabe
+ */
 function escape($str) {
+    if ($str === null) return '';
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-// HTML-Entities dekodieren (für alte Daten mit &auml; etc.)
+/**
+ * Dekodiert HTML-Entities (für alte Daten mit &auml; etc.)
+ */
 function decodeEntities($str) {
     if ($str === null) return '';
     return html_entity_decode($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
-
-// Tabellennamen
-define('TABLE_AEMTER', 'aemterwahl');
-define('TABLE_KANDIDATEN', 'kandidatenwahl');
-define('TABLE_SPIELWIESE', 'spielwiesewahl');
-define('TABLE_ANTWORTEN', 'antwortenwahl');
-
-// Vorbereitungsphase: spielwiesewahl statt kandidatenwahl verwenden
-define('USE_SPIELWIESE', false);
 ?>
