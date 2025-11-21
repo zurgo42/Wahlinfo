@@ -44,6 +44,7 @@ $alleKommentare = dbFetchAll(
      FROM " . TABLE_KOMMENTARE . " k
      LEFT JOIN " . TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
      WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
+     GROUP BY k.Knr
      ORDER BY k.Datum ASC"
 );
 
