@@ -68,21 +68,24 @@ try {
         );
     }
 
-    // Antwort speichern - Knr explizit auf NULL für auto_increment
+    // Nächste Knr ermitteln (da kein auto_increment)
+    $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . TABLE_KOMMENTARE);
+    $neueKnr = ($maxKnr['max_knr'] ?? 2000) + 1;
+
+    // Antwort speichern
     $pdo = getPdo();
     $stmt = $pdo->prepare(
         "INSERT INTO " . TABLE_KOMMENTARE . " (Knr, These, Bezug, Mnr, Datum, IP, Medium)
-         VALUES (NULL, ?, ?, ?, NOW(), ?, ?)"
+         VALUES (?, ?, ?, ?, NOW(), ?, ?)"
     );
     $stmt->execute([
+        $neueKnr,
         $text,
         $bezug,
         $userMnr,
         $_SERVER['REMOTE_ADDR'] ?? '',
         'web'
     ]);
-
-    $neueKnr = $pdo->lastInsertId();
 
     echo json_encode([
         'success' => true,
