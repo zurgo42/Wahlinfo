@@ -143,12 +143,12 @@ function sendNotifications($kommentarId, $bezugId) {
 // Sortierung festlegen
 $orderBy = $sortierung === 'alt' ? 'Datum ASC' : 'Datum DESC';
 
-// Kommentare laden
+// Kommentare laden (Verbergen != '1' oder 'ja')
 $kommentare = dbFetchAll(
     "SELECT k.*, t.Vorname, t.Name
      FROM " . TABLE_KOMMENTARE . " k
      LEFT JOIN " . TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
-     WHERE k.Verbergen IS NULL OR k.Verbergen = ''
+     WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
      ORDER BY $orderBy"
 );
 

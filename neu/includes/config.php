@@ -90,21 +90,24 @@ function getKandidatenTable() {
 // Benutzer-Authentifizierung
 // =============================================================================
 
+// Test-M-Nr für lokale Entwicklung (localhost)
+define('TEST_MNR', '049123456');
+
 /**
  * Holt die M-Nr des eingeloggten Users
  * Produktion: aus SSO-Variable
- * Entwicklung: aus GET-Parameter
+ * Entwicklung (localhost): automatisch Test-M-Nr
  */
 function getUserMnr() {
     // Produktion: SSO liefert M-Nr (anpassen je nach SSO-System)
-    // Beispiel: $_SERVER['REMOTE_USER'] oder $_SESSION['mnr']
     if (isset($_SERVER['REMOTE_USER'])) {
         return $_SERVER['REMOTE_USER'];
     }
 
-    // Entwicklung: Simulation per GET-Parameter
-    if (isset($_GET['user'])) {
-        return $_GET['user'];
+    // Entwicklung: localhost bekommt Test-M-Nr
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+        return TEST_MNR;
     }
 
     return null;
