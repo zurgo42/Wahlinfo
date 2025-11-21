@@ -15,10 +15,6 @@
 
 require_once __DIR__ . '/includes/config.php';
 
-// Tabellennamen für aktuelles Jahr
-define('TABLE_KOMMENTARE', 'Wahl2025kommentare');
-define('TABLE_TEILNEHMER', 'Wahl2025teilnehmer');
-
 // Eingeloggte M-Nr (SSO oder Simulation)
 $userMnr = getUserMnr();
 $pageTitle = 'Diskussion';

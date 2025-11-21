@@ -21,9 +21,16 @@ define('DEADLINE_KANDIDATEN', '2025-12-01 00:00:00');
 //    Danach: kein Editieren mehr, einzeln.php wird öffentlich
 define('DEADLINE_EDITIEREN', '2025-12-31 23:59:59');
 
-// Tabellennamen
+// Wahljahr (hier anpassen für neues Jahr)
+define('WAHLJAHR', '2025');
+
+// Tabellennamen - jahresabhängig
+define('TABLE_KANDIDATEN', 'Wahl' . WAHLJAHR);
+define('TABLE_KOMMENTARE', 'Wahl' . WAHLJAHR . 'kommentare');
+define('TABLE_TEILNEHMER', 'Wahl' . WAHLJAHR . 'teilnehmer');
+
+// Tabellennamen - jahresunabhängig
 define('TABLE_AEMTER', 'aemterwahl');
-define('TABLE_KANDIDATEN', 'kandidatenwahl');
 define('TABLE_SPIELWIESE', 'spielwiesewahl');
 define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
 define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
