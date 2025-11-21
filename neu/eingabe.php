@@ -191,7 +191,15 @@ if ($userMnr) {
     if ($kand) {
         // Antworten laden
         for ($i = 1; $i <= 26; $i++) {
-            $bemId = $kand["a$i"] ?? 0;
+            $wert = $kand["a$i"] ?? 0;
+
+            // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
+            if ($i >= 9 && $i <= 15 && $wert > 10000) {
+                $bemId = $wert - (round($wert / 10000) * 10000);
+            } else {
+                $bemId = $wert;
+            }
+
             if ($bemId > 0) {
                 $bem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$bemId]);
                 $antworten[$i] = $bem ? decodeEntities($bem['bem']) : '';
