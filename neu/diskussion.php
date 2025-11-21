@@ -180,7 +180,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                 <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
             </div>
             <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
-                <textarea id="antwort-text-<?php echo $aKnr; ?>" placeholder="Ihre Antwort..."></textarea>
+                <textarea id="antwort-text-<?php echo $aKnr; ?>" placeholder="Deine Antwort..."></textarea>
                 <button class="btn btn-small" onclick="sendeAntwort(<?php echo $aKnr; ?>)">Absenden</button>
                 <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $aKnr; ?>)">Abbrechen</button>
             </div>
@@ -203,8 +203,8 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
     <h1>Diskussion zur Wahl</h1>
 
     <p class="section-note">
-        Hier können Sie Fragen an die Kandidaten stellen und deren Antworten lesen.
-        Klicken Sie auf einen Kandidaten, um die Diskussion zu sehen.
+        Hier kannst du Fragen an die Kandidaten stellen und deren Antworten lesen.
+        Klicke auf einen Kandidaten, um die Diskussion zu sehen.
     </p>
 
     <!-- Kandidaten mit ihren Diskussionen -->
@@ -255,10 +255,10 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                     <span class="kandidat-name"><?php echo escape($kandName); ?></span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
                     <?php if ($hatNeueBeitraege): ?><span class="neu-badge">neu</span><?php endif; ?>
-                    <span class="toggle-icon" id="icon-<?php echo $kandId; ?>"><?php echo $hatNeueBeitraege ? '▲' : '▼'; ?></span>
+                    <span class="toggle-icon" id="icon-<?php echo $kandId; ?>">▼</span>
                 </div>
 
-                <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:<?php echo $hatNeueBeitraege ? 'block' : 'none'; ?>">
+                <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:none;">
                     <?php if (!empty($threads)): ?>
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
@@ -292,7 +292,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                                         <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
                                     </div>
                                     <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
-                                        <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Ihre Antwort..."></textarea>
+                                        <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Deine Antwort..."></textarea>
                                         <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
                                         <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
                                     </div>
@@ -317,7 +317,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                         <?php endif; ?>
                     </div>
                     <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
-                        <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Ihre Frage..."></textarea>
+                        <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Deine Frage..."></textarea>
                         <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
                         <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
                     </div>
@@ -366,7 +366,7 @@ function versteckeAntwortForm(knr) {
 function sendeAntwort(bezugKnr) {
     var text = document.getElementById('antwort-text-' + bezugKnr).value.trim();
     if (!text) {
-        alert('Bitte geben Sie einen Text ein.');
+        alert('Bitte gib einen Text ein.');
         return;
     }
 
@@ -407,7 +407,7 @@ function versteckeNeueFrageForm(kandId) {
 function sendeNeueFrage(kandId) {
     var text = document.getElementById('neue-frage-text-' + kandId).value.trim();
     if (!text) {
-        alert('Bitte geben Sie einen Text ein.');
+        alert('Bitte gib einen Text ein.');
         return;
     }
 

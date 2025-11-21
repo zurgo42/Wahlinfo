@@ -19,8 +19,8 @@
     --white: #ffffff;
 
     /* Theme Colors (überschreibbar für Dark Mode) */
-    --bg-primary: #EBEBEB;
-    --bg-secondary: #ffffff;
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #e8e8e8;
     --bg-card: #ffffff;
     --text-primary: #505050;
     --text-secondary: #505050;
