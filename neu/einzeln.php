@@ -43,7 +43,6 @@ include 'includes/header.php';
 // Hilfsfunktion: Für welches Amt kandidiert die Person?
 function getAemter($kand) {
     $aemter = [];
-    $conn = getDbConnection();
     for ($i = 1; $i <= 5; $i++) {
         if (!empty($kand["amt$i"]) && $kand["amt$i"] == '1') {
             $result = dbQuery("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = $i");
@@ -55,7 +54,14 @@ function getAemter($kand) {
     return $aemter;
 }
 
+// Ist Vorstandskandidat?
+$isVorstand = !empty($kand['amt1']) || !empty($kand['amt2']) || !empty($kand['amt3']);
+
 $aemterListe = getAemter($kand);
+
+// Skala für Kompetenzen
+$skala5 = ['', '⚪', '🔵', '🔵🔵', '🔵🔵🔵', '🔵🔵🔵🔵'];
+$skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 ?>
 
 <div class="candidate-detail">
@@ -72,7 +78,7 @@ $aemterListe = getAemter($kand);
             <h1><?php echo escape($kand['vorname'] . ' ' . $kand['name']); ?></h1>
             <p class="mnummer">M-Nr: <?php echo substr(escape($kand['mnummer']), 3); ?></p>
             <?php if (!empty($aemterListe)): ?>
-                <p class="kandidatur"><strong>Kandidatur für:</strong> <?php echo escape(implode(', ', $aemterListe)); ?></p>
+                <p class="kandidatur"><strong>Kandidatur für:</strong><br><?php echo escape(implode(', ', $aemterListe)); ?></p>
             <?php endif; ?>
         </div>
     </div>
@@ -87,10 +93,10 @@ $aemterListe = getAemter($kand);
         if ($hasLinks): ?>
             <ul class="link-list">
                 <?php if (!empty($kand['hplink'])): ?>
-                    <li><a href="<?php echo escape($kand['hplink']); ?>" target="_blank">Homepage/Mediaseite von <?php echo escape($kand['vorname']); ?></a></li>
+                    <li><a href="<?php echo escape($kand['hplink']); ?>" target="_blank">Link auf die Homepage/Mediaseite von <?php echo escape($kand['vorname']); ?></a></li>
                 <?php endif; ?>
                 <?php if (!empty($kand['videolink'])): ?>
-                    <li><a href="<?php echo escape($kand['videolink']); ?>" target="_blank">Vorstellungsvideo von <?php echo escape($kand['vorname']); ?></a></li>
+                    <li><a href="<?php echo escape($kand['videolink']); ?>" target="_blank">Link auf das Vorstellungsvideo von <?php echo escape($kand['vorname']); ?></a></li>
                 <?php endif; ?>
             </ul>
         <?php endif; ?>
@@ -107,7 +113,7 @@ $aemterListe = getAemter($kand);
 
         if ($hasTeam): ?>
             <h3>Bevorzugte Zusammenarbeit</h3>
-            <p><?php echo escape($kand['vorname']); ?> würde am liebsten mit folgenden Mitkandidaten zusammenarbeiten:</p>
+            <p>Am liebsten würde <?php echo escape($kand['vorname']); ?> mit folgenden Mitkandidaten zusammenarbeiten:</p>
             <ul class="team-list">
                 <?php for ($i = 1; $i <= 5; $i++):
                     $teamMnr = $kand["team$i"];
@@ -132,103 +138,132 @@ $aemterListe = getAemter($kand);
 
         if ($prefQuery && $prefQuery->num_rows > 0): ?>
             <h3>Wird präferiert von</h3>
+            <p><?php echo escape($kand['vorname']); ?> wird von folgenden Kandidaten präferiert:</p>
             <ul class="team-list">
                 <?php while ($pref = $prefQuery->fetch_assoc()): ?>
                     <li><?php echo escape($pref['vorname'] . ' ' . $pref['name']); ?></li>
                 <?php endwhile; ?>
             </ul>
         <?php endif; ?>
+
+        <?php if (!$hasLinks && !$hasTeam && (!$prefQuery || $prefQuery->num_rows == 0)): ?>
+            <p class="no-data">Keine ergänzenden Informationen vorhanden.</p>
+        <?php endif; ?>
     </div>
 
     <?php
     // Ressort-Präferenzen (nur für Vorstandskandidaten)
-    $isVorstand = !empty($kand['amt1']) || !empty($kand['amt2']) || !empty($kand['amt3']);
-
     // Prüfen ob Ressort-Angaben vorhanden
     $hasRessort = false;
-    for ($i = 1; $i <= 20; $i++) {
+    for ($i = 1; $i <= 30; $i++) {
         if (!empty($kand["r$i"]) && $kand["r$i"] > 9999) {
             $hasRessort = true;
             break;
         }
     }
 
-    if ($isVorstand && $hasRessort): ?>
+    if ($isVorstand): ?>
     <div class="detail-section">
         <h2>Ressort-Präferenzen</h2>
-        <p class="section-note">Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren (Prio 5 ist höchste Priorität):</p>
+        <?php if ($hasRessort): ?>
+            <p class="section-note">Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren<br>(Prio <strong>5</strong> ist höchste Priorität):</p>
 
-        <?php
-        $ressortQuery = dbQuery("SELECT * FROM ressortswahl ORDER BY id");
-        if ($ressortQuery):
-            while ($ressort = $ressortQuery->fetch_assoc()):
-                $rid = $ressort['id'];
-                $rfeld = "r$rid";
-                if (!empty($kand[$rfeld]) && $kand[$rfeld] > 9999):
-                    $prio = round($kand[$rfeld] / 10000);
-        ?>
-            <div class="ressort-item">
-                <span class="ressort-name"><?php echo escape($ressort['ressort']); ?></span>
-                <span class="ressort-prio">Prio <?php echo $prio; ?></span>
-            </div>
-        <?php
-                endif;
-            endwhile;
-        endif;
-        ?>
-    </div>
-    <?php elseif ($isVorstand): ?>
-    <div class="detail-section">
-        <p><?php echo escape($kand['vorname']); ?> hat auf Anfrage keine bevorzugten Aufgaben/Ressortzuständigkeiten eingetragen.</p>
+            <?php
+            // Ressorts nach Vorstandsbereich gruppieren
+            $ressortQuery = dbQuery("SELECT * FROM ressortswahl ORDER BY id");
+            if ($ressortQuery):
+                $ressorts = [];
+                while ($r = $ressortQuery->fetch_assoc()) {
+                    $ressorts[$r['id']] = $r['ressort'];
+                }
+
+                // Für jeden Vorstandsbereich (amt1, amt2, amt3)
+                for ($amtNr = 1; $amtNr <= 3; $amtNr++):
+                    if (empty($kand["amt$amtNr"])) continue;
+
+                    // Amt-Name holen
+                    $amtResult = dbQuery("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = $amtNr");
+                    $amtName = ($amtResult && $row = $amtResult->fetch_assoc()) ? $row['amt'] : "Bereich $amtNr";
+                    ?>
+
+                    <h3><?php echo escape($amtName); ?></h3>
+                    <div class="ressort-list">
+                    <?php
+                    // Ressorts für diesen Bereich (vereinfachte Zuordnung)
+                    $found = false;
+                    foreach ($ressorts as $rid => $rname):
+                        $rfeld = "r$rid";
+                        if (!empty($kand[$rfeld]) && $kand[$rfeld] > 9999):
+                            $found = true;
+                            $prio = round($kand[$rfeld] / 10000);
+                            $bemId = $kand[$rfeld] - ($prio * 10000);
+                            $bemerkung = '';
+                            if ($bemId > 0) {
+                                $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
+                                if ($bemResult && $bem = $bemResult->fetch_assoc()) {
+                                    $bemerkung = $bem['bem'];
+                                }
+                            }
+                    ?>
+                        <div class="ressort-item">
+                            <div class="ressort-name"><?php echo escape($rname); ?></div>
+                            <div class="ressort-prio">Prio <?php echo $prio; ?></div>
+                        </div>
+                        <?php if (!empty($bemerkung)): ?>
+                            <div class="ressort-comment"><?php echo escape($bemerkung); ?></div>
+                        <?php endif; ?>
+                    <?php
+                        endif;
+                    endforeach;
+
+                    if (!$found): ?>
+                        <p class="no-data">Keine Angaben</p>
+                    <?php endif; ?>
+                    </div>
+                <?php endfor;
+            endif; ?>
+        <?php else: ?>
+            <p class="no-data"><?php echo escape($kand['vorname']); ?> hat auf Anfrage keine bevorzugten Aufgaben/Ressortzuständigkeiten eingetragen.</p>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
 
-    <?php
-    // Anforderungen / Kompetenzen
-    $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY Nr");
-    if ($anfQuery && $anfQuery->num_rows > 0):
-    ?>
+    <!-- Anforderungen & Kompetenzen -->
     <div class="detail-section">
         <h2>Anforderungen & Kompetenzen</h2>
-        <p class="section-note">Einige Anforderungen, die für die ehrenamtliche Arbeit im Verein hilfreich sein könnten.</p>
+        <p class="section-note">Einige Anforderungen, die für die ehrenamtliche Arbeit im Verein hilfreich sein könnten, wurden den Kandidaten vorgelegt.</p>
 
+        <?php
+        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY Nr");
+        if ($anfQuery && $anfQuery->num_rows > 0):
+        ?>
+
+        <!-- Allgemeine Fragen (1-8) -->
+        <h3>Allgemeine Fragen</h3>
         <table class="anforderungen-table">
             <thead>
                 <tr>
-                    <th>Nr</th>
-                    <th>Anforderung</th>
+                    <th class="nr">Nr</th>
+                    <th>Frage</th>
                     <th>Antwort</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
+                $hasAllgemein = false;
                 $nr = 0;
-                $hasAntworten = false;
                 while ($anf = $anfQuery->fetch_assoc()):
                     $nr++;
+                    if ($nr > 8) break; // Nur Fragen 1-8
+
                     $afeld = "a$nr";
                     $antwort = '';
 
-                    if (!empty($kand[$afeld])) {
-                        $hasAntworten = true;
-                        // Einfache Textantwort aus bemerkungenwahl
-                        $bemId = $kand[$afeld];
-                        if ($bemId > 10000) {
-                            // Kodierte Antwort mit Bewertung
-                            $bewertung = round($bemId / 10000);
-                            $bemId = $bemId - ($bewertung * 10000);
-                            $antwort = "Bewertung: $bewertung";
-                            if ($bemId > 0) {
-                                $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
-                                if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                                    $antwort .= " - " . $bem['bem'];
-                                }
-                            }
-                        } else {
-                            $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
-                            if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                                $antwort = $bem['bem'];
-                            }
+                    if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
+                        $hasAllgemein = true;
+                        $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = " . (int)$kand[$afeld]);
+                        if ($bemResult && $bem = $bemResult->fetch_assoc()) {
+                            $antwort = $bem['bem'];
                         }
                     }
                 ?>
@@ -241,11 +276,80 @@ $aemterListe = getAemter($kand);
             </tbody>
         </table>
 
-        <?php if (!$hasAntworten): ?>
+        <?php if (!$hasAllgemein): ?>
             <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>
         <?php endif; ?>
+
+        <?php if ($isVorstand): ?>
+        <!-- Kompetenzen/Erfahrungen (9-15) - nur für Vorstand -->
+        <h3>Kompetenzen/Erfahrungen</h3>
+        <p class="section-note">
+            Je nach Ressortzuständigkeit sind für Vorstandsmitglieder bestimmte Kompetenzen und Erfahrungen wichtig.<br>
+            <strong>Skala:</strong>
+            <?php for ($j = 1; $j <= 5; $j++): ?>
+                <?php echo $skala5a[$j]; ?><?php if ($j < 5) echo ', '; ?>
+            <?php endfor; ?>
+        </p>
+
+        <table class="anforderungen-table">
+            <thead>
+                <tr>
+                    <th class="nr">Nr</th>
+                    <th>Kompetenz</th>
+                    <th>Bewertung</th>
+                    <th>Bemerkung</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $hasKompetenz = false;
+                // Restliche Anforderungen (9-15) lesen
+                $anfQuery2 = dbQuery("SELECT * FROM anforderungenwahl WHERE id > 8 ORDER BY Nr");
+                $nr = 8;
+                if ($anfQuery2):
+                while ($anf = $anfQuery2->fetch_assoc()):
+                    $nr++;
+                    if ($nr > 15) break;
+
+                    $afeld = "a$nr";
+                    $bewertung = '';
+                    $bemerkung = '';
+
+                    if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
+                        $hasKompetenz = true;
+                        $wert = $kand[$afeld];
+                        if ($wert > 10000) {
+                            $k = round($wert / 10000);
+                            $bemId = $wert - ($k * 10000);
+                            $bewertung = $skala5a[$k] ?? $k;
+                            if ($bemId > 0) {
+                                $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
+                                if ($bemResult && $bem = $bemResult->fetch_assoc()) {
+                                    $bemerkung = $bem['bem'];
+                                }
+                            }
+                        }
+                    }
+                ?>
+                <tr>
+                    <td class="nr"><?php echo $nr; ?></td>
+                    <td><?php echo escape($anf['Anforderung']); ?></td>
+                    <td><?php echo !empty($bewertung) ? escape($bewertung) : '-'; ?></td>
+                    <td><?php echo !empty($bemerkung) ? escape($bemerkung) : ''; ?></td>
+                </tr>
+                <?php endwhile;
+                endif; ?>
+            </tbody>
+        </table>
+
+        <?php if (!$hasKompetenz): ?>
+            <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>
+        <?php endif; ?>
+
+        <?php endif; // Ende $isVorstand ?>
+
+        <?php endif; // Ende $anfQuery ?>
     </div>
-    <?php endif; ?>
 
 </div>
 
@@ -254,6 +358,5 @@ $aemterListe = getAemter($kand);
 </div>
 
 <?php
-// Footer einbinden
 include 'includes/footer.php';
 ?>
