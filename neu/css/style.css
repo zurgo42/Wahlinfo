@@ -58,6 +58,7 @@ body.dark-mode {
     --mensa-grau: #2a2a4a;
     --white: #0f3460;
     --mensa-anthrazit: #e8e8e8;
+    --mensa-dunkelblau: #8ECAF6;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }

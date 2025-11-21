@@ -69,6 +69,55 @@ function kurzText($text, $maxLen) {
     return escape(substr($text, 0, strrpos(substr($text, 0, $maxLen), ' '))) . '...';
 }
 
+/**
+ * Zählt alle Antworten rekursiv
+ */
+function countAntwortenRekursiv($knr, $antwortenNachBezug) {
+    $count = 0;
+    if (isset($antwortenNachBezug[$knr])) {
+        foreach ($antwortenNachBezug[$knr] as $antwort) {
+            $count++;
+            $count += countAntwortenRekursiv($antwort['Knr'], $antwortenNachBezug);
+        }
+    }
+    return $count;
+}
+
+/**
+ * Zeigt Antworten rekursiv an
+ */
+function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tiefe = 0) {
+    if (!isset($antwortenNachBezug[$knr])) {
+        return;
+    }
+
+    foreach ($antwortenNachBezug[$knr] as $antwort):
+        $aKnr = $antwort['Knr'];
+    ?>
+        <div class="antwort-kompakt" style="margin-left: <?php echo min($tiefe * 10, 30); ?>px;">
+            <div class="beitrag-meta">
+                <span class="autor"><?php echo escape($antwort['AutorVorname'] . ' ' . $antwort['AutorName']); ?></span>
+                <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
+            </div>
+            <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
+                <?php echo kurzText($antwort['Kommentar'], $kurzTextLaenge); ?>
+                <?php if (strlen($antwort['Kommentar']) > $kurzTextLaenge): ?>
+                    <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
+                <?php endif; ?>
+            </div>
+            <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
+                <?php echo nl2br(escape(decodeEntities($antwort['Kommentar']))); ?>
+                <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
+            </div>
+            <?php
+            // Rekursiv weitere Antworten anzeigen
+            zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $tiefe + 1);
+            ?>
+        </div>
+    <?php
+    endforeach;
+}
+
 // =============================================================================
 // AUSGABE
 // =============================================================================
@@ -93,9 +142,9 @@ function kurzText($text, $maxLen) {
             $threads = $kommentareNachKandidat[$kandId] ?? [];
             $anzahlBeitraege = count($threads);
 
-            // Antworten zählen
+            // Antworten rekursiv zählen
             foreach ($threads as $thread) {
-                $anzahlBeitraege += count($antwortenNachBezug[$thread['Knr']] ?? []);
+                $anzahlBeitraege += countAntwortenRekursiv($thread['Knr'], $antwortenNachBezug);
             }
         ?>
             <div class="kandidat-section">
@@ -111,7 +160,6 @@ function kurzText($text, $maxLen) {
                     <?php else: ?>
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
-                            $antworten = $antwortenNachBezug[$knr] ?? [];
                         ?>
                             <div class="thread">
                                 <!-- Haupt-Beitrag -->
@@ -135,29 +183,10 @@ function kurzText($text, $maxLen) {
                                     </div>
                                 </div>
 
-                                <!-- Antworten -->
-                                <?php if (!empty($antworten)): ?>
+                                <!-- Antworten rekursiv -->
+                                <?php if (isset($antwortenNachBezug[$knr])): ?>
                                     <div class="antworten-liste">
-                                        <?php foreach ($antworten as $antwort):
-                                            $aKnr = $antwort['Knr'];
-                                        ?>
-                                            <div class="antwort-kompakt">
-                                                <div class="beitrag-meta">
-                                                    <span class="autor"><?php echo escape($antwort['AutorVorname'] . ' ' . $antwort['AutorName']); ?></span>
-                                                    <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
-                                                </div>
-                                                <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
-                                                    <?php echo kurzText($antwort['Kommentar'], $kurzTextLaenge); ?>
-                                                    <?php if (strlen($antwort['Kommentar']) > $kurzTextLaenge): ?>
-                                                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                                                    <?php echo nl2br(escape(decodeEntities($antwort['Kommentar']))); ?>
-                                                    <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
+                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
