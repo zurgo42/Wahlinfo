@@ -1169,3 +1169,129 @@ body.dark-mode .dark-mode-toggle:hover {
         padding-left: var(--spacing-sm);
     }
 }
+
+/* =============================================================================
+   Diskussion nach Kandidaten (kompakt)
+   ============================================================================= */
+
+.kandidaten-diskussion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.kandidat-section {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.kandidat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--mensa-dunkelblau);
+    color: white;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.kandidat-header:hover {
+    background: var(--mensa-hellblau);
+    color: var(--mensa-dunkelblau);
+}
+
+.kandidat-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.beitrag-count {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.toggle-icon {
+    font-size: 0.8rem;
+}
+
+.kandidat-threads {
+    padding: var(--spacing-sm);
+}
+
+.thread {
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--mensa-grau);
+}
+
+.thread:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.beitrag-kompakt {
+    font-size: 0.8rem;
+}
+
+.beitrag-meta {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+}
+
+.beitrag-meta .autor {
+    font-weight: 600;
+    color: var(--mensa-dunkelblau);
+}
+
+.beitrag-meta .datum {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.these-kurz {
+    font-weight: 600;
+    color: var(--mensa-dunkelblau);
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
+.kommentar-text, .kommentar-voll {
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.antworten-liste {
+    margin-left: var(--spacing-md);
+    padding-left: var(--spacing-sm);
+    border-left: 2px solid var(--mensa-hellblau);
+    margin-top: var(--spacing-xs);
+}
+
+.antwort-kompakt {
+    padding: var(--spacing-xs) 0;
+    font-size: 0.75rem;
+}
+
+.antwort-kompakt .beitrag-meta {
+    font-size: 0.7rem;
+}
+
+@media (max-width: 480px) {
+    .kandidat-header {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .kandidat-name {
+        font-size: 0.8rem;
+    }
+
+    .antworten-liste {
+        margin-left: var(--spacing-sm);
+    }
+}
