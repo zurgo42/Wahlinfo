@@ -251,7 +251,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <div class="anforderungen-grid">
             <?php
             $hasAllgemein = false;
-            for ($i = 0; $i < min(8, count($anforderungen)); $i++):
+            for ($i = 0; $i < min(8, count($anforderungen)); $i++) {
                 $anf = $anforderungen[$i];
                 $nr = $i + 1;
                 $afeld = "a$nr";
@@ -264,17 +264,17 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                         $antwort = decodeEntities($bem['bem']);
                     }
                 }
-            ?>
-            <div class="anforderung-card">
-                <div class="frage">
-                    <span class="nr"><?php echo $nr; ?></span>
-                    <?php echo decodeEntities($anf['Anforderung']); ?>
+                ?>
+                <div class="anforderung-card">
+                    <div class="frage">
+                        <span class="nr"><?php echo $nr; ?></span>
+                        <?php echo decodeEntities($anf['Anforderung']); ?>
+                    </div>
+                    <?php if (!empty($antwort)) { ?>
+                        <div class="antwort"><?php echo escape($antwort); ?></div>
+                    <?php } ?>
                 </div>
-                <?php if (!empty($antwort)): ?>
-                    <div class="antwort"><?php echo escape($antwort); ?></div>
-                <?php endif; ?>
-            </div>
-            <?php endfor; ?>
+            <?php } ?>
         </div>
 
         <?php if (!$hasAllgemein): ?>
@@ -295,7 +295,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <div class="anforderungen-grid">
             <?php
             $hasKompetenz = false;
-            for ($i = 8; $i < min(15, count($anforderungen)); $i++):
+            for ($i = 8; $i < min(15, count($anforderungen)); $i++) {
                 $anf = $anforderungen[$i];
                 $nr = $i + 1;
                 $afeld = "a$nr";
@@ -304,7 +304,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
                 if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
                     $hasKompetenz = true;
-                    $wert = $kand[$afeld];
+                    $wert = (int)$kand[$afeld];
                     if ($wert > 10000) {
                         $k = round($wert / 10000);
                         $bemId = $wert - ($k * 10000);
@@ -317,24 +317,24 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                         }
                     }
                 }
-            ?>
-            <div class="anforderung-card">
-                <div class="frage">
-                    <span class="nr"><?php echo $nr; ?></span>
-                    <?php echo decodeEntities($anf['Anforderung']); ?>
-                </div>
-                <?php if (!empty($bewertung) || !empty($bemerkung)): ?>
-                    <div class="antwort">
-                        <?php if (!empty($bewertung)): ?>
-                            <span class="bewertung"><?php echo escape($bewertung); ?></span>
-                        <?php endif; ?>
-                        <?php if (!empty($bemerkung)): ?>
-                            <?php echo escape($bemerkung); ?>
-                        <?php endif; ?>
+                ?>
+                <div class="anforderung-card">
+                    <div class="frage">
+                        <span class="nr"><?php echo $nr; ?></span>
+                        <?php echo decodeEntities($anf['Anforderung']); ?>
                     </div>
-                <?php endif; ?>
-            </div>
-            <?php endfor; ?>
+                    <?php if (!empty($bewertung) || !empty($bemerkung)) { ?>
+                        <div class="antwort">
+                            <?php if (!empty($bewertung)) { ?>
+                                <span class="bewertung"><?php echo escape($bewertung); ?></span>
+                            <?php } ?>
+                            <?php if (!empty($bemerkung)) { ?>
+                                <?php echo escape($bemerkung); ?>
+                            <?php } ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            <?php } ?>
         </div>
 
         <?php if (!$hasKompetenz): ?>
