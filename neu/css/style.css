@@ -1205,15 +1205,36 @@ body.dark-mode .dark-mode-toggle:hover {
 }
 
 .kandidat-foto {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px 0 0 4px;
     object-fit: cover;
     flex-shrink: 0;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: calc(-1 * var(--spacing-md));
+    margin-top: calc(-1 * var(--spacing-sm));
+    margin-bottom: calc(-1 * var(--spacing-sm));
+}
+
+/* Allgemeine Fragen - andere Farbe */
+.kandidat-section.allgemein .kandidat-header {
+    background: var(--mensa-anthrazit);
+}
+
+.kandidat-section.allgemein .kandidat-header:hover {
+    background: var(--mensa-grau);
+    color: var(--mensa-anthrazit);
+}
+
+body.dark-mode .kandidat-section.allgemein .kandidat-header {
+    background: #3a5a7a;
+}
+
+body.dark-mode .kandidat-section.allgemein .kandidat-header:hover {
+    background: var(--mensa-hellblau);
 }
 
 .kandidat-name {
@@ -1285,6 +1306,52 @@ body.dark-mode .dark-mode-toggle:hover {
     padding-left: var(--spacing-sm);
     border-left: 2px solid var(--mensa-hellblau);
     margin-top: var(--spacing-xs);
+}
+
+/* Antwort-Button */
+.antwort-action {
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+}
+
+.antwort-btn {
+    background: none;
+    border: none;
+    color: var(--mensa-dunkelblau);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.antwort-btn:hover {
+    background: var(--mensa-heller);
+}
+
+.antwort-form-inline {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--mensa-grau);
+    border-radius: var(--radius-sm);
+    display: none;
+}
+
+.antwort-form-inline textarea {
+    width: 100%;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.antwort-form-inline .btn {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
 }
 
 .antwort-kompakt {

@@ -242,9 +242,9 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
         ?>
 
         <!-- Allgemeine Fragen & Diskussion -->
-        <div class="kandidat-section">
+        <div class="kandidat-section allgemein">
             <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $allgemeineFragenId; ?>)">
-                <span class="kandidat-foto">§</span>
+                <span class="kandidat-foto">👥</span>
                 <span class="kandidat-name">Allgemeine Fragen &amp; Diskussion</span>
                 <span class="beitrag-count"><?php echo $allgemeineAnzahl; ?> Beiträge</span>
                 <span class="toggle-icon" id="icon-<?php echo $allgemeineFragenId; ?>">▼</span>
