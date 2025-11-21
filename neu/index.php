@@ -11,6 +11,9 @@ $pageTitle = 'Ergänzende Wahlinformation';
 // Header einbinden
 include 'includes/header.php';
 
+// Tabelle wählen: Spielwiese (Vorbereitungsphase) oder echte Kandidaten
+$kandidatenTable = USE_SPIELWIESE ? TABLE_SPIELWIESE : TABLE_KANDIDATEN;
+
 // Alle Ämter abrufen
 $aemterQuery = dbQuery("SELECT * FROM " . TABLE_AEMTER . " ORDER BY id");
 
@@ -39,7 +42,7 @@ while ($amt = $aemterQuery->fetch_assoc()) {
     // Dynamisch das richtige amt-Feld wählen (amt1, amt2, etc.)
     $kandidatenQuery = dbQuery(
         "SELECT vorname, name, mnummer, bildfile, text
-         FROM " . TABLE_KANDIDATEN . "
+         FROM " . $kandidatenTable . "
          WHERE amt{$amtId} = 1
          ORDER BY name ASC"
     );

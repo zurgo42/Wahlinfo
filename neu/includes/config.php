@@ -68,5 +68,9 @@ function escape(string $str): string {
 // Tabellennamen
 define('TABLE_AEMTER', 'aemterwahl');
 define('TABLE_KANDIDATEN', 'kandidatenwahl');
+define('TABLE_SPIELWIESE', 'spielwiesewahl');
 define('TABLE_ANTWORTEN', 'antwortenwahl');
+
+// Vorbereitungsphase: spielwiesewahl statt kandidatenwahl verwenden
+define('USE_SPIELWIESE', true);
 ?>

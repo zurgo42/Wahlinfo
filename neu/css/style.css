@@ -18,17 +18,17 @@
     --mensa-heller: #CEE3F6;
     --white: #ffffff;
 
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2rem;
-    --spacing-xl: 3rem;
+    /* Spacing - kompakt */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 0.75rem;
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.5rem;
 
     /* Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
 
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -136,9 +136,9 @@ body {
 /* Grid Layout */
 .candidate-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-xl);
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
 }
 
 /* Candidate Card */
@@ -169,17 +169,17 @@ body {
 }
 
 .card-image {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 180px;
+    min-height: 80px;
     background: linear-gradient(135deg, var(--mensa-grau) 0%, var(--white) 100%);
 }
 
 .card-image img {
     max-width: 100%;
-    max-height: 150px;
+    max-height: 70px;
     width: auto;
     height: auto;
     object-fit: contain;
@@ -187,22 +187,23 @@ body {
 }
 
 .card-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
 .card-title {
-    font-size: 1.1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--mensa-dunkelblau);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 2px;
     transition: color 0.3s;
+    line-height: 1.2;
 }
 
 .card-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--mensa-anthrazit);
     opacity: 0.8;
 }
@@ -222,15 +223,15 @@ body {
 .amt-header {
     background: linear-gradient(90deg, var(--mensa-dunkelblau) 0%, var(--mensa-hellblau) 100%);
     color: var(--white);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    margin: var(--spacing-lg) 0 var(--spacing-md) 0;
-    font-size: 1.3rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+    font-size: 1rem;
     font-weight: 600;
 }
 
 .amt-header .positions {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 400;
     opacity: 0.9;
 }
