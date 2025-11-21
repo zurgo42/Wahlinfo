@@ -19,8 +19,8 @@ $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
 // DATEN LADEN
 // =============================================================================
 
-// Alle Kandidaten laden
-$kandidatenTable = getKandidatenTable();
+// Alle Kandidaten laden (aus Wahl-Tabelle für Diskussion)
+$kandidatenTable = getWahlTable();
 $kandidaten = dbFetchAll(
     "SELECT Knr, vorname, name, mnummer
      FROM $kandidatenTable
