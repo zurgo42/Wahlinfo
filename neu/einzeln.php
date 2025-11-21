@@ -268,7 +268,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                 <div class="anforderung-card">
                     <div class="frage">
                         <span class="nr"><?php echo $nr; ?></span>
-                        <?php echo decodeEntities($anf['Anforderung']); ?>
+                        <?php echo isset($anf['Anforderung']) ? decodeEntities($anf['Anforderung']) : ''; ?>
                     </div>
                     <?php if (!empty($antwort)) { ?>
                         <div class="antwort"><?php echo escape($antwort); ?></div>
@@ -321,7 +321,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                 <div class="anforderung-card">
                     <div class="frage">
                         <span class="nr"><?php echo $nr; ?></span>
-                        <?php echo decodeEntities($anf['Anforderung']); ?>
+                        <?php echo isset($anf['Anforderung']) ? decodeEntities($anf['Anforderung']) : ''; ?>
                     </div>
                     <?php if (!empty($bewertung) || !empty($bemerkung)) { ?>
                         <div class="antwort">
