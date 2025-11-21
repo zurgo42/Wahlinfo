@@ -354,3 +354,167 @@ body {
 .candidate-card {
     animation: fadeIn 0.5s ease-out;
 }
+
+/* Kandidaten-Detailseite */
+.candidate-detail {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.detail-header {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--mensa-grau);
+}
+
+.detail-photo {
+    flex-shrink: 0;
+}
+
+.detail-photo img {
+    width: 120px;
+    height: auto;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.detail-info h1 {
+    font-size: 1.3rem;
+    color: var(--mensa-dunkelblau);
+    margin-bottom: var(--spacing-xs);
+}
+
+.detail-info .mnummer {
+    font-size: 0.85rem;
+    color: var(--mensa-anthrazit);
+    opacity: 0.8;
+    margin-bottom: var(--spacing-xs);
+}
+
+.detail-info .kandidatur {
+    font-size: 0.9rem;
+    color: var(--mensa-dunkelblau);
+}
+
+.detail-section {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--mensa-grau);
+}
+
+.detail-section:last-of-type {
+    border-bottom: none;
+}
+
+.detail-section h2 {
+    font-size: 1.1rem;
+    color: var(--mensa-dunkelblau);
+    margin-bottom: var(--spacing-sm);
+}
+
+.detail-section h3 {
+    font-size: 0.95rem;
+    color: var(--mensa-anthrazit);
+    margin: var(--spacing-sm) 0 var(--spacing-xs) 0;
+}
+
+.detail-section .section-note {
+    font-size: 0.8rem;
+    color: var(--mensa-anthrazit);
+    opacity: 0.8;
+    margin-bottom: var(--spacing-sm);
+}
+
+.link-list, .team-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-xs) 0;
+}
+
+.link-list li, .team-list li {
+    padding: var(--spacing-xs) 0;
+    font-size: 0.85rem;
+}
+
+.link-list a {
+    color: var(--mensa-dunkelblau);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mensa-hellblau);
+}
+
+.link-list a:hover {
+    color: var(--mensa-hellblau);
+}
+
+.ressort-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--mensa-grau);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.85rem;
+}
+
+.ressort-prio {
+    background: var(--mensa-hellgelb);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.anforderungen-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.anforderungen-table th,
+.anforderungen-table td {
+    padding: var(--spacing-xs);
+    text-align: left;
+    border-bottom: 1px solid var(--mensa-grau);
+}
+
+.anforderungen-table th {
+    background: var(--mensa-heller);
+    font-weight: 600;
+    color: var(--mensa-dunkelblau);
+}
+
+.anforderungen-table .nr {
+    width: 40px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.no-data {
+    font-style: italic;
+    color: var(--mensa-anthrazit);
+    opacity: 0.7;
+    font-size: 0.85rem;
+}
+
+.detail-actions {
+    text-align: center;
+    margin-top: var(--spacing-md);
+}
+
+@media (max-width: 480px) {
+    .detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .detail-photo img {
+        width: 100px;
+    }
+}
