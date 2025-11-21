@@ -234,8 +234,8 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <p class="section-note">Einige Anforderungen, die für die ehrenamtliche Arbeit im Verein hilfreich sein könnten, wurden den Kandidaten vorgelegt.</p>
 
         <?php
-        // Alle Anforderungen laden
-        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY id");
+        // Alle Anforderungen laden - nach Nr sortieren (varchar, aber zero-padded)
+        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY Nr ASC");
         $anforderungen = [];
         if ($anfQuery) {
             while ($row = $anfQuery->fetch_assoc()) {
