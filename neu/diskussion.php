@@ -62,11 +62,19 @@ foreach ($alleKommentare as $k) {
  * Kürzt Text für kompakte Darstellung
  */
 function kurzText($text, $maxLen) {
+    if ($text === null || $text === '') {
+        return '';
+    }
     $text = strip_tags(decodeEntities($text));
     if (strlen($text) <= $maxLen) {
         return escape($text);
     }
-    return escape(substr($text, 0, strrpos(substr($text, 0, $maxLen), ' '))) . '...';
+    $shortened = substr($text, 0, $maxLen);
+    $lastSpace = strrpos($shortened, ' ');
+    if ($lastSpace !== false) {
+        $shortened = substr($text, 0, $lastSpace);
+    }
+    return escape($shortened) . '...';
 }
 
 /**
@@ -93,27 +101,28 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
 
     foreach ($antwortenNachBezug[$knr] as $antwort):
         $aKnr = $antwort['Knr'];
+        $einrueckung = min($tiefe * 15, 45);
     ?>
-        <div class="antwort-kompakt" style="margin-left: <?php echo min($tiefe * 10, 30); ?>px;">
+        <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;">
             <div class="beitrag-meta">
                 <span class="autor"><?php echo escape($antwort['AutorVorname'] . ' ' . $antwort['AutorName']); ?></span>
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
             </div>
             <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
                 <?php echo kurzText($antwort['Kommentar'], $kurzTextLaenge); ?>
-                <?php if (strlen($antwort['Kommentar']) > $kurzTextLaenge): ?>
+                <?php if (strlen($antwort['Kommentar'] ?? '') > $kurzTextLaenge): ?>
                     <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
                 <?php endif; ?>
             </div>
             <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                <?php echo nl2br(escape(decodeEntities($antwort['Kommentar']))); ?>
+                <?php echo nl2br(escape(decodeEntities($antwort['Kommentar'] ?? ''))); ?>
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
             </div>
-            <?php
-            // Rekursiv weitere Antworten anzeigen
-            zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $tiefe + 1);
-            ?>
         </div>
+        <?php
+        // Rekursiv weitere Antworten anzeigen (als Geschwister, nicht verschachtelt)
+        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $tiefe + 1);
+        ?>
     <?php
     endforeach;
 }
