@@ -105,17 +105,25 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
     ?>
         <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;">
             <div class="beitrag-meta">
-                <span class="autor"><?php echo escape($antwort['AutorVorname'] . ' ' . $antwort['AutorName']); ?></span>
+                <span class="autor"><?php echo escape(($antwort['AutorVorname'] ?? '') . ' ' . ($antwort['AutorName'] ?? '')); ?></span>
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
             </div>
+            <?php
+            $kommentarText = $antwort['Kommentar'] ?? '';
+            $kurzKommentar = kurzText($kommentarText, $kurzTextLaenge);
+            ?>
             <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
-                <?php echo kurzText($antwort['Kommentar'], $kurzTextLaenge); ?>
-                <?php if (strlen($antwort['Kommentar'] ?? '') > $kurzTextLaenge): ?>
-                    <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
+                <?php if ($kurzKommentar !== ''): ?>
+                    <?php echo $kurzKommentar; ?>
+                    <?php if (strlen($kommentarText) > $kurzTextLaenge): ?>
+                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <em class="no-data">(kein Text)</em>
                 <?php endif; ?>
             </div>
             <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                <?php echo nl2br(escape(decodeEntities($antwort['Kommentar'] ?? ''))); ?>
+                <?php echo nl2br(escape(decodeEntities($kommentarText))); ?>
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
             </div>
         </div>
