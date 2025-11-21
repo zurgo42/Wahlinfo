@@ -48,7 +48,7 @@ function processFormSubmission($mnr, $postData, $files) {
     $table = getKandidatenTable();
 
     // Prüfe ob Kandidat existiert
-    $kandidat = dbFetchOne("SELECT * FROM $table WHERE MNr = ?", [$mnr]);
+    $kandidat = dbFetchOne("SELECT * FROM $table WHERE mnummer = ?", [$mnr]);
     if (!$kandidat) {
         return ['type' => 'error', 'message' => 'Kandidat nicht gefunden.'];
     }
@@ -63,7 +63,7 @@ function processFormSubmission($mnr, $postData, $files) {
             homepage = ?, video = ?,
             team1 = ?, team2 = ?, team3 = ?, team4 = ?, team5 = ?,
             ressort1 = ?, ressort2 = ?, ressort3 = ?, ressort4 = ?, ressort5 = ?, ressort6 = ?
-            WHERE MNr = ?";
+            WHERE mnummer = ?";
 
         $params = [
             $postData['Titel'] ?? '',
@@ -110,7 +110,7 @@ function processFormSubmission($mnr, $postData, $files) {
 
         if (!empty($updateFields)) {
             $updateParams[] = $mnr;
-            $sql = "UPDATE $table SET " . implode(', ', $updateFields) . " WHERE MNr = ?";
+            $sql = "UPDATE $table SET " . implode(', ', $updateFields) . " WHERE mnummer = ?";
             dbExecute($sql, $updateParams);
         }
 
@@ -171,7 +171,7 @@ function processPhotoUpload($file, $mnr) {
 
     // Dateiname in Datenbank speichern
     $table = getKandidatenTable();
-    dbExecute("UPDATE $table SET photo = ? WHERE MNr = ?", [$filename, $mnr]);
+    dbExecute("UPDATE $table SET photo = ? WHERE mnummer = ?", [$filename, $mnr]);
 
     return ['error' => false, 'message' => 'Foto hochgeladen.'];
 }
@@ -189,7 +189,7 @@ if ($mnr) {
     $table = getKandidatenTable();
 
     // Kandidatendaten laden
-    $kandidat = dbFetchOne("SELECT * FROM $table WHERE MNr = ?", [$mnr]);
+    $kandidat = dbFetchOne("SELECT * FROM $table WHERE mnummer = ?", [$mnr]);
 
     if ($kandidat) {
         // Ämter laden
@@ -274,7 +274,7 @@ if ($mnr) {
 
                 <div class="form-row">
                     <label>M-Nr</label>
-                    <input type="text" value="<?php echo escape($kandidat['MNr']); ?>" disabled>
+                    <input type="text" value="<?php echo escape($kandidat['mnummer']); ?>" disabled>
                 </div>
             </section>
 
