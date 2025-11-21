@@ -14,8 +14,8 @@ include 'includes/header.php';
 // Tabelle wählen: Spielwiese (Vorbereitungsphase) oder echte Kandidaten
 $kandidatenTable = USE_SPIELWIESE ? TABLE_SPIELWIESE : TABLE_KANDIDATEN;
 
-// Alle Ämter abrufen
-$aemterQuery = dbQuery("SELECT * FROM " . TABLE_AEMTER . " ORDER BY id");
+// Alle Ämter abrufen (nur id >= 1, da amt0 nicht existiert)
+$aemterQuery = dbQuery("SELECT * FROM " . TABLE_AEMTER . " WHERE id >= 1 ORDER BY id");
 
 if (!$aemterQuery) {
     echo '<div class="alert alert-warning">Fehler beim Laden der Ämter.</div>';
