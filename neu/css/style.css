@@ -18,6 +18,14 @@
     --mensa-heller: #CEE3F6;
     --white: #ffffff;
 
+    /* Theme Colors (überschreibbar für Dark Mode) */
+    --bg-primary: #EBEBEB;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --text-primary: #505050;
+    --text-secondary: #505050;
+    --border-color: #ddd;
+
     /* Spacing - kompakt */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -39,11 +47,58 @@
     --transition: all 0.3s ease;
 }
 
+/* Dark Mode */
+body.dark-mode {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --text-primary: #e8e8e8;
+    --text-secondary: #b8b8b8;
+    --border-color: #3a3a5a;
+    --mensa-grau: #2a2a4a;
+    --white: #0f3460;
+    --mensa-anthrazit: #e8e8e8;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
 body {
     font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
-    color: var(--mensa-anthrazit);
-    background-color: var(--mensa-grau);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Dark Mode Toggle */
+.dark-mode-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: 2px solid var(--mensa-dunkelblau);
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--mensa-dunkelblau);
+    transition: var(--transition);
+}
+
+.dark-mode-toggle:hover {
+    background: var(--mensa-dunkelblau);
+    color: white;
+}
+
+body.dark-mode .dark-mode-toggle {
+    border-color: var(--mensa-hellgelb);
+    color: var(--mensa-hellgelb);
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background: var(--mensa-hellgelb);
+    color: var(--bg-secondary);
 }
 
 /* Header */
