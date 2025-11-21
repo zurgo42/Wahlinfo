@@ -18,7 +18,7 @@ if (empty($zeige)) {
 // Prüfen ob Detailansicht erlaubt ist
 // Vor dem Editier-Stichtag: nur eigene Daten (Kandidat selbst)
 // Nach dem Editier-Stichtag: für alle öffentlich
-$userMnr = $_GET['user'] ?? null; // Käme vom SSO
+$userMnr = getUserMnr();
 if (!isDetailViewPublic() && $userMnr !== $zeige) {
     $pageTitle = 'Noch nicht verfügbar';
     include 'includes/header.php';

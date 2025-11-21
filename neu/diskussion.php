@@ -19,8 +19,8 @@ require_once __DIR__ . '/includes/config.php';
 define('TABLE_KOMMENTARE', 'Wahl2025kommentare');
 define('TABLE_TEILNEHMER', 'Wahl2025teilnehmer');
 
-// Eingeloggte M-Nr vom SSO
-$userMnr = $_GET['user'] ?? null;
+// Eingeloggte M-Nr (SSO oder Simulation)
+$userMnr = getUserMnr();
 $pageTitle = 'Diskussion';
 
 // Konfiguration
@@ -237,7 +237,7 @@ function formatKommentar($text, $maxLength, $knr) {
         <?php endif; ?>
     </div>
 
-    <!-- Neuer Beitrag (nur für eingeloggte User) -->
+    <!-- Neuer Beitrag -->
     <?php if ($userMnr): ?>
         <div class="neuer-beitrag">
             <h2>Neuen Beitrag schreiben</h2>
@@ -253,10 +253,6 @@ function formatKommentar($text, $maxLength, $knr) {
                 </div>
                 <button type="submit" class="btn btn-primary">Beitrag veröffentlichen</button>
             </form>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-info">
-            Melden Sie sich an, um an der Diskussion teilzunehmen.
         </div>
     <?php endif; ?>
 

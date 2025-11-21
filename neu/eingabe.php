@@ -15,8 +15,8 @@
 
 require_once __DIR__ . '/includes/config.php';
 
-// M-Nr kommt vom SSO (hier simuliert für Tests)
-$mnr = $_GET['mnr'] ?? $_POST['mnr'] ?? null;
+// M-Nr kommt vom SSO (oder Simulation per GET)
+$mnr = getUserMnr() ?? $_POST['mnr'] ?? null;
 
 // Meldungen für Benutzer
 $message = '';

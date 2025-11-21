@@ -8,8 +8,8 @@ require_once 'includes/config.php';
 
 $pageTitle = 'Ergänzende Wahlinformation';
 
-// Eingeloggte M-Nr vom SSO (simuliert für Tests)
-$userMnr = $_GET['user'] ?? null;
+// Eingeloggte M-Nr (SSO oder Simulation)
+$userMnr = getUserMnr();
 
 // Header einbinden
 include 'includes/header.php';

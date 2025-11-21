@@ -87,6 +87,30 @@ function getKandidatenTable() {
 }
 
 // =============================================================================
+// Benutzer-Authentifizierung
+// =============================================================================
+
+/**
+ * Holt die M-Nr des eingeloggten Users
+ * Produktion: aus SSO-Variable
+ * Entwicklung: aus GET-Parameter
+ */
+function getUserMnr() {
+    // Produktion: SSO liefert M-Nr (anpassen je nach SSO-System)
+    // Beispiel: $_SERVER['REMOTE_USER'] oder $_SESSION['mnr']
+    if (isset($_SERVER['REMOTE_USER'])) {
+        return $_SERVER['REMOTE_USER'];
+    }
+
+    // Entwicklung: Simulation per GET-Parameter
+    if (isset($_GET['user'])) {
+        return $_GET['user'];
+    }
+
+    return null;
+}
+
+// =============================================================================
 // Datenbank-Hilfsfunktionen
 // =============================================================================
 
