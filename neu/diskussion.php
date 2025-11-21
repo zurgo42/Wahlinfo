@@ -200,9 +200,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                 </div>
 
                 <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:none;">
-                    <?php if (empty($threads)): ?>
-                        <p class="no-data">Noch keine Beiträge zu diesem Kandidaten.</p>
-                    <?php else: ?>
+                    <?php if (!empty($threads)): ?>
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
                         ?>
@@ -248,6 +246,19 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
+
+                    <!-- Neue Frage stellen -->
+                    <div class="neue-frage-section">
+                        <button class="neue-frage-btn" onclick="zeigeNeueFrageForm(<?php echo $kandId; ?>)">
+                            <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="mini-foto" onerror="this.src='../img/keinFoto.jpg'">
+                            Selbst eine Frage an <?php echo escape($kandName); ?> stellen
+                        </button>
+                        <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
+                            <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Ihre Frage..."></textarea>
+                            <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
+                            <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -272,9 +283,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
             </div>
 
             <div class="kandidat-threads" id="threads-<?php echo $allgemeineFragenId; ?>" style="display:none;">
-                <?php if (empty($allgemeineThreads)): ?>
-                    <p class="no-data">Noch keine allgemeinen Beiträge.</p>
-                <?php else: ?>
+                <?php if (!empty($allgemeineThreads)): ?>
                     <?php foreach ($allgemeineThreads as $thread):
                         $knr = $thread['Knr'];
                     ?>
@@ -316,6 +325,19 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
+
+                <!-- Neue allgemeine Frage stellen -->
+                <div class="neue-frage-section">
+                    <button class="neue-frage-btn" onclick="zeigeNeueFrageForm(<?php echo $allgemeineFragenId; ?>)">
+                        <span class="mini-foto">👥</span>
+                        Selbst eine allgemeine Frage stellen
+                    </button>
+                    <div class="antwort-form-inline" id="neue-frage-form-<?php echo $allgemeineFragenId; ?>">
+                        <textarea id="neue-frage-text-<?php echo $allgemeineFragenId; ?>" placeholder="Ihre Frage..."></textarea>
+                        <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $allgemeineFragenId; ?>)">Absenden</button>
+                        <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $allgemeineFragenId; ?>)">Abbrechen</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -366,6 +388,47 @@ function sendeAntwort(bezugKnr) {
 
     var formData = new FormData();
     formData.append('bezug', bezugKnr);
+    formData.append('text', text);
+
+    fetch('antwort_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Speichern: ' + error);
+    });
+}
+
+function zeigeNeueFrageForm(kandId) {
+    // Alle anderen Formulare schließen
+    document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
+        form.style.display = 'none';
+    });
+    document.getElementById('neue-frage-form-' + kandId).style.display = 'block';
+    document.getElementById('neue-frage-text-' + kandId).focus();
+}
+
+function versteckeNeueFrageForm(kandId) {
+    document.getElementById('neue-frage-form-' + kandId).style.display = 'none';
+}
+
+function sendeNeueFrage(kandId) {
+    var text = document.getElementById('neue-frage-text-' + kandId).value.trim();
+    if (!text) {
+        alert('Bitte geben Sie einen Text ein.');
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('bezug', kandId);
     formData.append('text', text);
 
     fetch('antwort_speichern.php', {
