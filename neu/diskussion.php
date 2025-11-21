@@ -22,7 +22,7 @@ $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
 // Alle Kandidaten laden
 $kandidatenTable = getKandidatenTable();
 $kandidaten = dbFetchAll(
-    "SELECT id, vorname, name, mnummer
+    "SELECT Knr, vorname, name, mnummer
      FROM $kandidatenTable
      ORDER BY name ASC"
 );
@@ -86,7 +86,7 @@ function kurzText($text, $maxLen) {
     <!-- Kandidaten mit ihren Diskussionen -->
     <div class="kandidaten-diskussion">
         <?php foreach ($kandidaten as $kand):
-            $kandId = (int)$kand['id'];
+            $kandId = (int)$kand['Knr'];
             $kandName = escape($kand['vorname'] . ' ' . $kand['name']);
             $threads = $kommentareNachKandidat[$kandId] ?? [];
             $anzahlBeitraege = count($threads);
