@@ -15,7 +15,7 @@ define('DB_NAME', 'wahl');
 
 // Stichtage
 // 1. Ab wann echte Kandidaten statt Spielwiese angezeigt werden
-define('DEADLINE_KANDIDATEN', '2025-12-01 00:00:00');
+define('DEADLINE_KANDIDATEN', '2025-11-01 00:00:00');
 
 // 2. Bis wann Kandidaten ihre Daten editieren dürfen
 //    Danach: kein Editieren mehr, einzeln.php wird öffentlich
