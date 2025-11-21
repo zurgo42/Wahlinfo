@@ -13,7 +13,7 @@ define('DB_PASS', 'Cho8odoo');
 define('DB_NAME', 'wahl');
 
 // Datenbank-Verbindung herstellen
-function getDbConnection(): mysqli {
+function getDbConnection() {
     static $conn = null;
 
     if ($conn === null) {
@@ -30,7 +30,7 @@ function getDbConnection(): mysqli {
 }
 
 // Prepared Statement Helper
-function dbQuery(string $sql, array $params = []): mysqli_result|bool {
+function dbQuery($sql, $params = array()) {
     $conn = getDbConnection();
 
     if (empty($params)) {
@@ -61,7 +61,7 @@ function dbQuery(string $sql, array $params = []): mysqli_result|bool {
 }
 
 // Sicherheitsfunktionen
-function escape(string $str): string {
+function escape($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
