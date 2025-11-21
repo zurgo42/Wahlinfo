@@ -1,7 +1,7 @@
 <?php
 /**
  * Wahlinfo - Einzelansicht eines Kandidaten
- * Modernisierte Version
+ * Modernisierte Version (PDO)
  */
 
 require_once 'includes/config.php';
@@ -19,12 +19,7 @@ if (empty($zeige)) {
 $kandidatenTable = getKandidatenTable();
 
 // Kandidaten-Daten abrufen
-$conn = getDbConnection();
-$stmt = $conn->prepare("SELECT * FROM $kandidatenTable WHERE mnummer = ?");
-$stmt->bind_param('s', $zeige);
-$stmt->execute();
-$result = $stmt->get_result();
-$kand = $result->fetch_assoc();
+$kand = dbFetchOne("SELECT * FROM $kandidatenTable WHERE mnummer = ?", [$zeige]);
 
 if (!$kand) {
     $pageTitle = 'Kandidat nicht gefunden';
@@ -45,8 +40,8 @@ function getAemter($kand) {
     $aemter = [];
     for ($i = 1; $i <= 5; $i++) {
         if (!empty($kand["amt$i"]) && $kand["amt$i"] == '1') {
-            $result = dbQuery("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = $i");
-            if ($result && $row = $result->fetch_assoc()) {
+            $row = dbFetchOne("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = ?", [$i]);
+            if ($row) {
                 $aemter[] = $row['amt'];
             }
         }
@@ -118,8 +113,8 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                 <?php for ($i = 1; $i <= 5; $i++):
                     $teamMnr = $kand["team$i"];
                     if (!empty($teamMnr) && strlen($teamMnr) > 2):
-                        $teamResult = dbQuery("SELECT vorname, name FROM $kandidatenTable WHERE mnummer = '$teamMnr'");
-                        if ($teamResult && $teamMember = $teamResult->fetch_assoc()):
+                        $teamMember = dbFetchOne("SELECT vorname, name FROM $kandidatenTable WHERE mnummer = ?", [$teamMnr]);
+                        if ($teamMember):
                 ?>
                     <li><?php echo escape($teamMember['vorname'] . ' ' . $teamMember['name']); ?></li>
                 <?php
@@ -132,21 +127,21 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <?php
         // Wer präferiert diesen Kandidaten?
         $mnummer = $kand['mnummer'];
-        $prefQuery = dbQuery("SELECT vorname, name FROM $kandidatenTable
-            WHERE team1 = '$mnummer' OR team2 = '$mnummer' OR team3 = '$mnummer'
-            OR team4 = '$mnummer' OR team5 = '$mnummer' ORDER BY name");
+        $prefs = dbFetchAll("SELECT vorname, name FROM $kandidatenTable
+            WHERE team1 = ? OR team2 = ? OR team3 = ? OR team4 = ? OR team5 = ?
+            ORDER BY name", [$mnummer, $mnummer, $mnummer, $mnummer, $mnummer]);
 
-        if ($prefQuery && $prefQuery->num_rows > 0): ?>
+        if (!empty($prefs)): ?>
             <h3>Wird präferiert von</h3>
             <p><?php echo escape($kand['vorname']); ?> wird von folgenden Kandidaten präferiert:</p>
             <ul class="team-list">
-                <?php while ($pref = $prefQuery->fetch_assoc()): ?>
+                <?php foreach ($prefs as $pref): ?>
                     <li><?php echo escape($pref['vorname'] . ' ' . $pref['name']); ?></li>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </ul>
         <?php endif; ?>
 
-        <?php if (!$hasLinks && !$hasTeam && (!$prefQuery || $prefQuery->num_rows == 0)): ?>
+        <?php if (!$hasLinks && !$hasTeam && empty($prefs)): ?>
             <p class="no-data">Keine ergänzenden Informationen vorhanden.</p>
         <?php endif; ?>
     </div>
@@ -169,11 +164,11 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
             <p class="section-note">Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren<br>(Prio <strong>5</strong> ist höchste Priorität):</p>
 
             <?php
-            // Ressorts nach Vorstandsbereich gruppieren
-            $ressortQuery = dbQuery("SELECT * FROM ressortswahl ORDER BY id");
-            if ($ressortQuery):
+            // Ressorts laden
+            $ressortsData = dbFetchAll("SELECT * FROM ressortswahl ORDER BY id");
+            if ($ressortsData):
                 $ressorts = [];
-                while ($r = $ressortQuery->fetch_assoc()) {
+                foreach ($ressortsData as $r) {
                     $ressorts[$r['id']] = $r['ressort'];
                 }
 
@@ -182,14 +177,14 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                     if (empty($kand["amt$amtNr"])) continue;
 
                     // Amt-Name holen
-                    $amtResult = dbQuery("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = $amtNr");
-                    $amtName = ($amtResult && $row = $amtResult->fetch_assoc()) ? $row['amt'] : "Bereich $amtNr";
+                    $amtRow = dbFetchOne("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = ?", [$amtNr]);
+                    $amtName = $amtRow ? $amtRow['amt'] : "Bereich $amtNr";
                     ?>
 
                     <h3><?php echo escape($amtName); ?></h3>
                     <div class="ressort-list">
                     <?php
-                    // Ressorts für diesen Bereich (vereinfachte Zuordnung)
+                    // Ressorts für diesen Bereich
                     $found = false;
                     foreach ($ressorts as $rid => $rname):
                         $rfeld = "r$rid";
@@ -199,9 +194,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                             $bemId = $kand[$rfeld] - ($prio * 10000);
                             $bemerkung = '';
                             if ($bemId > 0) {
-                                $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
-                                if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                                    $bemerkung = $bem['bem'];
+                                $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [$bemId]);
+                                if ($bemRow) {
+                                    $bemerkung = $bemRow['bem'];
                                 }
                             }
                     ?>
@@ -234,14 +229,8 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         <p class="section-note">Einige Anforderungen, die für die ehrenamtliche Arbeit im Verein hilfreich sein könnten, wurden den Kandidaten vorgelegt.</p>
 
         <?php
-        // Alle Anforderungen laden - nach Nr sortieren (varchar, aber zero-padded)
-        $anfQuery = dbQuery("SELECT * FROM anforderungenwahl ORDER BY Nr ASC");
-        $anforderungen = [];
-        if ($anfQuery) {
-            while ($row = $anfQuery->fetch_assoc()) {
-                $anforderungen[] = $row;
-            }
-        }
+        // Alle Anforderungen laden - nach Nr sortieren
+        $anforderungen = dbFetchAll("SELECT * FROM anforderungenwahl ORDER BY Nr ASC");
 
         if (count($anforderungen) > 0):
         ?>
@@ -259,9 +248,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
                 if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
                     $hasAllgemein = true;
-                    $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = " . (int)$kand[$afeld]);
-                    if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                        $antwort = decodeEntities($bem['bem']);
+                    $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [(int)$kand[$afeld]]);
+                    if ($bemRow) {
+                        $antwort = decodeEntities($bemRow['bem']);
                     }
                 }
                 ?>
@@ -310,9 +299,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                         $bemId = $wert - ($k * 10000);
                         $bewertung = $skala5a[$k] ?? $k;
                         if ($bemId > 0) {
-                            $bemResult = dbQuery("SELECT bem FROM bemerkungenwahl WHERE id = $bemId");
-                            if ($bemResult && $bem = $bemResult->fetch_assoc()) {
-                                $bemerkung = decodeEntities($bem['bem']);
+                            $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [$bemId]);
+                            if ($bemRow) {
+                                $bemerkung = decodeEntities($bemRow['bem']);
                             }
                         }
                     }

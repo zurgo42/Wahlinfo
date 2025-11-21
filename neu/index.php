@@ -1,7 +1,7 @@
 <?php
 /**
  * Wahlinfo - Kandidaten-Übersicht
- * Modernisierte Version mit Card-Layout
+ * Modernisierte Version mit Card-Layout (PDO)
  */
 
 require_once 'includes/config.php';
@@ -15,9 +15,9 @@ include 'includes/header.php';
 $kandidatenTable = getKandidatenTable();
 
 // Alle Ämter abrufen (nur id >= 1, da amt0 nicht existiert)
-$aemterQuery = dbQuery("SELECT * FROM " . TABLE_AEMTER . " WHERE id >= 1 ORDER BY id");
+$aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id >= 1 ORDER BY id");
 
-if (!$aemterQuery) {
+if (empty($aemter)) {
     echo '<div class="alert alert-warning">Fehler beim Laden der Ämter.</div>';
     include 'includes/footer.php';
     exit;
@@ -33,21 +33,20 @@ if (!$aemterQuery) {
 <?php
 
 // Durch alle Ämter iterieren
-while ($amt = $aemterQuery->fetch_assoc()) {
+foreach ($aemter as $amt) {
     $amtId = (int)$amt['id'];
     $amtName = escape($amt['amt']);
     $anzPos = isset($amt['anzpos']) ? (int)$amt['anzpos'] : 1;
 
     // Kandidaten für dieses Amt abrufen
-    // Dynamisch das richtige amt-Feld wählen (amt1, amt2, etc.)
-    $kandidatenQuery = dbQuery(
+    $kandidaten = dbFetchAll(
         "SELECT vorname, name, mnummer, bildfile, text
-         FROM " . $kandidatenTable . "
-         WHERE amt{$amtId} = 1
+         FROM $kandidatenTable
+         WHERE amt$amtId = 1
          ORDER BY name ASC"
     );
 
-    if (!$kandidatenQuery || $kandidatenQuery->num_rows === 0) {
+    if (empty($kandidaten)) {
         continue; // Keine Kandidaten für dieses Amt
     }
 
@@ -61,7 +60,7 @@ while ($amt = $aemterQuery->fetch_assoc()) {
     </div>
 
     <div class="candidate-grid">
-        <?php while ($kandidat = $kandidatenQuery->fetch_assoc()):
+        <?php foreach ($kandidaten as $kandidat):
             $vorname = escape($kandidat['vorname']);
             $name = escape($kandidat['name']);
             $mnummer = escape($kandidat['mnummer']);
@@ -87,7 +86,7 @@ while ($amt = $aemterQuery->fetch_assoc()) {
             </a>
         </article>
 
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     </div>
 
 <?php } ?>
