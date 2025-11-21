@@ -52,7 +52,7 @@ define('TABLE_TEILNEHMER', 'Wahl' . WAHLJAHR . 'teilnehmer');
 // =============================================================================
 
 // Test-M-Nr für lokale Entwicklung (localhost)
-define('TEST_MNR', '049123456');
+define('TEST_MNR', '0495018');
 
 // =============================================================================
 // Funktionen laden

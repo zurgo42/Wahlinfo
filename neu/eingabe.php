@@ -223,7 +223,7 @@ if ($mnr) {
 
     <?php if (!$mnr): ?>
         <div class="message error">
-            Keine M-Nr angegeben. Bitte melden Sie sich über das SSO an.
+            Keine M-Nr angegeben. Bitte melde dich über das SSO an.
         </div>
     <?php elseif (!$kandidat): ?>
         <div class="message error">
@@ -234,7 +234,7 @@ if ($mnr) {
         <?php if (!$editingAllowed): ?>
             <div class="message warning">
                 Der Eingabezeitraum ist abgelaufen (Stichtag: <?php echo $deadlineFormatted; ?>).
-                Ihre Daten können nicht mehr geändert werden.
+                Deine Daten können nicht mehr geändert werden.
             </div>
         <?php endif; ?>
 
@@ -340,7 +340,7 @@ if ($mnr) {
             <!-- Team-Präferenzen -->
             <section class="form-section">
                 <h2>Team-Präferenzen</h2>
-                <p class="info">Mit wem möchten Sie zusammenarbeiten? (1 = erste Wahl)</p>
+                <p class="info">Mit wem möchtest du zusammenarbeiten? (1 = erste Wahl)</p>
 
                 <?php for ($i = 1; $i <= 5; $i++): ?>
                     <div class="form-row">
@@ -356,7 +356,7 @@ if ($mnr) {
             <!-- Ressort-Präferenzen -->
             <section class="form-section">
                 <h2>Ressort-Präferenzen</h2>
-                <p class="info">Welche Ressorts interessieren Sie? (nur für Vorstandskandidaten)</p>
+                <p class="info">Welche Ressorts interessieren dich? (nur für Vorstandskandidaten)</p>
 
                 <?php for ($i = 1; $i <= 6; $i++): ?>
                     <div class="form-row">
