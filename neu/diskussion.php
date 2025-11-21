@@ -174,6 +174,8 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $tie
     <div class="kandidaten-diskussion">
         <?php foreach ($kandidaten as $kand):
             $kandId = (int)$kand['Knr'];
+            // ID 97 wird separat als "Allgemeine Fragen" angezeigt
+            if ($kandId === 97) continue;
             // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
             $theseParts = explode('<br>', $kand['These'] ?? '');
             $kandName = trim($theseParts[0]);
