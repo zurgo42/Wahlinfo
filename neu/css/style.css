@@ -1363,6 +1363,63 @@ body.dark-mode .kandidat-section.allgemein .kandidat-header:hover {
     background: var(--mensa-heller);
 }
 
+/* Vote-Buttons */
+.vote-buttons {
+    display: inline-flex;
+    gap: 8px;
+    margin-right: 10px;
+}
+
+.vote-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vote-btn:hover {
+    background: var(--mensa-grau);
+}
+
+.vote-btn.active {
+    font-weight: 600;
+}
+
+.vote-btn.vote-up.active {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.vote-btn.vote-down.active {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+body.dark-mode .vote-btn.vote-up.active {
+    background: #1e4620;
+    border-color: #28a745;
+    color: #a3d9a5;
+}
+
+body.dark-mode .vote-btn.vote-down.active {
+    background: #4a1a1a;
+    border-color: #dc3545;
+    color: #f5c6cb;
+}
+
+.vote-count {
+    font-weight: 600;
+}
+
 .antwort-form-inline {
     margin-top: var(--spacing-sm);
     padding: var(--spacing-sm);

@@ -53,14 +53,24 @@ foreach ($fotoDaten as $foto) {
     }
 }
 
-// Alle Kommentare laden
+// Alle Kommentare laden (mit Vote-Zählungen)
+$voteJoin = "";
+$voteSelect = ", 0 AS votes_up, 0 AS votes_down, 0 AS user_vote";
+if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
+    $voteSelect = ",
+        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = 1) AS votes_up,
+        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = -1) AS votes_down,
+        (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote";
+}
+
 $alleKommentare = dbFetchAll(
-    "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName
+    "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName $voteSelect
      FROM " . TABLE_KOMMENTARE . " k
      LEFT JOIN " . TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
      WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
      GROUP BY k.Knr
-     ORDER BY k.Datum ASC"
+     ORDER BY k.Datum ASC",
+    defined('FEATURE_VOTING') && FEATURE_VOTING ? [$userMnr] : []
 );
 
 // Kommentare nach Kandidaten und Threads strukturieren
@@ -103,6 +113,26 @@ $kandidaten[] = [
     'mnummer' => '',
     'istAllgemein' => true
 ];
+
+/**
+ * Gibt Vote-Buttons HTML zurück
+ */
+function getVoteButtons($knr, $votesUp, $votesDown, $userVote) {
+    if (!defined('FEATURE_VOTING') || !FEATURE_VOTING) {
+        return '';
+    }
+    $upActive = ((int)$userVote === 1) ? ' active' : '';
+    $downActive = ((int)$userVote === -1) ? ' active' : '';
+    return '
+        <div class="vote-buttons" id="votes-' . $knr . '">
+            <button class="vote-btn vote-up' . $upActive . '" onclick="vote(' . $knr . ', 1)" title="Zustimmung">
+                👍 <span class="vote-count">' . (int)$votesUp . '</span>
+            </button>
+            <button class="vote-btn vote-down' . $downActive . '" onclick="vote(' . $knr . ', -1)" title="Ablehnung">
+                👎 <span class="vote-count">' . (int)$votesDown . '</span>
+            </button>
+        </div>';
+}
 
 /**
  * Kürzt Text für kompakte Darstellung
@@ -177,6 +207,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
             </div>
             <div class="antwort-action">
+                <?php echo getVoteButtons($aKnr, $antwort['votes_up'] ?? 0, $antwort['votes_down'] ?? 0, $antwort['user_vote'] ?? 0); ?>
                 <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
             </div>
             <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
@@ -289,6 +320,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                                         <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
                                     </div>
                                     <div class="antwort-action">
+                                        <?php echo getVoteButtons($knr, $thread['votes_up'] ?? 0, $thread['votes_down'] ?? 0, $thread['user_vote'] ?? 0); ?>
                                         <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
                                     </div>
                                     <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
@@ -429,6 +461,47 @@ function sendeNeueFrage(kandId) {
     })
     .catch(error => {
         alert('Fehler beim Speichern: ' + error);
+    });
+}
+
+// Voting-Funktionen
+function vote(knr, voteValue) {
+    var container = document.getElementById('votes-' + knr);
+    if (!container) return;
+
+    var upBtn = container.querySelector('.vote-up');
+    var downBtn = container.querySelector('.vote-down');
+
+    // Wenn gleicher Vote nochmal geklickt wird -> entfernen
+    if ((voteValue === 1 && upBtn.classList.contains('active')) ||
+        (voteValue === -1 && downBtn.classList.contains('active'))) {
+        voteValue = 0;
+    }
+
+    var formData = new FormData();
+    formData.append('knr', knr);
+    formData.append('vote', voteValue);
+
+    fetch('vote_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Zähler aktualisieren
+            upBtn.querySelector('.vote-count').textContent = data.up;
+            downBtn.querySelector('.vote-count').textContent = data.down;
+
+            // Active-Status aktualisieren
+            upBtn.classList.toggle('active', data.userVote === 1);
+            downBtn.classList.toggle('active', data.userVote === -1);
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Abstimmen: ' + error);
     });
 }
 </script>

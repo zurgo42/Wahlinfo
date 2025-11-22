@@ -46,6 +46,14 @@ define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
 define('TABLE_WAHL', 'Wahl' . WAHLJAHR);
 define('TABLE_KOMMENTARE', 'Wahl' . WAHLJAHR . 'kommentare');
 define('TABLE_TEILNEHMER', 'Wahl' . WAHLJAHR . 'teilnehmer');
+define('TABLE_VOTES', 'Wahl' . WAHLJAHR . 'votes');
+
+// =============================================================================
+// Feature-Flags
+// =============================================================================
+
+// Voting (Daumen hoch/runter) aktivieren - bei Missbrauch auf false setzen
+define('FEATURE_VOTING', true);
 
 // =============================================================================
 // Entwicklung
