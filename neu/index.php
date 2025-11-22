@@ -29,8 +29,8 @@ if (empty($aemter)) {
 ?>
 
 <div class="info-banner">
-    <p>Willkommen zur ergänzenden Wahlinformation. Hier finden Sie Informationen zu allen Kandidatinnen und Kandidaten.</p>
-    <p>Klicken Sie auf eine Karte, um mehr über die jeweilige Person zu erfahren.</p>
+    <p>Willkommen zur ergänzenden Wahlinformation. Hier findest du Informationen zu allen Kandidatinnen und Kandidaten.</p>
+    <p>Klicke auf eine Karte, um mehr über die jeweilige Person zu erfahren.</p>
 </div>
 
 <?php

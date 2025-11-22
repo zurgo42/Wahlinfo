@@ -100,16 +100,22 @@ function processFormSubmission($mnr, $postData, $files) {
                 // Alte Antwort zum Vergleich holen
                 $oldText = '';
                 if ($oldId > 0) {
-                    $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldId]);
-                    $oldText = $oldBem ? $oldBem['bem'] : '';
+                    // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
+                    $actualOldId = $oldId;
+                    if ($i >= 9 && $i <= 15 && $oldId > 10000) {
+                        $actualOldId = $oldId - (round($oldId / 10000) * 10000);
+                    }
+                    if ($actualOldId > 0) {
+                        $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$actualOldId]);
+                        $oldText = $oldBem ? $oldBem['bem'] : '';
+                    }
                 }
 
                 if (!empty($antwortText)) {
-                    // IMMER neue Bemerkung erstellen (alte bleibt erhalten)
-                    $bemId = createNewBemerkung($antwortText);
-                    dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$bemId, $mnr]);
-
+                    // Nur speichern wenn Text sich geändert hat
                     if ($antwortText !== $oldText) {
+                        $bemId = createNewBemerkung($antwortText);
+                        dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$bemId, $mnr]);
                         $changedFields[] = "$fieldName: neue ID $bemId";
                     }
                 } elseif ($oldId > 0) {
@@ -240,11 +246,11 @@ include __DIR__ . '/includes/header.php';
 <main class="container">
     <?php if (!$userMnr): ?>
         <div class="message error">
-            Keine M-Nr erkannt. Bitte melde dich über das SSO an.
+            Keine M-Nummer erkannt. Bitte melde dich über das SSO an.
         </div>
     <?php elseif (!$kand): ?>
         <div class="message error">
-            Du bist nicht als Kandidat registriert (M-Nr: <?php echo escape($userMnr); ?>).
+            Du bist nicht als Kandidat registriert (M<?php echo substr(escape($userMnr), 3); ?>).
         </div>
     <?php else: ?>
 
@@ -257,10 +263,6 @@ include __DIR__ . '/includes/header.php';
         <?php if ($editingAllowed): ?>
             <div class="message info">
                 Du kannst deine Daten bis zum <?php echo $deadlineFormatted; ?> Uhr bearbeiten.
-            </div>
-        <?php else: ?>
-            <div class="message warning">
-                Der Eingabezeitraum ist abgelaufen. Deine Daten werden so angezeigt, wie sie andere sehen.
             </div>
         <?php endif; ?>
 
@@ -291,7 +293,7 @@ include __DIR__ . '/includes/header.php';
                 </div>
                 <div class="detail-info">
                     <h1><?php echo escape($kand['vorname'] . ' ' . $kand['name']); ?></h1>
-                    <p class="mnummer">M-Nr: <?php echo substr(escape($kand['mnummer']), 3); ?></p>
+                    <p class="mnummer">M<?php echo substr(escape($kand['mnummer']), 3); ?></p>
                     <?php if (!empty($aemterListe)): ?>
                         <p class="kandidatur"><strong>Kandidatur für:</strong><br><?php echo escape(implode(', ', $aemterListe)); ?></p>
                     <?php endif; ?>

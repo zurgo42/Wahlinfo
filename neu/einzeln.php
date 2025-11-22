@@ -85,7 +85,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
         </div>
         <div class="detail-info">
             <h1><?php echo escape($kand['vorname'] . ' ' . $kand['name']); ?></h1>
-            <p class="mnummer">M-Nr: <?php echo substr(escape($kand['mnummer']), 3); ?></p>
+            <p class="mnummer">M<?php echo substr(escape($kand['mnummer']), 3); ?></p>
             <?php if (!empty($aemterListe)): ?>
                 <p class="kandidatur"><strong>Kandidatur für:</strong><br><?php echo escape(implode(', ', $aemterListe)); ?></p>
             <?php endif; ?>
@@ -215,8 +215,8 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                             }
                     ?>
                         <div class="ressort-item">
-                            <div class="ressort-name"><?php echo escape($rname); ?></div>
                             <div class="ressort-prio">Prio <?php echo $prio; ?></div>
+                            <div class="ressort-name"><?php echo escape($rname); ?></div>
                         </div>
                         <?php if (!empty($bemerkung)): ?>
                             <div class="ressort-comment"><?php echo escape($bemerkung); ?></div>
