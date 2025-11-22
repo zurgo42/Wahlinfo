@@ -1,10 +1,10 @@
 <?php // Erste Seite Vorstandsfrageboten: Einzeldarstellung eines Kandidaten
  $dieseseite = "einzeln";
- $daten = 'textewahl'; // Hier stehen etliche für mehrere Seiten zu verwendende Texte
+ $daten = 'textewahl'; // Hier stehen etliche fï¿½r mehrere Seiten zu verwendende Texte
  $naechsteseite = "einzeln";
  $bildquelle = "../neuwahl/";
 
- include ("kopf.php"); // Seitenaufbau, Funktionen nur für diese Programmfamilie, Initialisierungen
+ include ("kopf.php"); // Seitenaufbau, Funktionen nur fï¿½r diese Programmfamilie, Initialisierungen
  if (!ubeide('ohnemenu') AND ($mobil<2)) include("menuleiste.php"); // Kandidatenleiste im Kopf
 // Den Kandidaten aufrufen
  $zeige = ubeide('zeige'); 
@@ -15,7 +15,7 @@
  if (!$ks) abbruch('Das M mit dieser Mitgliedsnummer kandidiert nicht.');
 
  $kand = mysqli_fetch_array($kx); // Die Daten dieses Kandidaten
- $w0 = 140+($mobil>1)*100; $w1 = $w0+10; // Steuerung der Breite für Smartphone-Seiten
+ $w0 = 140+($mobil>1)*100; $w1 = $w0+10; // Steuerung der Breite fï¿½r Smartphone-Seiten
 
 
 // Linke Spalte bzw. Wahlausschuss-Seite
@@ -28,7 +28,7 @@
  if (laenge($kand['bildfile'])) {echo '<IMG SRC="'.$bildquelle.'img/'.$kand['bildfile'].'" width="'.$w0.'">';} else {echo '<IMG SRC="leer.jpg" width="'.$w0.'">';}
  echo '</div>';
 
- echo '<div style="padding-left: 1px; padding-top: 10px;"><h1>'.umlaute($kand['vorname']).' '.umlaute($kand['name']).'</h1><span class="text1n">MNr: '.substr($kand['mnummer'],3);
+ echo '<div style="padding-left: 1px; padding-top: 10px;"><h1>'.umlaute($kand['vorname']).' '.umlaute($kand['name']).'</h1><span class="text1n">M'.substr($kand['mnummer'],3);
  echo '<span class="text1b"><br><br>Kandidatur f&uuml;r '; $q=0;
  echo welchesamt($kand);
 
@@ -45,7 +45,7 @@
  $einzelkand = 'key='.$key.$linkerg.'&zeige='.$kand['mnummer'];
  //if ($privat) { // Die rechte Spalte in der Strategieteam-Ansicht
 
- $erg = 0; // Hiermit werden die eingegebenen Elemente gezählt
+ $erg = 0; // Hiermit werden die eingegebenen Elemente gezï¿½hlt
  echo '<td width="55%" class="nurlinks backp" style="vertical-align: top;"><h3>Erg&auml;nzende Informationen</h3><span class="text2n">Soweit hier Informationen der Kandidierenden verlinkt sind, sind sie nicht Teil der offziellen Wahl-Ank&uuml;ndigung des Vereins.';
  //if (time() < dzut($editieren_bis)) echo '<span class="text3n fa55"><br><br>Hinweis: Dieser Teil wird erst nach Beendigung der Editierfrist ('.$editieren_bis.') gezeigt, nachdem alle Kandidaten Gelegenheit hatten, ihre Informationen einzugeben!<br></span>';	
  echo '</span><p class="text1n">';
@@ -55,11 +55,11 @@
  if (!iget('spielwiese') AND ((time()<dzut($editieren_bis)) AND ($kand['mnummer'] <> $MNr))) { // nach Ende der Editierfrist
 	echo '<p class="text1b">Ab Ende der Editierfrist, also nach dem '.$editieren_bis.' sind hier zu allen Kandidaten weitere Informationen abrufbar.</p>';
  } else {
-	if ((time()<dzut($editieren_bis)) AND ($kand['mnummer'] == $MNr)) echo '<b>Nur du siehst hier derzeit deine eigenen Angaben!</b><br>';
+	//Hinweis fÃ¼r eigene Seite entfernt - alle sehen gleiche Darstellung
 	if (laenge($kand['hplink'])) {echo 'Der <a href="'.$kand['hplink'].'">Link auf die Homepage/Mediaseite</a> von '.$kand['vorname'].'</li>'; $erg++;}
 	if (laenge($kand['videolink'])) {echo '<br>Der <a href="'.$kand['videolink'].'">Link auf das Vorstellungsvideo</a> von '.$kand['vorname'].'</li>';  $erg++;}
 
- if (laenge($kand["team1"]) > 3) { // Die Mitkandidaten-Präferenzen des Gezeigten zeigen
+ if (laenge($kand["team1"]) > 3) { // Die Mitkandidaten-Prï¿½ferenzen des Gezeigten zeigen
 	echo '<br><br><b>Am liebsten w&uuml;rde '.$kand['vorname'].' mit folgenden Mitkandidaten zusammenarbeiten:</b><br>';
 	for ($i=1;$i<6;$i++) {$t = $kand["team$i"];
 		if (laenge($t)>2) {
@@ -68,7 +68,7 @@
 	}
  }
 
- // Alle diejenigen zeigen, die diesen Kandidaten präferieren
+ // Alle diejenigen zeigen, die diesen Kandidaten prï¿½ferieren
  $team2= mysqli_query($link,'SELECT vorname, name FROM '.$kandidatendb.' WHERE (team1="'.$kand['mnummer'].'" OR team2="'.$kand['mnummer'].'" OR team3="'.$kand['mnummer'].'" OR team4="'.$kand['mnummer'].'" OR team5="'.$kand['mnummer'].'") ORDER BY name');
  $tanz = mysqli_num_rows($team2);
  if ($tanz) {
@@ -81,7 +81,7 @@
  $anf1 = $anf2 = $r = 0; 	
  for ($i=1;$i<9;$i++) {$anf1 = $anf1 + ($kand["a$i"]>999); } // Erster Teil Anforderungen
  for ($i=10;$i<17;$i++) {$anf2 = $anf2 + ($kand["a$i"]>9999); } // Zweiter Teil Anforderungen
- for ($i=1;$i<18;$i++) {$r = $r + ($kand["r$i"]>9999);} // Ressortwünsche ausgefüllt
+ for ($i=1;$i<18;$i++) {$r = $r + ($kand["r$i"]>9999);} // Ressortwï¿½nsche ausgefï¿½llt
 
  // Haben die die Vorstandskandidaten welche Angaben gemacht?
  if (($kand['amt1'] OR $kand['amt2'] OR $kand['amt3']) AND (!$r)) { 
@@ -102,13 +102,12 @@ if (($kand['amt1'] OR $kand['amt2'] OR $kand['amt3']) AND ($r>0)) {
 		for ($av=$av0;$av<=$rnr[$amtv];$av++) { 
 		$ress = "r".$rnr[$av];
 	
-		//if ($kand[$ress] > 9000) { 
+		//if ($kand[$ress] > 9000) {
 			$r++;
-			echo '<li class="text1n"><b>'.$rs[$av];
-		$k = round($kand[$ress]/10000,0); 
+		$k = round($kand[$ress]/10000,0);
 		$b=$kand[$ress]-$k*10000;
 		$k = MAX($k,1);
-		echo ' mit Prio '.$k.'</b>';
+			echo '<li class="text1n" style="color: #333;"><b>Prio '.$k.': '.$rs[$av].'</b>';
 		if ($b) {$btext = db_result(mysqli_query($link,'SELECT bem FROM bemerkungenwahl WHERE id='.$b),0,'bem');
 		echo '<br>'.$btext;}
 		echo '</li>';//}
@@ -173,18 +172,18 @@ if (($kand['amt1'] OR $kand['amt2'] OR $kand['amt3']) AND ($r>0)) {
 	echo '</td></tr>';
 
 	for ($j=8;$j<15;$j++) {$j1=$j+1; $rsx = mysqli_fetch_array($rs);
-		echo '<tr><td align="center" class="text4n rh">'.$j1.'</td>';
-		echo '<td class="rh"><span class="text2b">'.umlaute($rsx['Anforderung']).'</td>';
-		echo '<td align="center" class="text2n rh"><span class="text1n center">';
+		echo '<tr><td align="center" class="text4n rh" style="color: #333;">'.$j1.'</td>';
+		echo '<td align="center" class="text2n rh" style="color: #333;"><span class="text1n center" style="color: #333;">';
 		if ($kand["a$j1"]>0) {
 			$erg++; $k = round($kand["a$j1"]/10000,0); $b=$kand["a$j1"]-$k*10000;
-			echo $skala5[$k].'</td>';
+			echo $skala5[$k].'</span></td>';
+			echo '<td class="rh"><span class="text2b" style="color: #333;">'.umlaute($rsx['Anforderung']).'</span></td>';
 			if ($b) {
 				$btext = db_result(mysqli_query($link,'SELECT bem FROM bemerkungenwahl WHERE id='.$b),0,'bem');
-				echo '<td align="left" class="text2n rh">'.$btext.'</td>';}
+				echo '<td align="left" class="text2n rh" style="color: #333;">'.$btext.'</td>';}
 			echo '</tr>';
 		} else {
-		echo ' </td><td> </td>';}
+		echo '</span></td><td class="rh"><span class="text2b" style="color: #333;">'.umlaute($rsx['Anforderung']).'</span></td><td> </td></tr>';}
 	}
   if ($erg<1) {echo '<tr><td colspan="4"><span class="text2b"><br><b>Von '.$kand['vorname'].' liegen hierzu keine Antworten vor.<br><br></span></td></tr>';}
 
@@ -196,7 +195,7 @@ if (($kand['amt1'] OR $kand['amt2'] OR $kand['amt3']) AND ($r>0)) {
 
  echo '</table></td></tr>';
  //echo $MNr.$kand['mnummer'];
- if (($MNr == $kand['mnummer']) AND (time()<dzut($editieren_bis))) { // Angebot Bearbeiten während der Editierfrist
+ if (($MNr == $kand['mnummer']) AND (time()<dzut($editieren_bis))) { // Angebot Bearbeiten wï¿½hrend der Editierfrist
  echo '<tr><td colspan="4" class="rh"><a href="eingabe.php?key='.$key.$linkerg.'&zeige='.$MNr.'"><span class="text2b">Wenn du noch etwas &auml;ndern/bearbeiten willst, klicke hier</span></a>.</td></tr>';} 
 
 

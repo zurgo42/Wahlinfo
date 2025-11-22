@@ -7,18 +7,18 @@
  <meta name="description" content="Wahlinfo-Seite des Vereins Mensa in Deutschland e.V.">
  <link href="../aktiv.css" rel="stylesheet" type="text/css">
 
-<?php // Dieser Teil startet die Seiten, schreibt den Kopf, enthält die Funktionen, definiert die DB-Tabellen, speichert übergebene Werte und lädt die Variablen zur Umfrage
+<?php // Dieser Teil startet die Seiten, schreibt den Kopf, enthï¿½lt die Funktionen, definiert die DB-Tabellen, speichert ï¿½bergebene Werte und lï¿½dt die Variablen zur Umfrage
 
  error_reporting(E_ALL & ~E_WARNING);
  ini_set('display_errors', 1);
 
 // Gemeinsame Funktionen zuladen
  include ('../fstandard.php');	// Standardfunktionen laden
- include ('funktionen.php'); // Funktionen für die spezielle Anwendung laden
+ include ('funktionen.php'); // Funktionen fï¿½r die spezielle Anwendung laden
  include_once ("config.php"); // Datenbank-Zugangsdaten
  include ($daten.'.php');	// Die individuellen Daten der jeweiligen Umfrage - $daten steht am Anfang jeder einzelnen Seite
 
-// Funktionen und Texte nur für dieses Projekt:
+// Funktionen und Texte nur fï¿½r dieses Projekt:
 
 // Funktionen
 
@@ -87,7 +87,7 @@
 	return $qa;
  }
 
- function weiter ($einzeln,$ue,$ressorts,$anforderungsliste,$fragen) { // zeigt das untere Menu oberhalb der Fußleiste
+ function weiter ($einzeln,$ue,$ressorts,$anforderungsliste,$fragen) { // zeigt das untere Menu oberhalb der Fuï¿½leiste
 	global $linkerg,$spalten, $privat,$mobil,$editieren_bis,$einzelkand,$spielwiese,$link;
 	
 	$spintern = $einzeln+$ue+$ressorts+$anforderungsliste+$fragen;
@@ -131,11 +131,11 @@
 	
 	echo '</tr></table></td></tr>';
 
-	} else { // Wahlausschuss-Seite  - ist das überhaupt noch gefragt??? **********************
+	} else { // Wahlausschuss-Seite  - ist das ï¿½berhaupt noch gefragt??? **********************
 	
 	if ($spielwiese) $erg = '&spielwiese=1';
 	echo '<tr><td valign="middle" colspan="'.$spalten.'" class="rh">';
-	//	echo '<span class="text3b"><br>Klicke auf das jeweilige Foto, um Details über den Kandidaten zu sehen!<br><br>';
+	//	echo '<span class="text3b"><br>Klicke auf das jeweilige Foto, um Details ï¿½ber den Kandidaten zu sehen!<br><br>';
 	if ($ue) {
 		echo '<br><a class="menu" style="width:600px; margin: 5 5 5 5;" href="index.php?privat='.$privat;
 		if ($spielwiese) echo '&spielwiese=1';
@@ -169,31 +169,50 @@
 
  function speichernmitbem ($name,$is0,$is8,$file) {  // Antworten und Bemerkungen ins Antwortfile schreiben
 	//$name ist der Buchstabe, unter dem der Wert in der Datenbank gespeichert werden soll; $is0 bis $is8 sind die lfdNr dieser Werte
-	//$name.lfdNr ist auch der per POST übergebene Wert; b.$name.lfdNr ist die zugehörige Bemerkung
+	//$name.lfdNr ist auch der per POST ï¿½bergebene Wert; b.$name.lfdNr ist die zugehï¿½rige Bemerkung
 	//Die Daten werden jeweils in der Form n*10000+b gespeichert - dabei ist n die Bewertung und b die ID der Bemerkung (1000<b<=9999)
 
 	global $datum, $dbzeigen,$key,$link;
 
 	//echo "XXX $name,$is0,$is8,$file ;".$name."1".'='.ipost($name."1");
 	$aendern = 0;
-	$ein = 0; // Das ist der Zähler, ob überhaupt etwas übergeben wurde
+	$ein = 0; // Das ist der Zï¿½hler, ob ï¿½berhaupt etwas ï¿½bergeben wurde
 	$eintrag = 'UPDATE '.$file.' SET ';
+
+	// Aktuelle Werte aus der Datenbank holen fï¿½r Vergleich
+	$aktuelleWerte = mysqli_fetch_array(mysqli_query($link,'SELECT * FROM '.$file.' WHERE schl='.$key));
+
 	for ($i=$is0;$i<=$is8;$i++){ // die lfdNrn durchgehen
-		$f = $name.$i; // Feldbezeichnung in der Datenbank und bei der Datenübergabe per POST der jeweilige Wert
+		$f = $name.$i; // Feldbezeichnung in der Datenbank und bei der Datenï¿½bergabe per POST der jeweilige Wert
 		//echo "<br> f ist $f und ipost ist ".ipost($f);
-		$wert = ipost($f); if ($wert > 5) $wert= 5; // Keine Werte über 5 möglich
-		if ($wert > 0) { 
-			$ein++; // Es wurde für diese Position etwas übergeben
-			$wert = ABS($wert*10000); 
+		$wert = ipost($f); if ($wert > 5) $wert= 5; // Keine Werte ï¿½ber 5 mï¿½glich
+		if ($wert > 0) {
+			$ein++; // Es wurde fï¿½r diese Position etwas ï¿½bergeben
+			$wert = ABS($wert*10000);
 			} else {
 			if ($file=="antwortenwahl") {$wert=10000;} else {$wert=0;}
 			}
 
-		$b = 'b'.$f; $bid = 0; 
+		$b = 'b'.$f; $bid = 0;
 		$bem = umlaute(ipost($b)); //echo "$i: wert $wert bem $bem ein $ein - ";
-		if (laenge($bem) > 1) { 
-			$ein++; // Es wurde ein Bemerkungstring mit Länge > 1 übergeben
-			$bid = bemerkungspeichern($bem); } // Hier wurde die Bewertung gespeichert (falls neu) und die ID übergeben
+
+		// Nur speichern wenn Text geï¿½ndert wurde
+		if (laenge($bem) > 1) {
+			$ein++; // Es wurde ein Bemerkungstring mit Lï¿½nge > 1 ï¿½bergeben
+			// Prï¿½fen ob der alte Text sich vom neuen unterscheidet
+			$alterWert = isset($aktuelleWerte[$f]) ? $aktuelleWerte[$f] : 0;
+			$alteBemId = $alterWert - (round($alterWert/10000,0) * 10000);
+			$alterText = "";
+			if ($alteBemId > 0) {
+				$alterText = db_result(mysqli_query($link,'SELECT bem FROM bemerkungenwahl WHERE id='.$alteBemId),0,'bem');
+			}
+			// Nur neue Bemerkung speichern wenn Text sich geï¿½ndert hat
+			if ($bem != $alterText) {
+				$bid = bemerkungspeichern($bem);
+			} else {
+				$bid = $alteBemId; // Alte ID behalten
+			}
+		}
 		$wert = $wert+$bid;
 		$eintrag .= $f.'='.$wert.', ';
 		}
@@ -248,24 +267,24 @@
 // Authentifizierungs- und Anonymisierungsteil
  $key = schluessel($MNr,$antwortenfile); // Hier wird ein Datensatz in der Adressen-DB und in der Antworten-DB angelegt
 
- // Nur Ms erreichen diese Seiten, indem der Mensa-Server deren MNr übergibt
- // Um die Anonymität zu erreichen, wird im Adressfile der MNr ein Key zugeordnet
+ // Nur Ms erreichen diese Seiten, indem der Mensa-Server deren MNr ï¿½bergibt
+ // Um die Anonymitï¿½t zu erreichen, wird im Adressfile der MNr ein Key zugeordnet
  // Unter diesem Key werden im Antwortenfile die Antworten gespeichert
- // Wird der Key gelöscht (am Ende der Umfrage bzw. auf Anforderung des Nutzers), ist eine Zuordnung Key-MNr nicht mehr möglich
+ // Wird der Key gelï¿½scht (am Ende der Umfrage bzw. auf Anforderung des Nutzers), ist eine Zuordnung Key-MNr nicht mehr mï¿½glich
 
- // Deshalb muss zu allen Seiten der Key übergeben (durch GET oder POST) oder die MNr abgerufen werden
- // Was im Einzelnen geschieht, wenn kein Key übergeben wird, wird auf den Einzelseiten geregelt
+ // Deshalb muss zu allen Seiten der Key ï¿½bergeben (durch GET oder POST) oder die MNr abgerufen werden
+ // Was im Einzelnen geschieht, wenn kein Key ï¿½bergeben wird, wird auf den Einzelseiten geregelt
 
 
 // Spezieller Teil: Kandidaten 
- // Die Identifizierung der Kandidaten in den spezifischen Tabellen kann über die M-Nummer erfolgen, weil hier keine Anonymisierung gewollt ist.
- // In der Antwortendatei zu Fragen/Antworten muss allerdings wie bei allen anderen Ms über den Schlüssel identifiziert werden (Einheitlichkeit).
- // Deshalb dürfen die Kandidaten ihren Schlüssel nicht vorzeitig löschen!
+ // Die Identifizierung der Kandidaten in den spezifischen Tabellen kann ï¿½ber die M-Nummer erfolgen, weil hier keine Anonymisierung gewollt ist.
+ // In der Antwortendatei zu Fragen/Antworten muss allerdings wie bei allen anderen Ms ï¿½ber den Schlï¿½ssel identifiziert werden (Einheitlichkeit).
+ // Deshalb dï¿½rfen die Kandidaten ihren Schlï¿½ssel nicht vorzeitig lï¿½schen!
 
 
 
 
-// Speicherteil: Wenn Daten übergeben werden, werden sie hier gespeichert
+// Speicherteil: Wenn Daten ï¿½bergeben werden, werden sie hier gespeichert
  $speichern = ipost('eingabe'); 
  if ($speichern) { // Die Links und die Team-Werte speichern
 	$hplink = ipost('hplink'); 
@@ -285,7 +304,7 @@
 
  $speichern = ipost('fragen'); 
  $verwerfen = 0; if (strpos($speichern,"verwerfen")) $verwerfen = 1; 
- if (strpos($speichern,"endg")) { // individuellen Datensatz löschen, aber als Basis für Meinungsbild erhalten
+ if (strpos($speichern,"endg")) { // individuellen Datensatz lï¿½schen, aber als Basis fï¿½r Meinungsbild erhalten
 	srand((double)microtime()*100000000);
 	$eintrag = 'UPDATE antwortenwahl SET schl="'.rand(1000000,9999999).'"';
 	$eintrag .= ', letzteintrag = "'.$datum;
@@ -307,7 +326,7 @@
 	if (laenge($neust)+laenge($neufr)+laenge($neuth) > 20) {//Neue Frage abspeichern
 		  $eintrag = 'INSERT INTO fragenwahl SET Stichwort="'.umlaute($neust).'", Status="'.umlaute($neufr).'", Ziel="'.umlaute($neuth).'", von="'.$MNr.'", datum="'.$datum.'"';
 		dbspeichern($eintrag);
-		// In der Antwortentabelle eine Spalte hinzufügen	
+		// In der Antwortentabelle eine Spalte hinzufï¿½gen	
 		$i = mysqli_num_rows(mysqli_query($link,'SELECT id FROM fragenwahl')); // die letzte Ziffer
 		$eintrag = 'ALTER TABLE antwortenwahl ADD COLUMN f'.$i.' MEDIUMINT, ADD COLUMN w'.$i.' MEDIUMINT';
 		$aendern = mysqli_query($link,$eintrag); 

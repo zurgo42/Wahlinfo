@@ -12,7 +12,7 @@ if ($eingabe) { // Es darf eingegeben werden.
 $ks = mysqli_query($link,'SELECT * FROM '.$kandidatendb.' WHERE mnummer="'.$MNr.'"');
 $knd = mysqli_fetch_array($ks);
 
-// Hinweis: Das Speichern läuft über den key - also nicht über die Mitgliedsnummer. Daran muss man beim Testen denken!
+// Hinweis: Das Speichern lï¿½uft ï¿½ber den key - also nicht ï¿½ber die Mitgliedsnummer. Daran muss man beim Testen denken!
 $einzelkand = 'key='.$key.$linkerg.'&zeige='.$MNr;
 echo '</form><form action="einzeln.php?key='.$key.$linkerg.'&zeige='.$MNr.'" method="post" enctype="multipart/form-data">';
 
@@ -96,7 +96,7 @@ $ranz = mysqli_num_rows($rs);
 
 echo '<tr><td colspan="4" valign="top" align="left">';
 echo '<h1>Zeit, Motivation, Pr&auml;ferenzen</h1>';
-echo '<span class="text3b">Auf Wunsch des Vorstands hat das Strategieteam eine Liste von Anforderungen erstellt, die f&uuml;r die Vorstandsarbeit im Verein hilfreich sein k&ouml;nnten. Das Strategietean hat einige davon ausgew&auml;hlt und legt sie allen Kandidaten vor.<br>Das k&ouml;nnte das Bild aus den Vorstellungstexten etwas abrunden und den Ms ihre Entscheidung erleichtern.<br><br></span>';
+echo '<span class="text3b">Auf Wunsch des Vorstands hat das Strategieteam eine Liste von Anforderungen erstellt, die f&uuml;r die Vorstandsarbeit im Verein hilfreich sein k&ouml;nnten. Das Strategieteam hat einige davon ausgew&auml;hlt und legt sie allen Kandidaten vor.<br>Das k&ouml;nnte das Bild aus den Vorstellungstexten etwas abrunden und den W&auml;hlerinnen und W&auml;hlern die Entscheidung erleichtern.<br><br></span>';
 echo '</td></tr>';
 
 echo '<tr><td colspan="4" class="nurunten"><h2>Allgemeine Fragen</h2><span class="text3b">(Alle Kandidaten)</span></td></tr>';
