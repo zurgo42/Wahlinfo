@@ -71,7 +71,17 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Dark Mode Toggle */
+/* Schriftgrößen */
+html.font-large {
+    font-size: 18px;
+}
+
+html.font-xlarge {
+    font-size: 22px;
+}
+
+/* Toggle Buttons */
+.font-size-toggle,
 .dark-mode-toggle {
     background: none;
     border: 2px solid var(--mensa-dunkelblau);
@@ -84,16 +94,24 @@ body {
     flex-shrink: 0;
 }
 
+.font-size-toggle {
+    margin-right: 8px;
+    font-weight: 600;
+}
+
+.font-size-toggle:hover,
 .dark-mode-toggle:hover {
     background: var(--mensa-dunkelblau);
     color: white;
 }
 
+body.dark-mode .font-size-toggle,
 body.dark-mode .dark-mode-toggle {
     border-color: var(--mensa-hellgelb);
     color: var(--mensa-hellgelb);
 }
 
+body.dark-mode .font-size-toggle:hover,
 body.dark-mode .dark-mode-toggle:hover {
     background: var(--mensa-hellgelb);
     color: var(--bg-secondary);
