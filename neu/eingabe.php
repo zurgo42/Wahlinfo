@@ -223,7 +223,7 @@ if ($mnr) {
 
     <?php if (!$mnr): ?>
         <div class="message error">
-            Keine M-Nr angegeben. Bitte melden Sie sich über das SSO an.
+            Keine M-Nr angegeben. Bitte melde dich über das SSO an.
         </div>
     <?php elseif (!$kandidat): ?>
         <div class="message error">
