@@ -43,10 +43,10 @@ foreach ($aemter as $amt) {
 
     // Kandidaten für dieses Amt abrufen
     $kandidaten = dbFetchAll(
-        "SELECT vorname, name, mnummer, bildfile, text
+        "SELECT Vorname as vorname, Name as name, mnummer, bildfile, text
          FROM $kandidatenTable
          WHERE amt$amtId = 1
-         ORDER BY name ASC"
+         ORDER BY Name ASC"
     );
 
     if (empty($kandidaten)) {
