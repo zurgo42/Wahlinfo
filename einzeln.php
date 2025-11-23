@@ -78,9 +78,9 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
     <div class="detail-header">
         <div class="detail-photo">
             <?php if (!empty($kand['bildfile'])): ?>
-                <img src="../img/<?php echo escape($kand['bildfile']); ?>" alt="Foto von <?php echo escape($kand['vorname'] . ' ' . $kand['name']); ?>">
+                <img src="img/<?php echo escape($kand['bildfile']); ?>" alt="Foto von <?php echo escape($kand['vorname'] . ' ' . $kand['name']); ?>">
             <?php else: ?>
-                <img src="../leer.jpg" alt="Kein Foto vorhanden">
+                <img src="img/leer.jpg" alt="Kein Foto vorhanden">
             <?php endif; ?>
         </div>
         <div class="detail-info">

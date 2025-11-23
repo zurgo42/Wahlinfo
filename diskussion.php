@@ -281,7 +281,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                     <?php if ($istAllgemein): ?>
                         <span class="kandidat-foto">👥</span>
                     <?php else: ?>
-                        <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='../img/keinFoto.jpg'">
+                        <img src="img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='img/keinFoto.jpg'">
                     <?php endif; ?>
                     <span class="kandidat-name"><?php echo escape($kandName); ?></span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
@@ -345,7 +345,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                         <?php if ($istAllgemein): ?>
                             Selbst eine <span class="inline-foto">👥</span> allgemeine Frage stellen
                         <?php else: ?>
-                            Selbst eine Frage an <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="inline-foto" onerror="this.src='../img/keinFoto.jpg'"> <?php echo escape($kandName); ?> stellen
+                            Selbst eine Frage an <img src="img/<?php echo escape($fotoDatei); ?>" alt="" class="inline-foto" onerror="this.src='img/keinFoto.jpg'"> <?php echo escape($kandName); ?> stellen
                         <?php endif; ?>
                     </div>
                     <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
