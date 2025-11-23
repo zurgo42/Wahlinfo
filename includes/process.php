@@ -5,6 +5,31 @@
  */
 
 // =============================================================================
+// Einstellungen aus Datenbank laden
+// =============================================================================
+
+/**
+ * Holt eine Einstellung aus der Datenbank oder den Fallback-Wert
+ */
+function getSetting($key, $default = null) {
+    static $settings = null;
+
+    if ($settings === null) {
+        $settings = [];
+        try {
+            $rows = dbFetchAll("SELECT setting_key, setting_value FROM einstellungenwahl");
+            foreach ($rows as $row) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
+        } catch (Exception $e) {
+            // Tabelle existiert noch nicht
+        }
+    }
+
+    return isset($settings[$key]) && $settings[$key] !== '' ? $settings[$key] : $default;
+}
+
+// =============================================================================
 // Stichtag-Funktionen
 // =============================================================================
 
@@ -12,14 +37,22 @@
  * Prüft ob echte Kandidaten angezeigt werden sollen (statt Spielwiese)
  */
 function showRealKandidaten() {
-    return time() >= strtotime(DEADLINE_KANDIDATEN);
+    // Wenn SHOW_SPIELWIESE explizit gesetzt ist, diese Einstellung verwenden
+    $showSpielwiese = getSetting('SHOW_SPIELWIESE', '0');
+    if ($showSpielwiese === '1') {
+        return false;
+    }
+
+    $deadline = getSetting('DEADLINE_KANDIDATEN', DEADLINE_KANDIDATEN);
+    return time() >= strtotime($deadline);
 }
 
 /**
  * Prüft ob Editieren noch erlaubt ist
  */
 function isEditingAllowed() {
-    return time() <= strtotime(DEADLINE_EDITIEREN);
+    $deadline = getSetting('DEADLINE_EDITIEREN', DEADLINE_EDITIEREN);
+    return time() <= strtotime($deadline);
 }
 
 /**
@@ -27,7 +60,15 @@ function isEditingAllowed() {
  * (erst nach dem Editier-Stichtag)
  */
 function isDetailViewPublic() {
-    return time() > strtotime(DEADLINE_EDITIEREN);
+    $deadline = getSetting('DEADLINE_EDITIEREN', DEADLINE_EDITIEREN);
+    return time() > strtotime($deadline);
+}
+
+/**
+ * Gibt den formatierten Editier-Stichtag zurück
+ */
+function getDeadlineEditieren() {
+    return getSetting('DEADLINE_EDITIEREN', DEADLINE_EDITIEREN);
 }
 
 // =============================================================================
