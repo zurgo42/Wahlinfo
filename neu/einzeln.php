@@ -209,13 +209,15 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
             });
             ?>
 
-            <div class="ressort-praef-grid">
+            <div class="anforderungen-grid">
                 <?php foreach ($prioList as $item): ?>
-                    <div class="ressort-row">
-                        <span class="ressort-name"><?php echo escape($item['name']); ?></span>
-                        <span class="prio-value">Prio <?php echo $item['prio']; ?></span>
+                    <div class="anforderung-card">
+                        <div class="frage">
+                            <span class="ressort-prio">Prio <?php echo $item['prio']; ?></span>
+                            <?php echo escape($item['name']); ?>
+                        </div>
                         <?php if (!empty($item['bem'])): ?>
-                            <span class="bem-text"><?php echo escape($item['bem']); ?></span>
+                            <div class="antwort"><?php echo escape($item['bem']); ?></div>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
