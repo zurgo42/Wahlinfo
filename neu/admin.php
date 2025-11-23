@@ -36,12 +36,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // === KANDIDATEN ===
             case 'kandidat_update':
                 $id = (int)$_POST['id'];
+                $amt1 = isset($_POST['amt1']) ? '1' : '';
+                $amt2 = isset($_POST['amt2']) ? '1' : '';
+                $amt3 = isset($_POST['amt3']) ? '1' : '';
+                $amt4 = isset($_POST['amt4']) ? '1' : '';
+                $amt5 = isset($_POST['amt5']) ? '1' : '';
                 dbExecute(
                     "UPDATE " . TABLE_KANDIDATEN . " SET
-                     vorname = ?, name = ?, mnummer = ?, email = ?, telefon = ?
+                     vorname = ?, name = ?, mnummer = ?, email = ?,
+                     amt1 = ?, amt2 = ?, amt3 = ?, amt4 = ?, amt5 = ?
                      WHERE id = ?",
                     [$_POST['vorname'], $_POST['name'], $_POST['mnummer'],
-                     $_POST['email'], $_POST['telefon'], $id]
+                     $_POST['email'], $amt1, $amt2, $amt3, $amt4, $amt5, $id]
                 );
                 $message = 'Kandidat aktualisiert';
                 $messageType = 'success';
@@ -55,11 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
 
             case 'kandidat_add':
+                $amt1 = isset($_POST['amt1']) ? '1' : '';
+                $amt2 = isset($_POST['amt2']) ? '1' : '';
+                $amt3 = isset($_POST['amt3']) ? '1' : '';
+                $amt4 = isset($_POST['amt4']) ? '1' : '';
+                $amt5 = isset($_POST['amt5']) ? '1' : '';
                 dbExecute(
-                    "INSERT INTO " . TABLE_KANDIDATEN . " (vorname, name, mnummer, email, telefon)
-                     VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO " . TABLE_KANDIDATEN . " (vorname, name, mnummer, email, amt1, amt2, amt3, amt4, amt5)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [$_POST['vorname'], $_POST['name'], $_POST['mnummer'],
-                     $_POST['email'], $_POST['telefon']]
+                     $_POST['email'], $amt1, $amt2, $amt3, $amt4, $amt5]
                 );
                 $message = 'Kandidat hinzugefügt';
                 $messageType = 'success';
@@ -87,12 +98,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Nächste ID ermitteln
                 $maxId = dbFetchOne("SELECT MAX(id) as max_id FROM " . TABLE_RESSORTS);
                 $newId = ($maxId['max_id'] ?? 0) + 1;
-                dbExecute(
-                    "INSERT INTO " . TABLE_RESSORTS . " (id, ressort) VALUES (?, ?)",
-                    [$newId, $_POST['ressort']]
-                );
-                $message = 'Ressort hinzugefügt';
-                $messageType = 'success';
+                if ($newId > 30) {
+                    $message = 'Maximal 30 Ressorts erlaubt';
+                    $messageType = 'error';
+                } else {
+                    dbExecute(
+                        "INSERT INTO " . TABLE_RESSORTS . " (id, ressort) VALUES (?, ?)",
+                        [$newId, $_POST['ressort']]
+                    );
+                    $message = 'Ressort hinzugefügt';
+                    $messageType = 'success';
+                }
+                break;
+
+            case 'ressort_swap':
+                $id1 = (int)$_POST['id1'];
+                $id2 = (int)$_POST['id2'];
+                // Ressort-Namen laden
+                $r1 = dbFetchOne("SELECT ressort FROM " . TABLE_RESSORTS . " WHERE id = ?", [$id1]);
+                $r2 = dbFetchOne("SELECT ressort FROM " . TABLE_RESSORTS . " WHERE id = ?", [$id2]);
+                if ($r1 && $r2) {
+                    dbExecute("UPDATE " . TABLE_RESSORTS . " SET ressort = ? WHERE id = ?", [$r2['ressort'], $id1]);
+                    dbExecute("UPDATE " . TABLE_RESSORTS . " SET ressort = ? WHERE id = ?", [$r1['ressort'], $id2]);
+                    $message = 'Ressorts getauscht';
+                    $messageType = 'success';
+                }
                 break;
 
             // === ÄMTER ===
@@ -151,6 +181,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $message = 'Anforderung hinzugefügt';
                 $messageType = 'success';
+                break;
+
+            case 'anforderung_swap':
+                $id1 = (int)$_POST['id1'];
+                $id2 = (int)$_POST['id2'];
+                $a1 = dbFetchOne("SELECT anforderung FROM " . TABLE_ANFORDERUNGEN . " WHERE id = ?", [$id1]);
+                $a2 = dbFetchOne("SELECT anforderung FROM " . TABLE_ANFORDERUNGEN . " WHERE id = ?", [$id2]);
+                if ($a1 && $a2) {
+                    dbExecute("UPDATE " . TABLE_ANFORDERUNGEN . " SET anforderung = ? WHERE id = ?", [$a2['anforderung'], $id1]);
+                    dbExecute("UPDATE " . TABLE_ANFORDERUNGEN . " SET anforderung = ? WHERE id = ?", [$a1['anforderung'], $id2]);
+                    $message = 'Anforderungen getauscht';
+                    $messageType = 'success';
+                }
                 break;
         }
     } catch (Exception $e) {

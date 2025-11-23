@@ -41,7 +41,7 @@ define('TABLE_KANDIDATEN', 'kandidatenwahl');
 define('TABLE_AEMTER', 'aemterwahl');
 define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
 define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
-define('TABLE_RESSORTS', 'ressortwahl');
+define('TABLE_RESSORTS', 'ressortswahl');
 
 // Admin-Zugang (M-Nummern die Admin-Rechte haben)
 define('ADMIN_MNRS', ['0495018', '0123456']); // Hier Admin-MNrs eintragen
