@@ -9,8 +9,11 @@ require_once __DIR__ . '/includes/config.php';
 $userMnr = getUserMnr();
 $pageTitle = 'Administration';
 
+// FirstUser-Modus: Erlaubt initialen Admin-Zugang via GET-Parameter
+$firstUserMode = isset($_GET['firstuser']) && $_GET['firstuser'] === '1';
+
 // Admin-Prüfung
-if (!$userMnr || !in_array($userMnr, ADMIN_MNRS)) {
+if (!$firstUserMode && (!$userMnr || !in_array($userMnr, ADMIN_MNRS))) {
     die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
         <h2>Zugriff verweigert</h2>
         <p>Diese Seite ist nur für Administratoren zugänglich.</p>
@@ -208,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $kandidaten = dbFetchAll("SELECT * FROM " . TABLE_KANDIDATEN . " ORDER BY name, vorname");
 $ressorts = dbFetchAll("SELECT * FROM " . TABLE_RESSORTS . " ORDER BY id");
-$aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " ORDER BY id");
+$aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id > 0 ORDER BY id");
 $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY id");
 
 ?>
@@ -430,6 +433,15 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
         <h2>Kandidaten verwalten</h2>
         <p>Kandidaten für die Wahl hinzufügen, bearbeiten oder löschen.</p>
 
+        <div style="background: var(--mensa-grau); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 15px;">
+            <strong>Ämter:</strong>
+            <?php foreach ($aemter as $a): ?>
+                <?php if ($a['id'] > 0): ?>
+                    <span style="margin-right: 15px;"><?php echo $a['id']; ?> = <?php echo escape($a['amt']); ?></span>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+
         <table class="admin-table">
             <thead>
                 <tr>
@@ -531,17 +543,20 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
-                                <?php if ($idx > 0): ?>
-                                    <button type="submit" formaction="?tab=ressorts" name="action" value="ressort_swap" class="btn-small" style="background: #6c757d; color: white;" onclick="this.form.querySelector('[name=id2]').value='<?php echo $ressorts[$idx-1]['id']; ?>'">↑</button>
-                                    <input type="hidden" name="id1" value="<?php echo $r['id']; ?>">
-                                    <input type="hidden" name="id2" value="">
-                                <?php endif; ?>
                             </div>
                         </td>
                     </form>
                 </tr>
                 <tr>
                     <td colspan="3" style="text-align: right; padding-top: 0;">
+                        <?php if ($idx > 0): ?>
+                            <form method="post" action="?tab=ressorts" style="display: inline;">
+                                <input type="hidden" name="action" value="ressort_swap">
+                                <input type="hidden" name="id1" value="<?php echo $r['id']; ?>">
+                                <input type="hidden" name="id2" value="<?php echo $ressorts[$idx-1]['id']; ?>">
+                                <button type="submit" class="btn-small" style="background: #6c757d; color: white;">↑ Tauschen</button>
+                            </form>
+                        <?php endif; ?>
                         <form method="post" action="?tab=ressorts" style="display: inline;"
                               onsubmit="return confirm('Ressort wirklich löschen?');">
                             <input type="hidden" name="action" value="ressort_delete">
@@ -648,17 +663,20 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
-                                <?php if ($idx > 0): ?>
-                                    <button type="submit" formaction="?tab=anforderungen" name="action" value="anforderung_swap" class="btn-small" style="background: #6c757d; color: white;" onclick="this.form.querySelector('[name=id2]').value='<?php echo $anforderungen[$idx-1]['id']; ?>'">↑</button>
-                                    <input type="hidden" name="id1" value="<?php echo $anf['id']; ?>">
-                                    <input type="hidden" name="id2" value="">
-                                <?php endif; ?>
                             </div>
                         </td>
                     </form>
                 </tr>
                 <tr>
                     <td colspan="3" style="text-align: right; padding-top: 0;">
+                        <?php if ($idx > 0): ?>
+                            <form method="post" action="?tab=anforderungen" style="display: inline;">
+                                <input type="hidden" name="action" value="anforderung_swap">
+                                <input type="hidden" name="id1" value="<?php echo $anf['id']; ?>">
+                                <input type="hidden" name="id2" value="<?php echo $anforderungen[$idx-1]['id']; ?>">
+                                <button type="submit" class="btn-small" style="background: #6c757d; color: white;">↑ Tauschen</button>
+                            </form>
+                        <?php endif; ?>
                         <form method="post" action="?tab=anforderungen" style="display: inline;"
                               onsubmit="return confirm('Anforderung wirklich löschen?');">
                             <input type="hidden" name="action" value="anforderung_delete">
