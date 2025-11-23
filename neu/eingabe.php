@@ -85,6 +85,30 @@ function processFormSubmission($mnr, $postData, $files) {
             $params[] = $newTeam;
         }
 
+        // Ressort-Präferenzen (r1-r30)
+        for ($i = 1; $i <= 30; $i++) {
+            $newPrio = (int)($postData["rprio$i"] ?? 0);
+            $newBem = trim($postData["rbem$i"] ?? '');
+            $oldWert = $kandidat["r$i"] ?? 0;
+
+            // Neuen Wert berechnen
+            $newWert = 0;
+            if ($newPrio > 0 || !empty($newBem)) {
+                $bemId = 0;
+                if (!empty($newBem)) {
+                    // Immer neue Bemerkung erstellen
+                    $bemId = createNewBemerkung($newBem);
+                }
+                $newWert = $newPrio * 10000 + $bemId;
+            }
+
+            if ($newWert != $oldWert) {
+                $changedFields[] = "r$i: $oldWert -> $newWert";
+            }
+            $sql .= "r$i = ?, ";
+            $params[] = $newWert;
+        }
+
         $sql = rtrim($sql, ', ') . " WHERE mnummer = ?";
         $params[] = $mnr;
 
@@ -222,6 +246,30 @@ if ($userMnr) {
              ORDER BY name, vorname",
             [$userMnr]
         );
+    }
+}
+
+// Ressorts laden (für Ressort-Präferenzen)
+$ressorts = dbFetchAll("SELECT id, ressort FROM " . TABLE_RESSORTS . " ORDER BY id ASC");
+
+// Ressort-Präferenzen laden (r1-r30)
+$ressortPraefs = [];
+if ($kand) {
+    for ($i = 1; $i <= 30; $i++) {
+        $wert = $kand["r$i"] ?? 0;
+        if ($wert > 0) {
+            // Erste Ziffer = Priorität, Rest = Bemerkung-ID
+            $prio = (int)floor($wert / 10000);
+            $bemId = $wert % 10000;
+            $bemText = '';
+            if ($bemId > 0) {
+                $bem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$bemId]);
+                $bemText = $bem ? decodeEntities($bem['bem']) : '';
+            }
+            $ressortPraefs[$i] = ['prio' => $prio, 'bem' => $bemText];
+        } else {
+            $ressortPraefs[$i] = ['prio' => 0, 'bem' => ''];
+        }
     }
 }
 
@@ -386,6 +434,50 @@ include __DIR__ . '/includes/header.php';
                     </div>
                 <?php endfor; ?>
             </div>
+
+            <?php if ($isVorstand && count($ressorts) > 0): ?>
+            <!-- Ressort-Präferenzen -->
+            <div class="detail-section">
+                <h2>Ressort-Präferenzen</h2>
+                <p class="section-note">
+                    Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren
+                    (Prio 5 ist höchste Priorität, 0 = kein Interesse).
+                </p>
+
+                <div class="ressort-praef-grid">
+                    <?php foreach ($ressorts as $index => $ressort):
+                        $rNr = $index + 1;
+                        $pref = $ressortPraefs[$rNr] ?? ['prio' => 0, 'bem' => ''];
+                    ?>
+                        <div class="ressort-row">
+                            <span class="ressort-name"><?php echo escape($ressort['ressort']); ?></span>
+                            <?php if ($editingAllowed): ?>
+                                <select name="rprio<?php echo $rNr; ?>" class="prio-select">
+                                    <?php for ($p = 0; $p <= 5; $p++): ?>
+                                        <option value="<?php echo $p; ?>" <?php echo ($pref['prio'] == $p) ? 'selected' : ''; ?>>
+                                            <?php echo $p; ?>
+                                        </option>
+                                    <?php endfor; ?>
+                                </select>
+                                <input type="text" name="rbem<?php echo $rNr; ?>"
+                                       value="<?php echo escape($pref['bem']); ?>"
+                                       placeholder="Kommentar (optional)"
+                                       class="ressort-bem">
+                            <?php else: ?>
+                                <?php if ($pref['prio'] > 0): ?>
+                                    <span class="prio-value">Prio <?php echo $pref['prio']; ?></span>
+                                    <?php if (!empty($pref['bem'])): ?>
+                                        <span class="bem-text"><?php echo escape($pref['bem']); ?></span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="no-data">-</span>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Anforderungen & Kompetenzen -->
             <div class="detail-section">
