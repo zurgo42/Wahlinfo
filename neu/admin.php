@@ -198,6 +198,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $messageType = 'success';
                 }
                 break;
+
+            // === EINSTELLUNGEN ===
+            case 'einstellungen_save':
+                $settings = [
+                    'WAHLJAHR' => $_POST['WAHLJAHR'] ?? '',
+                    'DEADLINE_KANDIDATEN' => $_POST['DEADLINE_KANDIDATEN'] ?? '',
+                    'DEADLINE_EDITIEREN' => $_POST['DEADLINE_EDITIEREN'] ?? '',
+                    'FEATURE_VOTING' => isset($_POST['FEATURE_VOTING']) ? '1' : '0',
+                    'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? ''
+                ];
+                foreach ($settings as $key => $value) {
+                    dbExecute(
+                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                         ON DUPLICATE KEY UPDATE setting_value = ?",
+                        [$key, $value, $value]
+                    );
+                }
+                $message = 'Einstellungen gespeichert';
+                $messageType = 'success';
+                break;
         }
     } catch (Exception $e) {
         $message = 'Fehler: ' . $e->getMessage();
@@ -213,6 +233,17 @@ $kandidaten = dbFetchAll("SELECT * FROM " . TABLE_KANDIDATEN . " ORDER BY name, 
 $ressorts = dbFetchAll("SELECT * FROM " . TABLE_RESSORTS . " ORDER BY id");
 $aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id > 0 ORDER BY id");
 $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY id");
+
+// Einstellungen aus DB laden (falls Tabelle existiert)
+$dbSettings = [];
+try {
+    $settingsRows = dbFetchAll("SELECT setting_key, setting_value FROM einstellungenwahl");
+    foreach ($settingsRows as $row) {
+        $dbSettings[$row['setting_key']] = $row['setting_value'];
+    }
+} catch (Exception $e) {
+    // Tabelle existiert noch nicht - Config-Werte verwenden
+}
 
 ?>
 <?php include __DIR__ . '/includes/header.php'; ?>
@@ -706,34 +737,48 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
         <!-- EINSTELLUNGEN -->
         <!-- ================================================================= -->
         <h2>Einstellungen</h2>
-        <p>Aktuelle Wahl-Einstellungen (derzeit in config.php definiert).</p>
+        <p>Wahl-Einstellungen bearbeiten und speichern.</p>
 
-        <div class="settings-grid">
-            <label>Wahljahr:</label>
-            <input type="text" value="<?php echo WAHLJAHR; ?>" readonly>
+        <form method="post" action="?tab=einstellungen">
+            <input type="hidden" name="action" value="einstellungen_save">
 
-            <label>Kandidaten-Stichtag:</label>
-            <input type="text" value="<?php echo DEADLINE_KANDIDATEN; ?>" readonly>
+            <div class="settings-grid">
+                <label for="WAHLJAHR">Wahljahr:</label>
+                <input type="text" id="WAHLJAHR" name="WAHLJAHR"
+                       value="<?php echo escape($dbSettings['WAHLJAHR'] ?? WAHLJAHR); ?>">
 
-            <label>Editier-Stichtag:</label>
-            <input type="text" value="<?php echo DEADLINE_EDITIEREN; ?>" readonly>
+                <label for="DEADLINE_KANDIDATEN">Kandidaten-Stichtag:</label>
+                <input type="text" id="DEADLINE_KANDIDATEN" name="DEADLINE_KANDIDATEN"
+                       value="<?php echo escape($dbSettings['DEADLINE_KANDIDATEN'] ?? DEADLINE_KANDIDATEN); ?>"
+                       placeholder="YYYY-MM-DD HH:MM:SS">
 
-            <label>Voting aktiviert:</label>
-            <input type="text" value="<?php echo FEATURE_VOTING ? 'Ja' : 'Nein'; ?>" readonly>
+                <label for="DEADLINE_EDITIEREN">Editier-Stichtag:</label>
+                <input type="text" id="DEADLINE_EDITIEREN" name="DEADLINE_EDITIEREN"
+                       value="<?php echo escape($dbSettings['DEADLINE_EDITIEREN'] ?? DEADLINE_EDITIEREN); ?>"
+                       placeholder="YYYY-MM-DD HH:MM:SS">
 
-            <p class="settings-note">
-                Diese Einstellungen werden derzeit in <code>includes/config.php</code> definiert.<br>
-                Künftig sollen sie in einer Datenbank-Tabelle verwaltet werden können.
-            </p>
-        </div>
+                <label for="FEATURE_VOTING">Voting aktiviert:</label>
+                <label style="font-weight: normal;">
+                    <input type="checkbox" id="FEATURE_VOTING" name="FEATURE_VOTING"
+                           <?php echo (isset($dbSettings['FEATURE_VOTING']) ? $dbSettings['FEATURE_VOTING'] : FEATURE_VOTING) ? 'checked' : ''; ?>>
+                    Ja
+                </label>
 
-        <h3 style="margin-top: 30px;">Admin-Benutzer</h3>
-        <p>Folgende M-Nummern haben Admin-Zugang:</p>
-        <ul>
-            <?php foreach (ADMIN_MNRS as $mnr): ?>
-                <li><?php echo escape($mnr); ?></li>
-            <?php endforeach; ?>
-        </ul>
+                <label for="ADMIN_MNRS">Admin M-Nummern:</label>
+                <input type="text" id="ADMIN_MNRS" name="ADMIN_MNRS"
+                       value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? implode(',', ADMIN_MNRS)); ?>"
+                       placeholder="Kommagetrennt, z.B. 0495018,0123456">
+
+                <p class="settings-note">
+                    Nach dem Speichern werden die Werte aus der Datenbank geladen.<br>
+                    <strong>Hinweis:</strong> Die Tabelle <code>einstellungenwahl</code> muss zuerst erstellt werden.
+                </p>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">Speichern</button>
+            </div>
+        </form>
 
         <?php endif; ?>
 
