@@ -604,7 +604,7 @@ function speichereEdit(knr) {
             }
             if (vollEl) vollEl.innerHTML = textHtml + ' <a href="#" class="weniger-link" onclick="zeigeKurz(' + knr + '); return false;">weniger</a>';
             versteckeEditForm(knr);
-            alert('Gespeichert. Auf der Gesamtseite wird die Änderung erst nach Neuladen sichtbar.');
+            alert('Deine Änderung wurde gespeichert.');
         } else {
             alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
         }
