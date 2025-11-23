@@ -12,6 +12,19 @@ require_once __DIR__ . '/includes/config.php';
 $userMnr = getUserMnr();
 $pageTitle = 'Diskussion';
 
+// Prüfen ob Spielwiese aktiv ist
+if (!showRealKandidaten()) {
+    include __DIR__ . '/includes/header.php';
+    echo '<div class="container">
+        <h1>Diskussion</h1>
+        <div class="alert alert-info">
+            Solange die Kandidatenliste nicht vorliegt, ist hier keine Diskussion möglich.
+        </div>
+    </div>';
+    include __DIR__ . '/includes/footer.php';
+    exit;
+}
+
 // Konfiguration
 $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
 $neueBeitraegeAnzahl = 10; // Anzahl der als "neu" markierten Beiträge
