@@ -10,7 +10,20 @@ $userMnr = getUserMnr();
 $pageTitle = 'Administration';
 
 // FirstUser-Modus: Erlaubt initialen Admin-Zugang via GET-Parameter
-$firstUserMode = isset($_GET['firstuser']) && $_GET['firstuser'] === '1';
+// Nur aktiv wenn noch keine Admin-MNRs in DB konfiguriert sind
+$firstUserMode = false;
+if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
+    // Prüfen ob bereits Admins in DB konfiguriert
+    try {
+        $dbAdmins = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'ADMIN_MNRS'");
+        if (!$dbAdmins || empty(trim($dbAdmins['setting_value']))) {
+            $firstUserMode = true;
+        }
+    } catch (Exception $e) {
+        // Tabelle existiert noch nicht - FirstUser erlauben
+        $firstUserMode = true;
+    }
+}
 
 // Admin-Prüfung
 if (!$firstUserMode && (!$userMnr || !in_array($userMnr, ADMIN_MNRS))) {
@@ -764,15 +777,10 @@ try {
                     Ja
                 </label>
 
-                <label for="ADMIN_MNRS">Admin M-Nummern:</label>
+                <label for="ADMIN_MNRS">Admin M-Nummern (kommagetrennt):</label>
                 <input type="text" id="ADMIN_MNRS" name="ADMIN_MNRS"
                        value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? implode(',', ADMIN_MNRS)); ?>"
-                       placeholder="Kommagetrennt, z.B. 0495018,0123456">
-
-                <p class="settings-note">
-                    Nach dem Speichern werden die Werte aus der Datenbank geladen.<br>
-                    <strong>Hinweis:</strong> Die Tabelle <code>einstellungenwahl</code> muss zuerst erstellt werden.
-                </p>
+                       placeholder="z.B. 0495018,0123456">
             </div>
 
             <div style="margin-top: 20px;">
