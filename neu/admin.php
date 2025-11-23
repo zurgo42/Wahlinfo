@@ -438,7 +438,7 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                     <th>Name</th>
                     <th>M-Nr</th>
                     <th>Email</th>
-                    <th>Telefon</th>
+                    <th>Ämter (1-5)</th>
                     <th>Aktionen</th>
                 </tr>
             </thead>
@@ -451,9 +451,16 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                         <td><?php echo $k['id']; ?></td>
                         <td><input type="text" name="vorname" value="<?php echo escape($k['vorname'] ?? ''); ?>"></td>
                         <td><input type="text" name="name" value="<?php echo escape($k['name'] ?? ''); ?>"></td>
-                        <td><input type="text" name="mnummer" value="<?php echo escape($k['mnummer'] ?? ''); ?>"></td>
+                        <td><input type="text" name="mnummer" value="<?php echo escape($k['mnummer'] ?? ''); ?>" style="width:90px"></td>
                         <td><input type="email" name="email" value="<?php echo escape($k['email'] ?? ''); ?>"></td>
-                        <td><input type="text" name="telefon" value="<?php echo escape($k['telefon'] ?? ''); ?>"></td>
+                        <td style="white-space: nowrap;">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <label style="margin-right: 5px;">
+                                    <input type="checkbox" name="amt<?php echo $i; ?>" <?php echo (!empty($k["amt$i"]) && $k["amt$i"] == '1') ? 'checked' : ''; ?>>
+                                    <?php echo $i; ?>
+                                </label>
+                            <?php endfor; ?>
+                        </td>
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
@@ -480,9 +487,16 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                         <td>Neu</td>
                         <td><input type="text" name="vorname" placeholder="Vorname"></td>
                         <td><input type="text" name="name" placeholder="Name"></td>
-                        <td><input type="text" name="mnummer" placeholder="M-Nr"></td>
+                        <td><input type="text" name="mnummer" placeholder="M-Nr" style="width:90px"></td>
                         <td><input type="email" name="email" placeholder="Email"></td>
-                        <td><input type="text" name="telefon" placeholder="Telefon"></td>
+                        <td style="white-space: nowrap;">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <label style="margin-right: 5px;">
+                                    <input type="checkbox" name="amt<?php echo $i; ?>">
+                                    <?php echo $i; ?>
+                                </label>
+                            <?php endfor; ?>
+                        </td>
                         <td>
                             <button type="submit" class="btn-small btn-add">Hinzufügen</button>
                         </td>
@@ -496,18 +510,18 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
         <!-- RESSORTS -->
         <!-- ================================================================= -->
         <h2>Ressorts verwalten</h2>
-        <p>Vorstandsressorts für die Ressort-Präferenzen der Kandidaten.</p>
+        <p>Vorstandsressorts für die Ressort-Präferenzen der Kandidaten (bis zu 30).</p>
 
         <table class="admin-table">
             <thead>
                 <tr>
                     <th style="width: 80px;">ID</th>
                     <th>Ressort</th>
-                    <th style="width: 200px;">Aktionen</th>
+                    <th style="width: 250px;">Aktionen</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($ressorts as $r): ?>
+                <?php foreach ($ressorts as $idx => $r): ?>
                 <tr>
                     <form method="post" action="?tab=ressorts">
                         <input type="hidden" name="action" value="ressort_update">
@@ -517,6 +531,11 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
+                                <?php if ($idx > 0): ?>
+                                    <button type="submit" formaction="?tab=ressorts" name="action" value="ressort_swap" class="btn-small" style="background: #6c757d; color: white;" onclick="this.form.querySelector('[name=id2]').value='<?php echo $ressorts[$idx-1]['id']; ?>'">↑</button>
+                                    <input type="hidden" name="id1" value="<?php echo $r['id']; ?>">
+                                    <input type="hidden" name="id2" value="">
+                                <?php endif; ?>
                             </div>
                         </td>
                     </form>
@@ -608,27 +627,32 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
         <!-- ANFORDERUNGEN -->
         <!-- ================================================================= -->
         <h2>Anforderungen/Fragen verwalten</h2>
-        <p>Fragen, die Kandidaten in einzeln.php beantworten sollen.</p>
+        <p>Fragen, die Kandidaten in eingabe.php beantworten sollen.</p>
 
         <table class="admin-table">
             <thead>
                 <tr>
                     <th style="width: 80px;">ID</th>
                     <th>Anforderung/Frage</th>
-                    <th style="width: 200px;">Aktionen</th>
+                    <th style="width: 250px;">Aktionen</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($anforderungen as $anf): ?>
+                <?php foreach ($anforderungen as $idx => $anf): ?>
                 <tr>
                     <form method="post" action="?tab=anforderungen">
                         <input type="hidden" name="action" value="anforderung_update">
                         <input type="hidden" name="id" value="<?php echo $anf['id']; ?>">
                         <td><?php echo $anf['id']; ?></td>
-                        <td><textarea name="anforderung"><?php echo escape($anf['anforderung'] ?? ''); ?></textarea></td>
+                        <td><textarea name="anforderung"><?php echo escape($anf['Anforderung'] ?? $anf['anforderung'] ?? ''); ?></textarea></td>
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
+                                <?php if ($idx > 0): ?>
+                                    <button type="submit" formaction="?tab=anforderungen" name="action" value="anforderung_swap" class="btn-small" style="background: #6c757d; color: white;" onclick="this.form.querySelector('[name=id2]').value='<?php echo $anforderungen[$idx-1]['id']; ?>'">↑</button>
+                                    <input type="hidden" name="id1" value="<?php echo $anf['id']; ?>">
+                                    <input type="hidden" name="id2" value="">
+                                <?php endif; ?>
                             </div>
                         </td>
                     </form>
