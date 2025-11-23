@@ -25,8 +25,62 @@ if (!$userMnr) {
 }
 
 // Parameter validieren
+$action = isset($_POST['action']) ? $_POST['action'] : 'create';
 $bezug = isset($_POST['bezug']) ? (int)$_POST['bezug'] : 0;
+$knr = isset($_POST['knr']) ? (int)$_POST['knr'] : 0;
 $text = isset($_POST['text']) ? trim($_POST['text']) : '';
+
+// Edit-Aktion
+if ($action === 'edit') {
+    if ($knr < 1) {
+        echo json_encode(['success' => false, 'message' => 'Ungültige Knr']);
+        exit;
+    }
+    if (empty($text)) {
+        echo json_encode(['success' => false, 'message' => 'Text darf nicht leer sein']);
+        exit;
+    }
+
+    try {
+        // Prüfen ob der Beitrag dem User gehört und maximal 3 Minuten alt ist
+        $kommentar = dbFetchOne(
+            "SELECT Mnr, Datum FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?",
+            [$knr]
+        );
+
+        if (!$kommentar) {
+            echo json_encode(['success' => false, 'message' => 'Beitrag nicht gefunden']);
+            exit;
+        }
+
+        if ($kommentar['Mnr'] !== $userMnr) {
+            echo json_encode(['success' => false, 'message' => 'Nicht dein Beitrag']);
+            exit;
+        }
+
+        $alter = time() - strtotime($kommentar['Datum']);
+        if ($alter > 180) { // 3 Minuten
+            echo json_encode(['success' => false, 'message' => 'Editieren nur innerhalb von 3 Minuten möglich']);
+            exit;
+        }
+
+        // Text bereinigen
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+
+        // Update
+        dbExecute(
+            "UPDATE " . TABLE_KOMMENTARE . " SET These = ? WHERE Knr = ?",
+            [$text, $knr]
+        );
+
+        echo json_encode(['success' => true, 'message' => 'Beitrag aktualisiert']);
+        exit;
+
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Datenbankfehler: ' . $e->getMessage()]);
+        exit;
+    }
+}
 
 // Debug: Bezug muss >= 1 sein (Kandidaten-ID oder Knr eines Beitrags)
 if ($bezug < 1) {

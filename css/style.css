@@ -1666,3 +1666,16 @@ body.dark-mode .anforderung-card .bewertung {
         margin-left: var(--spacing-sm);
     }
 }
+
+/* Edit-Hinweis */
+.edit-hinweis {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    font-style: italic;
+}
+
+.edit-btn {
+    color: #6c757d;
+}
+

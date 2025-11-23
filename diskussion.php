@@ -53,14 +53,22 @@ foreach ($fotoDaten as $foto) {
     }
 }
 
-// Alle Kommentare laden (mit Vote-Zählungen)
+// Alle Kommentare laden (mit Vote-Zählungen und Voter-Listen)
 $voteJoin = "";
-$voteSelect = ", 0 AS votes_up, 0 AS votes_down, 0 AS user_vote";
+$voteSelect = ", 0 AS votes_up, 0 AS votes_down, 0 AS user_vote, '' AS voters_up, '' AS voters_down";
 if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
     $voteSelect = ",
         (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = 1) AS votes_up,
         (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = -1) AS votes_down,
-        (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote";
+        (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote,
+        (SELECT GROUP_CONCAT(CONCAT(t2.Vorname, ' ', t2.Name) SEPARATOR ', ')
+         FROM " . TABLE_VOTES . " v2
+         LEFT JOIN " . TABLE_TEILNEHMER . " t2 ON v2.Mnr = t2.Mnr
+         WHERE v2.Knr = k.Knr AND v2.vote = 1) AS voters_up,
+        (SELECT GROUP_CONCAT(CONCAT(t3.Vorname, ' ', t3.Name) SEPARATOR ', ')
+         FROM " . TABLE_VOTES . " v3
+         LEFT JOIN " . TABLE_TEILNEHMER . " t3 ON v3.Mnr = t3.Mnr
+         WHERE v3.Knr = k.Knr AND v3.vote = -1) AS voters_down";
 }
 
 $alleKommentare = dbFetchAll(
@@ -117,21 +125,32 @@ $kandidaten[] = [
 /**
  * Gibt Vote-Buttons HTML zurück
  */
-function getVoteButtons($knr, $votesUp, $votesDown, $userVote) {
+function getVoteButtons($knr, $votesUp, $votesDown, $userVote, $votersUp = '', $votersDown = '') {
     if (!defined('FEATURE_VOTING') || !FEATURE_VOTING) {
         return '';
     }
     $upActive = ((int)$userVote === 1) ? ' active' : '';
     $downActive = ((int)$userVote === -1) ? ' active' : '';
+    $titleUp = $votersUp ? escape($votersUp) : 'Zustimmung';
+    $titleDown = $votersDown ? escape($votersDown) : 'Ablehnung';
     return '
         <div class="vote-buttons" id="votes-' . $knr . '">
-            <button class="vote-btn vote-up' . $upActive . '" onclick="vote(' . $knr . ', 1)" title="Zustimmung">
+            <button class="vote-btn vote-up' . $upActive . '" onclick="vote(' . $knr . ', 1)" title="' . $titleUp . '">
                 👍 <span class="vote-count">' . (int)$votesUp . '</span>
             </button>
-            <button class="vote-btn vote-down' . $downActive . '" onclick="vote(' . $knr . ', -1)" title="Ablehnung">
+            <button class="vote-btn vote-down' . $downActive . '" onclick="vote(' . $knr . ', -1)" title="' . $titleDown . '">
                 👎 <span class="vote-count">' . (int)$votesDown . '</span>
             </button>
         </div>';
+}
+
+/**
+ * Wandelt URLs in Text zu klickbaren Links um
+ */
+function linkifyText($text) {
+    // URL-Pattern
+    $pattern = '/(https?:\/\/[^\s<]+)/i';
+    return preg_replace($pattern, '<a href="$1" target="_blank" rel="noopener">$1</a>', $text);
 }
 
 /**
@@ -143,14 +162,15 @@ function kurzText($text, $maxLen) {
     }
     $text = strip_tags(decodeEntities($text));
     if (strlen($text) <= $maxLen) {
-        return escape($text);
+        // Zeilenumbrüche erhalten und Links klickbar machen
+        return linkifyText(nl2br(escape($text)));
     }
     $shortened = substr($text, 0, $maxLen);
     $lastSpace = strrpos($shortened, ' ');
     if ($lastSpace !== false) {
         $shortened = substr($text, 0, $lastSpace);
     }
-    return escape($shortened) . '...';
+    return linkifyText(nl2br(escape($shortened))) . '...';
 }
 
 /**
@@ -170,7 +190,7 @@ function countAntwortenRekursiv($knr, $antwortenNachBezug) {
 /**
  * Zeigt Antworten rekursiv an
  */
-function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe = 0) {
+function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $userMnr, $tiefe = 0) {
     if (!isset($antwortenNachBezug[$knr])) {
         return;
     }
@@ -179,8 +199,11 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
         $aKnr = $antwort['Knr'];
         $einrueckung = min($tiefe * 15, 45);
         $istNeu = isset($neueKnrs[$aKnr]);
+        $istEigenerBeitrag = ($antwort['Mnr'] ?? '') === $userMnr;
+        $kannEditieren = $istEigenerBeitrag && isset($antwort['Datum']) &&
+            (time() - strtotime($antwort['Datum'])) <= 180; // 3 Minuten
     ?>
-        <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;">
+        <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;" id="beitrag-<?php echo $aKnr; ?>">
             <div class="beitrag-meta">
                 <span class="autor"><?php echo escape(getAutorName($antwort)); ?></span>
                 <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
@@ -195,7 +218,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
             <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
                 <?php if ($kurzBeitrag !== ''): ?>
                     <?php echo $kurzBeitrag; ?>
-                    <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
+                    <?php if (strlen(strip_tags(decodeEntities($beitragText))) > $kurzTextLaenge): ?>
                         <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
                     <?php endif; ?>
                 <?php else: ?>
@@ -203,22 +226,30 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                 <?php endif; ?>
             </div>
             <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
+                <?php echo linkifyText(nl2br(escape(decodeEntities($beitragText)))); ?>
                 <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
             </div>
             <div class="antwort-action">
-                <?php echo getVoteButtons($aKnr, $antwort['votes_up'] ?? 0, $antwort['votes_down'] ?? 0, $antwort['user_vote'] ?? 0); ?>
+                <?php echo getVoteButtons($aKnr, $antwort['votes_up'] ?? 0, $antwort['votes_down'] ?? 0, $antwort['user_vote'] ?? 0, $antwort['voters_up'] ?? '', $antwort['voters_down'] ?? ''); ?>
                 <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
+                <?php if ($istEigenerBeitrag): ?>
+                    <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $aKnr; ?>, <?php echo $kannEditieren ? 'true' : 'false'; ?>)">✏️ Editieren</button>
+                <?php endif; ?>
             </div>
             <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
                 <textarea id="antwort-text-<?php echo $aKnr; ?>" placeholder="Deine Antwort..."></textarea>
                 <button class="btn btn-small" onclick="sendeAntwort(<?php echo $aKnr; ?>)">Absenden</button>
                 <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $aKnr; ?>)">Abbrechen</button>
             </div>
+            <div class="antwort-form-inline" id="edit-form-<?php echo $aKnr; ?>">
+                <textarea id="edit-text-<?php echo $aKnr; ?>"><?php echo escape(decodeEntities($beitragText)); ?></textarea>
+                <button class="btn btn-small" onclick="speichereEdit(<?php echo $aKnr; ?>)">Speichern</button>
+                <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(<?php echo $aKnr; ?>)">Abbrechen</button>
+            </div>
         </div>
         <?php
         // Rekursiv weitere Antworten anzeigen (als Geschwister, nicht verschachtelt)
-        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe + 1);
+        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $userMnr, $tiefe + 1);
         ?>
     <?php
     endforeach;
@@ -294,10 +325,13 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
                             $threadIstNeu = isset($neueKnrs[$knr]);
+                            $istEigenerBeitrag = ($thread['Mnr'] ?? '') === $userMnr;
+                            $kannEditieren = $istEigenerBeitrag && isset($thread['Datum']) &&
+                                (time() - strtotime($thread['Datum'])) <= 180;
                         ?>
-                            <div class="thread">
+                            <div class="thread" id="thread-<?php echo $knr; ?>">
                                 <!-- Haupt-Beitrag -->
-                                <div class="beitrag-kompakt">
+                                <div class="beitrag-kompakt" id="beitrag-<?php echo $knr; ?>">
                                     <div class="beitrag-meta">
                                         <span class="autor"><?php echo escape(getAutorName($thread)); ?></span>
                                         <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
@@ -311,29 +345,37 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                                     ?>
                                     <div class="kommentar-text" id="text-<?php echo $knr; ?>">
                                         <?php echo $kurzBeitrag; ?>
-                                        <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
+                                        <?php if (strlen(strip_tags(decodeEntities($beitragText))) > $kurzTextLaenge): ?>
                                             <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $knr; ?>); return false;">mehr</a>
                                         <?php endif; ?>
                                     </div>
                                     <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
-                                        <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
+                                        <?php echo linkifyText(nl2br(escape(decodeEntities($beitragText)))); ?>
                                         <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
                                     </div>
                                     <div class="antwort-action">
-                                        <?php echo getVoteButtons($knr, $thread['votes_up'] ?? 0, $thread['votes_down'] ?? 0, $thread['user_vote'] ?? 0); ?>
+                                        <?php echo getVoteButtons($knr, $thread['votes_up'] ?? 0, $thread['votes_down'] ?? 0, $thread['user_vote'] ?? 0, $thread['voters_up'] ?? '', $thread['voters_down'] ?? ''); ?>
                                         <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
+                                        <?php if ($istEigenerBeitrag): ?>
+                                            <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $knr; ?>, <?php echo $kannEditieren ? 'true' : 'false'; ?>)">✏️ Editieren</button>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
                                         <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Deine Antwort..."></textarea>
                                         <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
                                         <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
                                     </div>
+                                    <div class="antwort-form-inline" id="edit-form-<?php echo $knr; ?>">
+                                        <textarea id="edit-text-<?php echo $knr; ?>"><?php echo escape(decodeEntities($beitragText)); ?></textarea>
+                                        <button class="btn btn-small" onclick="speichereEdit(<?php echo $knr; ?>)">Speichern</button>
+                                        <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(<?php echo $knr; ?>)">Abbrechen</button>
+                                    </div>
                                 </div>
 
                                 <!-- Antworten rekursiv -->
                                 <?php if (isset($antwortenNachBezug[$knr])): ?>
-                                    <div class="antworten-liste">
-                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs); ?>
+                                    <div class="antworten-liste" id="antworten-<?php echo $knr; ?>">
+                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $userMnr); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -349,6 +391,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                         <?php endif; ?>
                     </div>
                     <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
+                        <p class="edit-hinweis">💡 Nach dem Absenden kannst du deinen Beitrag 3 Minuten lang editieren.</p>
                         <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Deine Frage..."></textarea>
                         <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
                         <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
@@ -383,7 +426,6 @@ function zeigeKurz(knr) {
 }
 
 function zeigeAntwortForm(knr) {
-    // Alle anderen Formulare schließen
     document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
         form.style.display = 'none';
     });
@@ -413,7 +455,10 @@ function sendeAntwort(bezugKnr) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            // Neuen Beitrag sofort anzeigen
+            fuegeNeuenBeitragEin(bezugKnr, data.knr, text);
+            document.getElementById('antwort-text-' + bezugKnr).value = '';
+            versteckeAntwortForm(bezugKnr);
         } else {
             alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
         }
@@ -423,8 +468,58 @@ function sendeAntwort(bezugKnr) {
     });
 }
 
+function fuegeNeuenBeitragEin(bezugKnr, neueKnr, text) {
+    var now = new Date();
+    var datum = now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+    var textHtml = text.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/gi, '<a href="$1" target="_blank">$1</a>');
+
+    var html = `
+        <div class="antwort-kompakt" id="beitrag-${neueKnr}" style="background: #fffce0;">
+            <div class="beitrag-meta">
+                <span class="autor">Du</span>
+                <span class="datum">${datum}</span>
+                <span class="beitrag-id">#${neueKnr}</span>
+                <span class="neu-badge">neu</span>
+            </div>
+            <div class="kommentar-text">${textHtml}</div>
+            <div class="antwort-action">
+                <button class="antwort-btn" onclick="zeigeAntwortForm(${neueKnr})">↩ Antworten</button>
+                <button class="antwort-btn edit-btn" onclick="editiereBeitrag(${neueKnr}, true)">✏️ Editieren</button>
+            </div>
+            <div class="antwort-form-inline" id="antwort-form-${neueKnr}">
+                <textarea id="antwort-text-${neueKnr}" placeholder="Deine Antwort..."></textarea>
+                <button class="btn btn-small" onclick="sendeAntwort(${neueKnr})">Absenden</button>
+                <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(${neueKnr})">Abbrechen</button>
+            </div>
+            <div class="antwort-form-inline" id="edit-form-${neueKnr}">
+                <textarea id="edit-text-${neueKnr}">${text}</textarea>
+                <button class="btn btn-small" onclick="speichereEdit(${neueKnr})">Speichern</button>
+                <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(${neueKnr})">Abbrechen</button>
+            </div>
+        </div>
+    `;
+
+    // Finde den Container für Antworten
+    var antwortenListe = document.getElementById('antworten-' + bezugKnr);
+    if (antwortenListe) {
+        antwortenListe.insertAdjacentHTML('beforeend', html);
+    } else {
+        // Container erstellen wenn noch keine Antworten da sind
+        var beitrag = document.getElementById('beitrag-' + bezugKnr);
+        if (beitrag) {
+            var newContainer = document.createElement('div');
+            newContainer.className = 'antworten-liste';
+            newContainer.id = 'antworten-' + bezugKnr;
+            newContainer.innerHTML = html;
+            beitrag.parentElement.appendChild(newContainer);
+        }
+    }
+
+    // Zum neuen Beitrag scrollen
+    document.getElementById('beitrag-' + neueKnr).scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
 function zeigeNeueFrageForm(kandId) {
-    // Alle anderen Formulare schließen
     document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
         form.style.display = 'none';
     });
@@ -454,7 +549,60 @@ function sendeNeueFrage(kandId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Seite neu laden um Thread-Struktur korrekt anzuzeigen
             location.reload();
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Speichern: ' + error);
+    });
+}
+
+// Edit-Funktionen
+function editiereBeitrag(knr, kannEditieren) {
+    if (!kannEditieren) {
+        alert('Editieren ist nur innerhalb von 3 Minuten nach dem Absenden möglich.');
+        return;
+    }
+    document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
+        form.style.display = 'none';
+    });
+    document.getElementById('edit-form-' + knr).style.display = 'block';
+    document.getElementById('edit-text-' + knr).focus();
+}
+
+function versteckeEditForm(knr) {
+    document.getElementById('edit-form-' + knr).style.display = 'none';
+}
+
+function speichereEdit(knr) {
+    var text = document.getElementById('edit-text-' + knr).value.trim();
+    if (!text) {
+        alert('Bitte gib einen Text ein.');
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('knr', knr);
+    formData.append('text', text);
+    formData.append('action', 'edit');
+
+    fetch('antwort_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Text aktualisieren
+            var textEl = document.getElementById('text-' + knr);
+            var vollEl = document.getElementById('voll-' + knr);
+            var textHtml = text.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/gi, '<a href="$1" target="_blank">$1</a>');
+            if (textEl) textEl.innerHTML = textHtml;
+            if (vollEl) vollEl.innerHTML = textHtml + ' <a href="#" class="weniger-link" onclick="zeigeKurz(' + knr + '); return false;">weniger</a>';
+            versteckeEditForm(knr);
         } else {
             alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
         }
@@ -472,7 +620,6 @@ function vote(knr, voteValue) {
     var upBtn = container.querySelector('.vote-up');
     var downBtn = container.querySelector('.vote-down');
 
-    // Wenn gleicher Vote nochmal geklickt wird -> entfernen
     if ((voteValue === 1 && upBtn.classList.contains('active')) ||
         (voteValue === -1 && downBtn.classList.contains('active'))) {
         voteValue = 0;
@@ -489,11 +636,8 @@ function vote(knr, voteValue) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Zähler aktualisieren
             upBtn.querySelector('.vote-count').textContent = data.up;
             downBtn.querySelector('.vote-count').textContent = data.down;
-
-            // Active-Status aktualisieren
             upBtn.classList.toggle('active', data.userVote === 1);
             downBtn.classList.toggle('active', data.userVote === -1);
         } else {
