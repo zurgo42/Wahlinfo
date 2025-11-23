@@ -63,11 +63,11 @@ if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
         (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote,
         (SELECT GROUP_CONCAT(CONCAT(t2.Vorname, ' ', t2.Name) SEPARATOR ', ')
          FROM " . TABLE_VOTES . " v2
-         LEFT JOIN " . TABLE_TEILNEHMER . " t2 ON v2.Mnr = t2.Mnr
+         LEFT JOIN " . TABLE_TEILNEHMER . " t2 ON v2.Mnr COLLATE utf8mb4_unicode_ci = t2.Mnr COLLATE utf8mb4_unicode_ci
          WHERE v2.Knr = k.Knr AND v2.vote = 1) AS voters_up,
         (SELECT GROUP_CONCAT(CONCAT(t3.Vorname, ' ', t3.Name) SEPARATOR ', ')
          FROM " . TABLE_VOTES . " v3
-         LEFT JOIN " . TABLE_TEILNEHMER . " t3 ON v3.Mnr = t3.Mnr
+         LEFT JOIN " . TABLE_TEILNEHMER . " t3 ON v3.Mnr COLLATE utf8mb4_unicode_ci = t3.Mnr COLLATE utf8mb4_unicode_ci
          WHERE v3.Knr = k.Knr AND v3.vote = -1) AS voters_down";
 }
 
