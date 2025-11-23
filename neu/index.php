@@ -75,8 +75,8 @@ foreach ($aemter as $amt) {
 
         <article class="candidate-card">
             <?php
-            // Eigene Karte -> eingabe.php, sonst -> einzeln.php
-            if ($userMnr && $userMnr === $kandidat['mnummer']) {
+            // Eigene Karte -> eingabe.php (wenn Editieren erlaubt), sonst -> einzeln.php
+            if ($userMnr && $userMnr === $kandidat['mnummer'] && isEditingAllowed()) {
                 $link = "eingabe.php?mnr=" . urlencode($mnummer);
             } else {
                 $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId;

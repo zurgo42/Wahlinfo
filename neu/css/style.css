@@ -1583,6 +1583,30 @@ body.dark-mode .neue-frage-zeile:hover {
     font-weight: 600;
 }
 
+/* Kompetenz-Eingabe */
+.kompetenz-eingabe {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.kompetenz-prio-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.kompetenz-prio-row label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.kompetenz-prio-row .prio-select {
+    width: auto;
+    min-width: 150px;
+}
+
 .bem-text {
     font-size: 0.85rem;
     font-style: italic;

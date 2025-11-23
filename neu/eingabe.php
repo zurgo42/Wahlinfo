@@ -117,34 +117,59 @@ function processFormSubmission($mnr, $postData, $files) {
         // Antworten speichern (a1-a26) - IMMER neue ID erstellen!
         for ($i = 1; $i <= 26; $i++) {
             $fieldName = "a$i";
-            if (isset($postData[$fieldName])) {
-                $antwortText = trim($postData[$fieldName]);
-                $oldId = $kandidat[$fieldName] ?? 0;
+            $antwortText = trim($postData[$fieldName] ?? '');
+            $oldWert = $kandidat[$fieldName] ?? 0;
 
-                // Alte Antwort zum Vergleich holen
+            // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
+            if ($i >= 9 && $i <= 15) {
+                $newPrio = (int)($postData["aprio$i"] ?? 0);
+
+                // Alte Werte extrahieren
+                $oldPrio = 0;
+                $oldBemId = $oldWert;
+                if ($oldWert > 10000) {
+                    $oldPrio = (int)floor($oldWert / 10000);
+                    $oldBemId = $oldWert % 10000;
+                }
                 $oldText = '';
-                if ($oldId > 0) {
-                    // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
-                    $actualOldId = $oldId;
-                    if ($i >= 9 && $i <= 15 && $oldId > 10000) {
-                        $actualOldId = $oldId - (round($oldId / 10000) * 10000);
+                if ($oldBemId > 0) {
+                    $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldBemId]);
+                    $oldText = $oldBem ? $oldBem['bem'] : '';
+                }
+
+                // Neuen Wert berechnen
+                $newWert = 0;
+                if ($newPrio > 0 || !empty($antwortText)) {
+                    $bemId = 0;
+                    if (!empty($antwortText) && $antwortText !== $oldText) {
+                        $bemId = createNewBemerkung($antwortText);
+                    } elseif (!empty($antwortText)) {
+                        $bemId = $oldBemId; // Text unverändert, alte ID behalten
                     }
-                    if ($actualOldId > 0) {
-                        $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$actualOldId]);
-                        $oldText = $oldBem ? $oldBem['bem'] : '';
-                    }
+                    $newWert = $newPrio * 10000 + $bemId;
+                }
+
+                if ($newWert != $oldWert) {
+                    dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$newWert, $mnr]);
+                    $changedFields[] = "$fieldName: $oldWert -> $newWert";
+                }
+            } else {
+                // Normale Antworten (a1-a8, a16-a26)
+                $oldText = '';
+                if ($oldWert > 0) {
+                    $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldWert]);
+                    $oldText = $oldBem ? $oldBem['bem'] : '';
                 }
 
                 if (!empty($antwortText)) {
-                    // Nur speichern wenn Text sich geändert hat
                     if ($antwortText !== $oldText) {
                         $bemId = createNewBemerkung($antwortText);
                         dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$bemId, $mnr]);
                         $changedFields[] = "$fieldName: neue ID $bemId";
                     }
-                } elseif ($oldId > 0) {
+                } elseif ($oldWert > 0) {
                     dbExecute("UPDATE $table SET $fieldName = 0 WHERE mnummer = ?", [$mnr]);
-                    $changedFields[] = "$fieldName: gelöscht (war ID $oldId)";
+                    $changedFields[] = "$fieldName: gelöscht (war ID $oldWert)";
                 }
             }
         }
@@ -212,6 +237,7 @@ function processPhotoUpload($file, $mnr, $table) {
 
 $kand = null;
 $antworten = [];
+$kompetenzPrios = []; // Prioritäten für a9-a15
 $vorstandsKandidaten = [];
 
 if ($userMnr) {
@@ -225,9 +251,14 @@ if ($userMnr) {
 
             // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
             if ($i >= 9 && $i <= 15 && $wert > 10000) {
-                $bemId = $wert - (round($wert / 10000) * 10000);
+                $prio = (int)floor($wert / 10000);
+                $bemId = $wert % 10000;
+                $kompetenzPrios[$i] = $prio;
             } else {
                 $bemId = $wert;
+                if ($i >= 9 && $i <= 15) {
+                    $kompetenzPrios[$i] = 0;
+                }
             }
 
             if ($bemId > 0) {
@@ -518,14 +549,17 @@ include __DIR__ . '/includes/header.php';
                 <!-- Kompetenzen (9-15) - nur für Vorstand -->
                 <h3>Kompetenzen/Erfahrungen</h3>
                 <p class="section-note">
-                    Je nach Ressortzuständigkeit sind bestimmte Kompetenzen wichtig.
+                    Je nach Ressortzuständigkeit sind bestimmte Kompetenzen wichtig.<br>
+                    <strong>Skala:</strong> 1 = keine, 2 = wenig, 3 = etwas, 4 = gut, 5 = sehr gut
                 </p>
 
                 <div class="anforderungen-grid">
                     <?php
+                    $skalaLabels = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                     for ($i = 8; $i < min(15, count($anforderungen)); $i++) {
                         $anf = $anforderungen[$i];
                         $nr = $i + 1;
+                        $currentPrio = $kompetenzPrios[$nr] ?? 0;
                     ?>
                         <div class="anforderung-card">
                             <div class="frage">
@@ -533,11 +567,29 @@ include __DIR__ . '/includes/header.php';
                                 <?php echo decodeEntities($anf['Anforderung'] ?? ''); ?>
                             </div>
                             <?php if ($editingAllowed): ?>
-                                <textarea name="a<?php echo $nr; ?>" rows="6" class="eingabe-textarea"
-                                          placeholder="Deine Antwort..."><?php echo escape($antworten[$nr] ?? ''); ?></textarea>
+                                <div class="kompetenz-eingabe">
+                                    <div class="kompetenz-prio-row">
+                                        <label>Selbsteinschätzung:</label>
+                                        <select name="aprio<?php echo $nr; ?>" class="prio-select">
+                                            <option value="0" <?php echo ($currentPrio == 0) ? 'selected' : ''; ?>>-- wählen --</option>
+                                            <?php for ($p = 1; $p <= 5; $p++): ?>
+                                                <option value="<?php echo $p; ?>" <?php echo ($currentPrio == $p) ? 'selected' : ''; ?>>
+                                                    <?php echo $p; ?> - <?php echo $skalaLabels[$p]; ?>
+                                                </option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+                                    <textarea name="a<?php echo $nr; ?>" rows="3" class="eingabe-textarea"
+                                              placeholder="Ergänzende Bemerkung (optional)..."><?php echo escape($antworten[$nr] ?? ''); ?></textarea>
+                                </div>
                             <?php else: ?>
-                                <?php if (!empty($antworten[$nr])): ?>
-                                    <div class="antwort"><?php echo escape($antworten[$nr]); ?></div>
+                                <?php if ($currentPrio > 0 || !empty($antworten[$nr])): ?>
+                                    <div class="antwort">
+                                        <?php if ($currentPrio > 0): ?>
+                                            <span class="bewertung"><?php echo $skalaLabels[$currentPrio]; ?></span>
+                                        <?php endif; ?>
+                                        <?php echo escape($antworten[$nr] ?? ''); ?>
+                                    </div>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>
