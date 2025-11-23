@@ -224,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'DEADLINE_KANDIDATEN' => $_POST['DEADLINE_KANDIDATEN'] ?? '',
                     'DEADLINE_EDITIEREN' => $_POST['DEADLINE_EDITIEREN'] ?? '',
                     'FEATURE_VOTING' => isset($_POST['FEATURE_VOTING']) ? '1' : '0',
+                    'SHOW_SPIELWIESE' => isset($_POST['SHOW_SPIELWIESE']) ? '1' : '0',
                     'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? ''
                 ];
                 foreach ($settings as $key => $value) {
@@ -237,51 +238,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $messageType = 'success';
                 break;
 
-            // === E-MAIL VERSAND ===
-            case 'send_email':
-                $empfaengerMnr = trim($_POST['empfaenger_mnr'] ?? '');
-                $betreff = trim($_POST['betreff'] ?? '');
-                $nachrichtText = trim($_POST['nachricht'] ?? '');
-
-                if (empty($empfaengerMnr) || empty($betreff) || empty($nachrichtText)) {
-                    $message = 'Bitte alle Felder ausfüllen';
+            // === ARCHIVIERUNG ===
+            case 'archiv_erstellen':
+                $jahr = (int)$_POST['archiv_jahr'];
+                if ($jahr < 2000 || $jahr > 2100) {
+                    $message = 'Ungültiges Jahr';
                     $messageType = 'error';
-                    break;
-                }
-
-                // Kandidat-Daten holen für E-Mail-Adresse
-                $kandidat = dbFetchOne("SELECT * FROM " . TABLE_KANDIDATEN . " WHERE mnummer = ?", [$empfaengerMnr]);
-                if (!$kandidat) {
-                    $message = 'Kandidat nicht gefunden';
-                    $messageType = 'error';
-                    break;
-                }
-
-                // E-Mail-Adresse aus Datenbank holen
-                $empfaengerEmail = trim($kandidat['email'] ?? '');
-                if (empty($empfaengerEmail)) {
-                    $message = 'Kandidat hat keine E-Mail-Adresse hinterlegt. Bitte zuerst E-Mail-Adresse nachtragen.';
-                    $messageType = 'error';
-                    break;
-                }
-
-                // E-Mail versenden
-                $headers = "From: Wahlinfo <noreply@example.com>\r\n";
-                $headers .= "Reply-To: admin@example.com\r\n";
-                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-
-                $emailBody = "Hallo " . $kandidat['vorname'] . " " . $kandidat['name'] . ",\n\n";
-                $emailBody .= $nachrichtText . "\n\n";
-                $emailBody .= "---\n";
-                $emailBody .= "Diese E-Mail wurde über das Wahlinfo-System versendet.\n";
-
-                if (mail($empfaengerEmail, $betreff, $emailBody, $headers)) {
-                    $message = "E-Mail erfolgreich versendet an " . $kandidat['vorname'] . " " . $kandidat['name'] . " (" . $empfaengerEmail . ")";
-                    $messageType = 'success';
                 } else {
-                    $message = 'Fehler beim E-Mail-Versand. Bitte Serverkonfiguration prüfen.';
-                    $messageType = 'error';
+                    $tabellen = [
+                        TABLE_ADRESSEN => "wahl{$jahr}_adressenwahl",
+                        TABLE_BEMERKUNGEN => "wahl{$jahr}_bemerkungenwahl",
+                        TABLE_KANDIDATEN => "wahl{$jahr}_kandidatenwahl"
+                    ];
+                    $erfolg = 0;
+                    foreach ($tabellen as $quelle => $ziel) {
+                        try {
+                            dbExecute("CREATE TABLE IF NOT EXISTS `{$ziel}` LIKE `{$quelle}`");
+                            dbExecute("INSERT INTO `{$ziel}` SELECT * FROM `{$quelle}`");
+                            $erfolg++;
+                        } catch (Exception $e) {
+                            // Tabelle existiert bereits oder Fehler
+                        }
+                    }
+                    $message = "{$erfolg} von 3 Tabellen für {$jahr} archiviert";
+                    $messageType = $erfolg > 0 ? 'success' : 'error';
                 }
+                break;
+
+            // === MAILING ===
+            case 'mail_text_speichern':
+                $mailKey = $_POST['mail_key'] ?? '';
+                $mailText = $_POST['mail_text'] ?? '';
+                if (in_array($mailKey, ['MAIL_TEXT_INITIAL', 'MAIL_TEXT_ERINNERUNG'])) {
+                    dbExecute(
+                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                         ON DUPLICATE KEY UPDATE setting_value = ?",
+                        [$mailKey, $mailText, $mailText]
+                    );
+                    $message = 'Mail-Text gespeichert';
+                    $messageType = 'success';
+                }
+                break;
+
+            case 'mail_initial_senden':
+                $mailText = $_POST['mail_text'] ?? '';
+                $betreff = $_POST['betreff'] ?? 'Vorstandswahl - Kandidateneintragung eröffnet';
+                $gesendet = 0;
+                $fehler = 0;
+
+                $kandidatenMail = dbFetchAll("SELECT id, vorname, name, email, mnummer FROM " . TABLE_KANDIDATEN . " WHERE email != '' AND email IS NOT NULL");
+                foreach ($kandidatenMail as $k) {
+                    // Platzhalter ersetzen
+                    $text = str_replace(
+                        ['{VORNAME}', '{NAME}', '{MNUMMER}'],
+                        [$k['vorname'], $k['name'], $k['mnummer']],
+                        $mailText
+                    );
+
+                    // Mail senden
+                    $headers = "From: wahlinfo@mensa.de\r\n";
+                    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+                    if (mail($k['email'], $betreff, $text, $headers)) {
+                        // Zeitstempel in nachricht speichern
+                        dbExecute("UPDATE " . TABLE_KANDIDATEN . " SET nachricht = ? WHERE id = ?",
+                            [date('Y-m-d H:i:s'), $k['id']]);
+                        $gesendet++;
+                    } else {
+                        $fehler++;
+                    }
+                }
+                $message = "{$gesendet} Mails gesendet" . ($fehler > 0 ? ", {$fehler} Fehler" : "");
+                $messageType = $fehler == 0 ? 'success' : 'warning';
+                break;
+
+            case 'mail_erinnerung_senden':
+                $mailText = $_POST['mail_text'] ?? '';
+                $betreff = $_POST['betreff'] ?? 'Vorstandswahl - Erinnerung: Daten eintragen';
+                $gesendet = 0;
+                $fehler = 0;
+
+                // Nur Kandidaten ohne eingetragene Daten (z.B. ohne Adresse)
+                $kandidatenMail = dbFetchAll(
+                    "SELECT k.id, k.vorname, k.name, k.email, k.mnummer
+                     FROM " . TABLE_KANDIDATEN . " k
+                     LEFT JOIN " . TABLE_ADRESSEN . " a ON k.mnummer = a.mnummer
+                     WHERE k.email != '' AND k.email IS NOT NULL
+                     AND (a.mnummer IS NULL OR a.strasse IS NULL OR a.strasse = '')"
+                );
+
+                foreach ($kandidatenMail as $k) {
+                    $text = str_replace(
+                        ['{VORNAME}', '{NAME}', '{MNUMMER}'],
+                        [$k['vorname'], $k['name'], $k['mnummer']],
+                        $mailText
+                    );
+
+                    $headers = "From: wahlinfo@mensa.de\r\n";
+                    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+                    if (mail($k['email'], $betreff, $text, $headers)) {
+                        $gesendet++;
+                    } else {
+                        $fehler++;
+                    }
+                }
+                $message = "{$gesendet} Erinnerungen gesendet" . ($fehler > 0 ? ", {$fehler} Fehler" : "");
+                $messageType = $fehler == 0 ? 'success' : 'warning';
                 break;
         }
     } catch (Exception $e) {
@@ -519,6 +582,8 @@ try {
         <a href="?tab=anforderungen" class="admin-tab <?php echo $activeTab === 'anforderungen' ? 'active' : ''; ?>">Anforderungen</a>
         <a href="?tab=email" class="admin-tab <?php echo $activeTab === 'email' ? 'active' : ''; ?>">E-Mail</a>
         <a href="?tab=einstellungen" class="admin-tab <?php echo $activeTab === 'einstellungen' ? 'active' : ''; ?>">Einstellungen</a>
+        <a href="?tab=mailing" class="admin-tab <?php echo $activeTab === 'mailing' ? 'active' : ''; ?>">Mailing</a>
+        <a href="?tab=archivierung" class="admin-tab <?php echo $activeTab === 'archivierung' ? 'active' : ''; ?>">Archivierung</a>
     </div>
 
     <div class="admin-section">
@@ -830,6 +895,13 @@ try {
                     Ja
                 </label>
 
+                <label for="SHOW_SPIELWIESE">Spielwiese anzeigen:</label>
+                <label style="font-weight: normal;">
+                    <input type="checkbox" id="SHOW_SPIELWIESE" name="SHOW_SPIELWIESE"
+                           <?php echo (!empty($dbSettings['SHOW_SPIELWIESE']) && $dbSettings['SHOW_SPIELWIESE'] == '1') ? 'checked' : ''; ?>>
+                    Ja (statt echte Kandidaten)
+                </label>
+
                 <label for="ADMIN_MNRS">Admin M-Nummern (kommagetrennt):</label>
                 <input type="text" id="ADMIN_MNRS" name="ADMIN_MNRS"
                        value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? ''); ?>"
@@ -841,49 +913,152 @@ try {
             </div>
         </form>
 
-        <?php elseif ($activeTab === 'email'): ?>
+        <?php elseif ($activeTab === 'mailing'): ?>
         <!-- ================================================================= -->
-        <!-- E-MAIL VERSAND -->
+        <!-- MAILING -->
         <!-- ================================================================= -->
-        <h2>E-Mail an Kandidaten senden</h2>
-        <p>Versende eine individuelle E-Mail an einen Kandidaten.</p>
+        <h2>Kandidaten-Benachrichtigung</h2>
+        <p>Mails an Kandidaten senden. Platzhalter: {VORNAME}, {NAME}, {MNUMMER}</p>
 
-        <form method="post" action="?tab=email">
-            <input type="hidden" name="action" value="send_email">
-
-            <div class="settings-grid" style="max-width: 800px;">
-                <label for="empfaenger_mnr">Empfänger:</label>
-                <select id="empfaenger_mnr" name="empfaenger_mnr" required style="padding: 8px;">
-                    <option value="">-- Kandidat auswählen --</option>
-                    <?php foreach ($kandidaten as $k): ?>
-                        <option value="<?php echo escape($k['mnummer']); ?>">
-                            <?php echo escape($k['vorname'] . ' ' . $k['name'] . ' (M' . substr($k['mnummer'], 3) . ')'); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-
-                <label for="betreff">Betreff:</label>
-                <input type="text" id="betreff" name="betreff" required
-                       placeholder="z.B. Deine Kandidatur für Vorstand"
-                       style="padding: 8px;">
-
-                <label for="nachricht">Nachricht:</label>
-                <textarea id="nachricht" name="nachricht" required
-                          rows="15" style="padding: 8px; font-family: monospace;"
-                          placeholder="Liebe/r ...,&#10;&#10;...&#10;&#10;Viele Grüße"></textarea>
+        <!-- Initialnachricht -->
+        <h3 style="margin-top: 20px;">1. Initialnachricht (Wahl eröffnet)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Benachrichtigt alle Kandidaten, dass sie ihre Daten eintragen können.
+        </p>
+        <form method="post" action="?tab=mailing">
+            <input type="hidden" name="action" value="mail_initial_senden">
+            <div style="margin-bottom: 15px;">
+                <label for="betreff_initial"><strong>Betreff:</strong></label>
+                <input type="text" id="betreff_initial" name="betreff"
+                       value="Vorstandswahl - Kandidateneintragung eröffnet"
+                       style="width: 100%; padding: 8px; margin-top: 5px;">
             </div>
+            <div style="margin-bottom: 15px;">
+                <label for="mail_initial"><strong>Mail-Text:</strong></label>
+                <textarea id="mail_initial" name="mail_text" rows="12"
+                          style="width: 100%; padding: 8px; margin-top: 5px; font-family: monospace;"><?php
+echo escape($dbSettings['MAIL_TEXT_INITIAL'] ?? 'Hallo {VORNAME},
 
-            <div style="margin-top: 20px;">
-                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">E-Mail senden</button>
+die Kandidateneintragung für die Vorstandswahl ist eröffnet.
+
+Du kannst deine Daten ab sofort unter folgendem Link eintragen:
+[LINK ZUR EINGABE]
+
+Stichtag für die Eintragung: [DEADLINE]
+
+Falls bereits Daten aus dem Vorjahr vorhanden sind, überprüfe diese bitte und aktualisiere sie bei Bedarf.
+
+Das Diskussionstool ist ebenfalls geöffnet und steht für den Austausch zur Verfügung.
+
+Bei Fragen wende dich bitte an [KONTAKT].
+
+Viele Grüße
+Das Wahlteam');
+?></textarea>
             </div>
+            <div class="btn-group">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px;">
+                    Mail an alle Kandidaten senden
+                </button>
+                <button type="button" class="btn-small" style="background: #6c757d; color: white; padding: 10px 20px;"
+                        onclick="document.getElementById('save_initial').click();">
+                    Nur Text speichern
+                </button>
+            </div>
+        </form>
+        <form method="post" action="?tab=mailing" style="display: none;">
+            <input type="hidden" name="action" value="mail_text_speichern">
+            <input type="hidden" name="mail_key" value="MAIL_TEXT_INITIAL">
+            <input type="hidden" name="mail_text" id="mail_text_initial_hidden">
+            <button type="submit" id="save_initial">Speichern</button>
+        </form>
+        <script>
+        document.querySelector('button[onclick*="save_initial"]').addEventListener('click', function() {
+            document.getElementById('mail_text_initial_hidden').value = document.getElementById('mail_initial').value;
+        });
+        </script>
 
-            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 4px; border-left: 4px solid #ffc107;">
-                <strong>Hinweis:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li>Die E-Mail wird an die hinterlegte E-Mail-Adresse des Kandidaten gesendet</li>
-                    <li>Falls keine E-Mail-Adresse hinterlegt ist, wird die M-Nummer verwendet</li>
-                    <li>Bitte stelle sicher, dass der Mail-Server korrekt konfiguriert ist</li>
-                </ul>
+        <hr style="margin: 30px 0;">
+
+        <!-- Erinnerungsmail -->
+        <h3>2. Erinnerungsmail</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Wird nur an Kandidaten gesendet, die ihre Daten noch nicht eingetragen haben.
+        </p>
+        <form method="post" action="?tab=mailing">
+            <input type="hidden" name="action" value="mail_erinnerung_senden">
+            <div style="margin-bottom: 15px;">
+                <label for="betreff_erinnerung"><strong>Betreff:</strong></label>
+                <input type="text" id="betreff_erinnerung" name="betreff"
+                       value="Vorstandswahl - Erinnerung: Daten eintragen"
+                       style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="mail_erinnerung"><strong>Mail-Text:</strong></label>
+                <textarea id="mail_erinnerung" name="mail_text" rows="10"
+                          style="width: 100%; padding: 8px; margin-top: 5px; font-family: monospace;"><?php
+echo escape($dbSettings['MAIL_TEXT_ERINNERUNG'] ?? 'Hallo {VORNAME},
+
+dies ist eine freundliche Erinnerung, dass du deine Kandidatendaten für die Vorstandswahl noch nicht eingetragen hast.
+
+Bitte trage deine Daten bis zum Stichtag [DEADLINE] unter folgendem Link ein:
+[LINK ZUR EINGABE]
+
+Bei Fragen wende dich bitte an [KONTAKT].
+
+Viele Grüße
+Das Wahlteam');
+?></textarea>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px;">
+                    Erinnerung senden
+                </button>
+                <button type="button" class="btn-small" style="background: #6c757d; color: white; padding: 10px 20px;"
+                        onclick="document.getElementById('save_erinnerung').click();">
+                    Nur Text speichern
+                </button>
+            </div>
+        </form>
+        <form method="post" action="?tab=mailing" style="display: none;">
+            <input type="hidden" name="action" value="mail_text_speichern">
+            <input type="hidden" name="mail_key" value="MAIL_TEXT_ERINNERUNG">
+            <input type="hidden" name="mail_text" id="mail_text_erinnerung_hidden">
+            <button type="submit" id="save_erinnerung">Speichern</button>
+        </form>
+        <script>
+        document.querySelector('button[onclick*="save_erinnerung"]').addEventListener('click', function() {
+            document.getElementById('mail_text_erinnerung_hidden').value = document.getElementById('mail_erinnerung').value;
+        });
+        </script>
+
+        <?php elseif ($activeTab === 'archivierung'): ?>
+        <!-- ================================================================= -->
+        <!-- ARCHIVIERUNG -->
+        <!-- ================================================================= -->
+        <h2>Tabellen archivieren</h2>
+        <p>Dupliziert die wahljahrbezogenen Tabellen mit Jahres-Prefix für das Archiv.</p>
+
+        <div style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
+            <strong>Hinweis:</strong> Diese Funktion erstellt Kopien der folgenden Tabellen:
+            <ul style="margin: 10px 0 0 20px;">
+                <li>adressenwahl → wahl[JAHR]_adressenwahl</li>
+                <li>bemerkungenwahl → wahl[JAHR]_bemerkungenwahl</li>
+                <li>kandidatenwahl → wahl[JAHR]_kandidatenwahl</li>
+            </ul>
+        </div>
+
+        <form method="post" action="?tab=archivierung" onsubmit="return confirm('Tabellen wirklich archivieren? Bestehende Archive werden NICHT überschrieben.');">
+            <input type="hidden" name="action" value="archiv_erstellen">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <label for="archiv_jahr"><strong>Archivjahr:</strong></label>
+                <input type="number" id="archiv_jahr" name="archiv_jahr"
+                       value="<?php echo date('Y'); ?>"
+                       min="2000" max="2100"
+                       style="width: 100px; padding: 8px;">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px;">
+                    Archiv erstellen
+                </button>
             </div>
         </form>
 

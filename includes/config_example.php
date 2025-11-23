@@ -37,15 +37,14 @@ define('DEADLINE_EDITIEREN', '2026-02-15 23:59:59');
 // Tabellennamen - ALLE mit Prefix "wahl"
 // =============================================================================
 
-// Zeitlose Tabellen
-define('TABLE_AEMTER', 'wahlaemter');
-define('TABLE_ANFORDERUNGEN', 'wahlanforderungen');
-define('TABLE_BEMERKUNGEN', 'wahlbemerkungen');
-define('TABLE_RESSORTS', 'wahlressorts');
-define('TABLE_ADRESSEN', 'wahladressen');
-define('TABLE_AENDERUNGSLOG', 'wahlaenderungslog');
-define('TABLE_EINSTELLUNGEN', 'wahleinstellungen');
-define('TABLE_DOKUMENTE', 'wahldokumente');
+// Jahresunabhängige Tabellen
+define('TABLE_SPIELWIESE', 'spielwiesewahl');
+define('TABLE_KANDIDATEN', 'kandidatenwahl');
+define('TABLE_AEMTER', 'aemterwahl');
+define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
+define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
+define('TABLE_RESSORTS', 'ressortswahl');
+define('TABLE_ADRESSEN', 'adressenwahl');
 
 // Jahresabhängige Tabellen - Format: wahl[JAHR]...
 // Kandidaten, Kommentare, Teilnehmer, Votes
