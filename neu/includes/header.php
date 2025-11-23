@@ -13,6 +13,11 @@
         if (localStorage.getItem('darkMode') === 'true') {
             document.documentElement.style.setProperty('--bg-primary', '#1a1a2e');
         }
+        // Schriftgröße sofort anwenden
+        var savedFontSize = localStorage.getItem('fontSize') || 'normal';
+        if (savedFontSize !== 'normal') {
+            document.documentElement.classList.add('font-' + savedFontSize);
+        }
     </script>
 </head>
 <body class="<?php echo (isset($_COOKIE['darkMode']) && $_COOKIE['darkMode'] === 'true') ? 'dark-mode' : ''; ?>">
@@ -28,6 +33,9 @@
         <div class="header-center">
             <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Ergänzende Wahlinformation'; ?></h1>
         </div>
+        <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
+            <span class="font-icon">A</span>
+        </button>
         <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
             <span class="toggle-icon">🌙</span>
         </button>
@@ -54,7 +62,35 @@
             }
         }
 
-        // Icon beim Laden setzen
+        function toggleFontSize() {
+            const sizes = ['normal', 'large', 'xlarge'];
+            const current = localStorage.getItem('fontSize') || 'normal';
+            const currentIndex = sizes.indexOf(current);
+            const nextIndex = (currentIndex + 1) % sizes.length;
+            const nextSize = sizes[nextIndex];
+
+            // Alte Klasse entfernen
+            sizes.forEach(s => document.documentElement.classList.remove('font-' + s));
+
+            // Neue Klasse hinzufügen
+            if (nextSize !== 'normal') {
+                document.documentElement.classList.add('font-' + nextSize);
+            }
+
+            localStorage.setItem('fontSize', nextSize);
+            updateFontIcon(nextSize);
+        }
+
+        function updateFontIcon(size) {
+            const icon = document.querySelector('.font-icon');
+            if (icon) {
+                if (size === 'normal') icon.textContent = 'A';
+                else if (size === 'large') icon.textContent = 'A+';
+                else if (size === 'xlarge') icon.textContent = 'A++';
+            }
+        }
+
+        // Icons beim Laden setzen
         (function() {
             const isDark = localStorage.getItem('darkMode') === 'true';
             if (isDark) {
@@ -64,5 +100,12 @@
             if (icon) {
                 icon.textContent = isDark ? '☀️' : '🌙';
             }
+
+            // Schriftgröße setzen
+            const fontSize = localStorage.getItem('fontSize') || 'normal';
+            if (fontSize !== 'normal') {
+                document.documentElement.classList.add('font-' + fontSize);
+            }
+            updateFontIcon(fontSize);
         })();
     </script>

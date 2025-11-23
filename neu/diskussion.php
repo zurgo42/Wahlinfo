@@ -14,26 +14,63 @@ $pageTitle = 'Diskussion';
 
 // Konfiguration
 $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
+$neueBeitraegeAnzahl = 10; // Anzahl der als "neu" markierten Beiträge
+
+/**
+ * Gibt den Autorennamen zurück, mit MNr als Fallback
+ */
+function getAutorName($kommentar) {
+    $vorname = trim($kommentar['AutorVorname'] ?? '');
+    $name = trim($kommentar['AutorName'] ?? '');
+    if ($vorname !== '' || $name !== '') {
+        return trim($vorname . ' ' . $name);
+    }
+    // Fallback: MNr anzeigen
+    $mnr = $kommentar['Mnr'] ?? '';
+    return $mnr ? "MNr $mnr" : 'Unbekannt';
+}
 
 // =============================================================================
 // DATEN LADEN
 // =============================================================================
 
-// Alle Kandidaten laden
-$kandidatenTable = getKandidatenTable();
+// Alle Kandidaten laden (aus Wahl-Tabelle für Diskussion)
+$kandidatenTable = getWahlTable();
 $kandidaten = dbFetchAll(
-    "SELECT Knr, vorname, name, mnummer
+    "SELECT Knr, These, mnummer
      FROM $kandidatenTable
-     ORDER BY name ASC"
+     ORDER BY These ASC"
 );
 
-// Alle Kommentare laden
+// Fotos aus kandidatenwahl laden (bildfile nach mnummer)
+$fotoNachMnummer = [];
+$fotoDaten = dbFetchAll(
+    "SELECT mnummer, bildfile FROM " . TABLE_KANDIDATEN
+);
+foreach ($fotoDaten as $foto) {
+    if (!empty($foto['mnummer']) && !empty($foto['bildfile'])) {
+        $fotoNachMnummer[$foto['mnummer']] = $foto['bildfile'];
+    }
+}
+
+// Alle Kommentare laden (mit Vote-Zählungen)
+$voteJoin = "";
+$voteSelect = ", 0 AS votes_up, 0 AS votes_down, 0 AS user_vote";
+if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
+    $voteSelect = ",
+        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = 1) AS votes_up,
+        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = -1) AS votes_down,
+        (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote";
+}
+
 $alleKommentare = dbFetchAll(
-    "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName
+    "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName $voteSelect
      FROM " . TABLE_KOMMENTARE . " k
      LEFT JOIN " . TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
      WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
-     ORDER BY k.Datum ASC"
+     GROUP BY k.Knr
+     ORDER BY k.Datum ASC",
+    defined('FEATURE_VOTING') && FEATURE_VOTING ? [$userMnr] : []
 );
 
 // Kommentare nach Kandidaten und Threads strukturieren
@@ -58,15 +95,133 @@ foreach ($alleKommentare as $k) {
     }
 }
 
+// Die letzten N Beiträge als "neu" markieren
+$neueKnrs = [];
+$sortierteKommentare = $alleKommentare;
+usort($sortierteKommentare, function($a, $b) {
+    return strtotime($b['Datum']) - strtotime($a['Datum']);
+});
+for ($i = 0; $i < min($neueBeitraegeAnzahl, count($sortierteKommentare)); $i++) {
+    $neueKnrs[$sortierteKommentare[$i]['Knr']] = true;
+}
+
+// Pseudo-Kandidat für "Allgemeine Fragen" erstellen
+$allgemeineFragenId = 97;
+$kandidaten[] = [
+    'Knr' => $allgemeineFragenId,
+    'These' => 'Allgemeine Fragen & Diskussion',
+    'mnummer' => '',
+    'istAllgemein' => true
+];
+
+/**
+ * Gibt Vote-Buttons HTML zurück
+ */
+function getVoteButtons($knr, $votesUp, $votesDown, $userVote) {
+    if (!defined('FEATURE_VOTING') || !FEATURE_VOTING) {
+        return '';
+    }
+    $upActive = ((int)$userVote === 1) ? ' active' : '';
+    $downActive = ((int)$userVote === -1) ? ' active' : '';
+    return '
+        <div class="vote-buttons" id="votes-' . $knr . '">
+            <button class="vote-btn vote-up' . $upActive . '" onclick="vote(' . $knr . ', 1)" title="Zustimmung">
+                👍 <span class="vote-count">' . (int)$votesUp . '</span>
+            </button>
+            <button class="vote-btn vote-down' . $downActive . '" onclick="vote(' . $knr . ', -1)" title="Ablehnung">
+                👎 <span class="vote-count">' . (int)$votesDown . '</span>
+            </button>
+        </div>';
+}
+
 /**
  * Kürzt Text für kompakte Darstellung
  */
 function kurzText($text, $maxLen) {
+    if ($text === null || $text === '') {
+        return '';
+    }
     $text = strip_tags(decodeEntities($text));
     if (strlen($text) <= $maxLen) {
         return escape($text);
     }
-    return escape(substr($text, 0, strrpos(substr($text, 0, $maxLen), ' '))) . '...';
+    $shortened = substr($text, 0, $maxLen);
+    $lastSpace = strrpos($shortened, ' ');
+    if ($lastSpace !== false) {
+        $shortened = substr($text, 0, $lastSpace);
+    }
+    return escape($shortened) . '...';
+}
+
+/**
+ * Zählt alle Antworten rekursiv
+ */
+function countAntwortenRekursiv($knr, $antwortenNachBezug) {
+    $count = 0;
+    if (isset($antwortenNachBezug[$knr])) {
+        foreach ($antwortenNachBezug[$knr] as $antwort) {
+            $count++;
+            $count += countAntwortenRekursiv($antwort['Knr'], $antwortenNachBezug);
+        }
+    }
+    return $count;
+}
+
+/**
+ * Zeigt Antworten rekursiv an
+ */
+function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe = 0) {
+    if (!isset($antwortenNachBezug[$knr])) {
+        return;
+    }
+
+    foreach ($antwortenNachBezug[$knr] as $antwort):
+        $aKnr = $antwort['Knr'];
+        $einrueckung = min($tiefe * 15, 45);
+        $istNeu = isset($neueKnrs[$aKnr]);
+    ?>
+        <div class="antwort-kompakt" style="margin-left: <?php echo $einrueckung; ?>px;">
+            <div class="beitrag-meta">
+                <span class="autor"><?php echo escape(getAutorName($antwort)); ?></span>
+                <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
+                <span class="beitrag-id">#<?php echo $aKnr; ?></span>
+                <?php if ($istNeu): ?><span class="neu-badge">neu</span><?php endif; ?>
+            </div>
+            <?php
+            // Text steht in These, nicht in Kommentar
+            $beitragText = $antwort['These'] ?? '';
+            $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
+            ?>
+            <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
+                <?php if ($kurzBeitrag !== ''): ?>
+                    <?php echo $kurzBeitrag; ?>
+                    <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
+                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <em class="no-data">(kein Text)</em>
+                <?php endif; ?>
+            </div>
+            <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
+                <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
+                <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
+            </div>
+            <div class="antwort-action">
+                <?php echo getVoteButtons($aKnr, $antwort['votes_up'] ?? 0, $antwort['votes_down'] ?? 0, $antwort['user_vote'] ?? 0); ?>
+                <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
+            </div>
+            <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
+                <textarea id="antwort-text-<?php echo $aKnr; ?>" placeholder="Deine Antwort..."></textarea>
+                <button class="btn btn-small" onclick="sendeAntwort(<?php echo $aKnr; ?>)">Absenden</button>
+                <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $aKnr; ?>)">Abbrechen</button>
+            </div>
+        </div>
+        <?php
+        // Rekursiv weitere Antworten anzeigen (als Geschwister, nicht verschachtelt)
+        zeigeAntwortenRekursiv($aKnr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs, $tiefe + 1);
+        ?>
+    <?php
+    endforeach;
 }
 
 // =============================================================================
@@ -79,88 +234,125 @@ function kurzText($text, $maxLen) {
     <h1>Diskussion zur Wahl</h1>
 
     <p class="section-note">
-        Hier können Sie Fragen an die Kandidaten stellen und deren Antworten lesen.
-        Klicken Sie auf einen Kandidaten, um die Diskussion zu sehen.
+        Hier kannst du Fragen an die Kandidaten stellen und deren Antworten lesen.
+        Klicke auf einen Kandidaten, um die Diskussion zu sehen.
     </p>
 
     <!-- Kandidaten mit ihren Diskussionen -->
     <div class="kandidaten-diskussion">
         <?php foreach ($kandidaten as $kand):
             $kandId = (int)$kand['Knr'];
-            $kandName = escape($kand['vorname'] . ' ' . $kand['name']);
+            $istAllgemein = !empty($kand['istAllgemein']);
+
+            // Name und Foto bestimmen
+            if ($istAllgemein) {
+                $kandName = 'Allgemeine Fragen & Diskussion';
+                $fotoDatei = '';
+            } else {
+                // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
+                $theseParts = explode('<br>', $kand['These'] ?? '');
+                $kandName = trim($theseParts[0]);
+                $mnummer = $kand['mnummer'] ?? '';
+                $fotoDatei = $fotoNachMnummer[$mnummer] ?? 'keinFoto.jpg';
+            }
+
             $threads = $kommentareNachKandidat[$kandId] ?? [];
             $anzahlBeitraege = count($threads);
 
-            // Antworten zählen
+            // Antworten rekursiv zählen und prüfen ob neue Beiträge vorhanden
+            $hatNeueBeitraege = false;
             foreach ($threads as $thread) {
-                $anzahlBeitraege += count($antwortenNachBezug[$thread['Knr']] ?? []);
+                $anzahlBeitraege += countAntwortenRekursiv($thread['Knr'], $antwortenNachBezug);
+                if (isset($neueKnrs[$thread['Knr']])) {
+                    $hatNeueBeitraege = true;
+                }
+                // Auch in Antworten prüfen
+                if (isset($antwortenNachBezug[$thread['Knr']])) {
+                    foreach ($antwortenNachBezug[$thread['Knr']] as $ant) {
+                        if (isset($neueKnrs[$ant['Knr']])) {
+                            $hatNeueBeitraege = true;
+                        }
+                    }
+                }
             }
         ?>
-            <div class="kandidat-section">
+            <div class="kandidat-section<?php echo $istAllgemein ? ' allgemein' : ''; ?>">
                 <div class="kandidat-header" onclick="toggleKandidatDiskussion(<?php echo $kandId; ?>)">
-                    <span class="kandidat-name"><?php echo $kandName; ?></span>
+                    <?php if ($istAllgemein): ?>
+                        <span class="kandidat-foto">👥</span>
+                    <?php else: ?>
+                        <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='../img/keinFoto.jpg'">
+                    <?php endif; ?>
+                    <span class="kandidat-name"><?php echo escape($kandName); ?></span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
+                    <?php if ($hatNeueBeitraege): ?><span class="neu-badge">neu</span><?php endif; ?>
                     <span class="toggle-icon" id="icon-<?php echo $kandId; ?>">▼</span>
                 </div>
 
                 <div class="kandidat-threads" id="threads-<?php echo $kandId; ?>" style="display:none;">
-                    <?php if (empty($threads)): ?>
-                        <p class="no-data">Noch keine Beiträge zu diesem Kandidaten.</p>
-                    <?php else: ?>
+                    <?php if (!empty($threads)): ?>
                         <?php foreach ($threads as $thread):
                             $knr = $thread['Knr'];
-                            $antworten = $antwortenNachBezug[$knr] ?? [];
+                            $threadIstNeu = isset($neueKnrs[$knr]);
                         ?>
                             <div class="thread">
                                 <!-- Haupt-Beitrag -->
                                 <div class="beitrag-kompakt">
                                     <div class="beitrag-meta">
-                                        <span class="autor"><?php echo escape($thread['AutorVorname'] . ' ' . $thread['AutorName']); ?></span>
+                                        <span class="autor"><?php echo escape(getAutorName($thread)); ?></span>
                                         <span class="datum"><?php echo date('d.m.Y H:i', strtotime($thread['Datum'])); ?></span>
+                                        <span class="beitrag-id">#<?php echo $knr; ?></span>
+                                        <?php if ($threadIstNeu): ?><span class="neu-badge">neu</span><?php endif; ?>
                                     </div>
-                                    <?php if (!empty($thread['These'])): ?>
-                                        <div class="these-kurz"><?php echo escape(decodeEntities($thread['These'])); ?></div>
-                                    <?php endif; ?>
+                                    <?php
+                                    // Text steht in These, nicht in Kommentar
+                                    $beitragText = $thread['These'] ?? '';
+                                    $kurzBeitrag = kurzText($beitragText, $kurzTextLaenge);
+                                    ?>
                                     <div class="kommentar-text" id="text-<?php echo $knr; ?>">
-                                        <?php echo kurzText($thread['Kommentar'], $kurzTextLaenge); ?>
-                                        <?php if (strlen($thread['Kommentar']) > $kurzTextLaenge): ?>
+                                        <?php echo $kurzBeitrag; ?>
+                                        <?php if (strlen($beitragText) > $kurzTextLaenge): ?>
                                             <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $knr; ?>); return false;">mehr</a>
                                         <?php endif; ?>
                                     </div>
                                     <div class="kommentar-voll" id="voll-<?php echo $knr; ?>" style="display:none;">
-                                        <?php echo nl2br(escape(decodeEntities($thread['Kommentar']))); ?>
+                                        <?php echo nl2br(escape(decodeEntities($beitragText))); ?>
                                         <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $knr; ?>); return false;">weniger</a>
+                                    </div>
+                                    <div class="antwort-action">
+                                        <?php echo getVoteButtons($knr, $thread['votes_up'] ?? 0, $thread['votes_down'] ?? 0, $thread['user_vote'] ?? 0); ?>
+                                        <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
+                                    </div>
+                                    <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
+                                        <textarea id="antwort-text-<?php echo $knr; ?>" placeholder="Deine Antwort..."></textarea>
+                                        <button class="btn btn-small" onclick="sendeAntwort(<?php echo $knr; ?>)">Absenden</button>
+                                        <button class="btn btn-small btn-secondary" onclick="versteckeAntwortForm(<?php echo $knr; ?>)">Abbrechen</button>
                                     </div>
                                 </div>
 
-                                <!-- Antworten -->
-                                <?php if (!empty($antworten)): ?>
+                                <!-- Antworten rekursiv -->
+                                <?php if (isset($antwortenNachBezug[$knr])): ?>
                                     <div class="antworten-liste">
-                                        <?php foreach ($antworten as $antwort):
-                                            $aKnr = $antwort['Knr'];
-                                        ?>
-                                            <div class="antwort-kompakt">
-                                                <div class="beitrag-meta">
-                                                    <span class="autor"><?php echo escape($antwort['AutorVorname'] . ' ' . $antwort['AutorName']); ?></span>
-                                                    <span class="datum"><?php echo date('d.m.Y H:i', strtotime($antwort['Datum'])); ?></span>
-                                                </div>
-                                                <div class="kommentar-text" id="text-<?php echo $aKnr; ?>">
-                                                    <?php echo kurzText($antwort['Kommentar'], $kurzTextLaenge); ?>
-                                                    <?php if (strlen($antwort['Kommentar']) > $kurzTextLaenge): ?>
-                                                        <a href="#" class="mehr-link" onclick="zeigeVoll(<?php echo $aKnr; ?>); return false;">mehr</a>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="kommentar-voll" id="voll-<?php echo $aKnr; ?>" style="display:none;">
-                                                    <?php echo nl2br(escape(decodeEntities($antwort['Kommentar']))); ?>
-                                                    <a href="#" class="weniger-link" onclick="zeigeKurz(<?php echo $aKnr; ?>); return false;">weniger</a>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
+                                        <?php zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neueKnrs); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
+
+                    <!-- Neue Frage stellen -->
+                    <div class="neue-frage-zeile" onclick="zeigeNeueFrageForm(<?php echo $kandId; ?>)">
+                        <?php if ($istAllgemein): ?>
+                            Selbst eine <span class="inline-foto">👥</span> allgemeine Frage stellen
+                        <?php else: ?>
+                            Selbst eine Frage an <img src="../img/<?php echo escape($fotoDatei); ?>" alt="" class="inline-foto" onerror="this.src='../img/keinFoto.jpg'"> <?php echo escape($kandName); ?> stellen
+                        <?php endif; ?>
+                    </div>
+                    <div class="antwort-form-inline" id="neue-frage-form-<?php echo $kandId; ?>">
+                        <textarea id="neue-frage-text-<?php echo $kandId; ?>" placeholder="Deine Frage..."></textarea>
+                        <button class="btn btn-small" onclick="sendeNeueFrage(<?php echo $kandId; ?>)">Absenden</button>
+                        <button class="btn btn-small btn-secondary" onclick="versteckeNeueFrageForm(<?php echo $kandId; ?>)">Abbrechen</button>
+                    </div>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -188,6 +380,129 @@ function zeigeVoll(knr) {
 function zeigeKurz(knr) {
     document.getElementById('text-' + knr).style.display = 'block';
     document.getElementById('voll-' + knr).style.display = 'none';
+}
+
+function zeigeAntwortForm(knr) {
+    // Alle anderen Formulare schließen
+    document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
+        form.style.display = 'none';
+    });
+    document.getElementById('antwort-form-' + knr).style.display = 'block';
+    document.getElementById('antwort-text-' + knr).focus();
+}
+
+function versteckeAntwortForm(knr) {
+    document.getElementById('antwort-form-' + knr).style.display = 'none';
+}
+
+function sendeAntwort(bezugKnr) {
+    var text = document.getElementById('antwort-text-' + bezugKnr).value.trim();
+    if (!text) {
+        alert('Bitte gib einen Text ein.');
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('bezug', bezugKnr);
+    formData.append('text', text);
+
+    fetch('antwort_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Speichern: ' + error);
+    });
+}
+
+function zeigeNeueFrageForm(kandId) {
+    // Alle anderen Formulare schließen
+    document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
+        form.style.display = 'none';
+    });
+    document.getElementById('neue-frage-form-' + kandId).style.display = 'block';
+    document.getElementById('neue-frage-text-' + kandId).focus();
+}
+
+function versteckeNeueFrageForm(kandId) {
+    document.getElementById('neue-frage-form-' + kandId).style.display = 'none';
+}
+
+function sendeNeueFrage(kandId) {
+    var text = document.getElementById('neue-frage-text-' + kandId).value.trim();
+    if (!text) {
+        alert('Bitte gib einen Text ein.');
+        return;
+    }
+
+    var formData = new FormData();
+    formData.append('bezug', kandId);
+    formData.append('text', text);
+
+    fetch('antwort_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Speichern: ' + error);
+    });
+}
+
+// Voting-Funktionen
+function vote(knr, voteValue) {
+    var container = document.getElementById('votes-' + knr);
+    if (!container) return;
+
+    var upBtn = container.querySelector('.vote-up');
+    var downBtn = container.querySelector('.vote-down');
+
+    // Wenn gleicher Vote nochmal geklickt wird -> entfernen
+    if ((voteValue === 1 && upBtn.classList.contains('active')) ||
+        (voteValue === -1 && downBtn.classList.contains('active'))) {
+        voteValue = 0;
+    }
+
+    var formData = new FormData();
+    formData.append('knr', knr);
+    formData.append('vote', voteValue);
+
+    fetch('vote_speichern.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Zähler aktualisieren
+            upBtn.querySelector('.vote-count').textContent = data.up;
+            downBtn.querySelector('.vote-count').textContent = data.down;
+
+            // Active-Status aktualisieren
+            upBtn.classList.toggle('active', data.userVote === 1);
+            downBtn.classList.toggle('active', data.userVote === -1);
+        } else {
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+        }
+    })
+    .catch(error => {
+        alert('Fehler beim Abstimmen: ' + error);
+    });
 }
 </script>
 

@@ -19,8 +19,8 @@
     --white: #ffffff;
 
     /* Theme Colors (überschreibbar für Dark Mode) */
-    --bg-primary: #EBEBEB;
-    --bg-secondary: #ffffff;
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #e8e8e8;
     --bg-card: #ffffff;
     --text-primary: #505050;
     --text-secondary: #505050;
@@ -58,6 +58,7 @@ body.dark-mode {
     --mensa-grau: #2a2a4a;
     --white: #0f3460;
     --mensa-anthrazit: #e8e8e8;
+    --mensa-dunkelblau: #8ECAF6;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -70,7 +71,17 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Dark Mode Toggle */
+/* Schriftgrößen */
+html.font-large {
+    font-size: 18px;
+}
+
+html.font-xlarge {
+    font-size: 22px;
+}
+
+/* Toggle Buttons */
+.font-size-toggle,
 .dark-mode-toggle {
     background: none;
     border: 2px solid var(--mensa-dunkelblau);
@@ -83,16 +94,24 @@ body {
     flex-shrink: 0;
 }
 
+.font-size-toggle {
+    margin-right: 8px;
+    font-weight: 600;
+}
+
+.font-size-toggle:hover,
 .dark-mode-toggle:hover {
     background: var(--mensa-dunkelblau);
     color: white;
 }
 
+body.dark-mode .font-size-toggle,
 body.dark-mode .dark-mode-toggle {
     border-color: var(--mensa-hellgelb);
     color: var(--mensa-hellgelb);
 }
 
+body.dark-mode .font-size-toggle:hover,
 body.dark-mode .dark-mode-toggle:hover {
     background: var(--mensa-hellgelb);
     color: var(--bg-secondary);
@@ -562,8 +581,8 @@ body.dark-mode .dark-mode-toggle:hover {
 
 .ressort-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
     background: var(--mensa-grau);
     border-radius: var(--radius-sm);
@@ -573,10 +592,12 @@ body.dark-mode .dark-mode-toggle:hover {
 
 .ressort-prio {
     background: var(--mensa-hellgelb);
+    color: var(--mensa-anthrazit);
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 600;
     font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .ressort-comment {
@@ -628,6 +649,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .anforderung-card .bewertung {
     display: inline-block;
     background: var(--mensa-hellgelb);
+    color: var(--mensa-anthrazit);
     padding: 2px 6px;
     border-radius: 8px;
     font-weight: 600;
@@ -743,7 +765,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .form-row select {
     width: 100%;
     padding: var(--spacing-sm);
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
     font-family: inherit;
@@ -970,7 +992,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .beitrag-form textarea {
     width: 100%;
     padding: var(--spacing-sm);
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-family: inherit;
     font-size: 0.9rem;
@@ -980,7 +1002,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .beitrag-form input[type="text"] {
     width: 100%;
     padding: var(--spacing-sm);
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
 }
@@ -1081,7 +1103,7 @@ body.dark-mode .dark-mode-toggle:hover {
 .antwort-form textarea {
     width: 100%;
     padding: var(--spacing-xs);
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-family: inherit;
     font-size: 0.85rem;
@@ -1190,22 +1212,63 @@ body.dark-mode .dark-mode-toggle:hover {
 .kandidat-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--mensa-dunkelblau);
-    color: white;
+    background: var(--mensa-heller);
+    color: var(--mensa-anthrazit);
     cursor: pointer;
     transition: var(--transition);
 }
 
 .kandidat-header:hover {
     background: var(--mensa-hellblau);
-    color: var(--mensa-dunkelblau);
+}
+
+body.dark-mode .kandidat-header {
+    background: #1a3a5a;
+    color: var(--text-primary);
+}
+
+body.dark-mode .kandidat-header:hover {
+    background: #2a4a6a;
+}
+
+.kandidat-foto {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px 0 0 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: calc(-1 * var(--spacing-md));
+    margin-top: calc(-1 * var(--spacing-sm));
+    margin-bottom: calc(-1 * var(--spacing-sm));
+}
+
+/* Allgemeine Fragen - leicht andere Farbe */
+.kandidat-section.allgemein .kandidat-header {
+    background: var(--mensa-grau);
+}
+
+.kandidat-section.allgemein .kandidat-header:hover {
+    background: #d0d0d0;
+}
+
+body.dark-mode .kandidat-section.allgemein .kandidat-header {
+    background: #2a3a4a;
+}
+
+body.dark-mode .kandidat-section.allgemein .kandidat-header:hover {
+    background: #3a4a5a;
 }
 
 .kandidat-name {
     font-weight: 600;
     font-size: 0.9rem;
+    flex: 1;
 }
 
 .beitrag-count {
@@ -1254,6 +1317,12 @@ body.dark-mode .dark-mode-toggle:hover {
     opacity: 0.7;
 }
 
+.beitrag-meta .beitrag-id {
+    color: var(--mensa-anthrazit);
+    opacity: 0.5;
+    font-size: 0.7rem;
+}
+
 .these-kurz {
     font-weight: 600;
     color: var(--mensa-dunkelblau);
@@ -1273,6 +1342,109 @@ body.dark-mode .dark-mode-toggle:hover {
     margin-top: var(--spacing-xs);
 }
 
+/* Antwort-Button */
+.antwort-action {
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+}
+
+.antwort-btn {
+    background: none;
+    border: none;
+    color: var(--mensa-dunkelblau);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.antwort-btn:hover {
+    background: var(--mensa-heller);
+}
+
+/* Vote-Buttons */
+.vote-buttons {
+    display: inline-flex;
+    gap: 8px;
+    margin-right: 10px;
+}
+
+.vote-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vote-btn:hover {
+    background: var(--mensa-grau);
+}
+
+.vote-btn.active {
+    font-weight: 600;
+}
+
+.vote-btn.vote-up.active {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.vote-btn.vote-down.active {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+body.dark-mode .vote-btn.vote-up.active {
+    background: #1e4620;
+    border-color: #28a745;
+    color: #a3d9a5;
+}
+
+body.dark-mode .vote-btn.vote-down.active {
+    background: #4a1a1a;
+    border-color: #dc3545;
+    color: #f5c6cb;
+}
+
+.vote-count {
+    font-weight: 600;
+}
+
+.antwort-form-inline {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--mensa-grau);
+    border-radius: var(--radius-sm);
+    display: none;
+}
+
+.antwort-form-inline textarea {
+    width: 100%;
+    padding: var(--spacing-xs);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.antwort-form-inline .btn {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
 .antwort-kompakt {
     padding: var(--spacing-xs) 0;
     font-size: 0.75rem;
@@ -1280,6 +1452,205 @@ body.dark-mode .dark-mode-toggle:hover {
 
 .antwort-kompakt .beitrag-meta {
     font-size: 0.7rem;
+}
+
+/* Neu-Badge */
+.neu-badge {
+    background: var(--mensa-gelb);
+    color: #333;
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: var(--spacing-xs);
+}
+
+body.dark-mode .neu-badge {
+    background: var(--mensa-hellgelb);
+    color: #1a1a2e;
+}
+
+/* Neue Frage als Textzeile */
+.neue-frage-zeile {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    color: var(--mensa-dunkelblau);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.neue-frage-zeile:hover {
+    color: var(--mensa-hellblau);
+}
+
+.neue-frage-zeile .inline-foto {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    object-fit: cover;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+body.dark-mode .neue-frage-zeile {
+    color: var(--mensa-hellblau);
+}
+
+body.dark-mode .neue-frage-zeile:hover {
+    color: var(--mensa-hellgelb);
+}
+
+/* Eingabe-Formular Styles */
+.eingabe-textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.team-select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.team-select option:disabled {
+    color: #999;
+    font-style: italic;
+}
+
+/* Ressort-Präferenzen */
+.ressort-praef-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.ressort-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--spacing-sm);
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.ressort-name {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.prio-select {
+    width: 60px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.ressort-bem {
+    width: 200px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.prio-value {
+    background: var(--mensa-hellgelb);
+    color: var(--mensa-anthrazit);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Kompetenz-Eingabe */
+.kompetenz-eingabe {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.kompetenz-prio-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.kompetenz-prio-row label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.kompetenz-prio-row .prio-select {
+    width: auto;
+    min-width: 150px;
+}
+
+.bem-text {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+body.dark-mode .prio-select,
+body.dark-mode .ressort-bem {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+@media (max-width: 600px) {
+    .ressort-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xs);
+    }
+
+    .ressort-bem {
+        width: 100%;
+    }
+}
+
+.photo-upload {
+    margin-top: var(--spacing-sm);
+    text-align: center;
+}
+
+.form-actions {
+    margin-top: var(--spacing-lg);
+    text-align: center;
+}
+
+body.dark-mode .eingabe-textarea,
+body.dark-mode .team-select {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .ressort-prio,
+body.dark-mode .anforderung-card .bewertung {
+    background: var(--mensa-hellgelb);
+    color: var(--mensa-anthrazit);
 }
 
 @media (max-width: 480px) {
