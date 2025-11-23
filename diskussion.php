@@ -232,8 +232,8 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
             <div class="antwort-action">
                 <?php echo getVoteButtons($aKnr, $antwort['votes_up'] ?? 0, $antwort['votes_down'] ?? 0, $antwort['user_vote'] ?? 0, $antwort['voters_up'] ?? '', $antwort['voters_down'] ?? ''); ?>
                 <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $aKnr; ?>)">↩ Antworten</button>
-                <?php if ($istEigenerBeitrag): ?>
-                    <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $aKnr; ?>, <?php echo $kannEditieren ? 'true' : 'false'; ?>)">✏️ Editieren</button>
+                <?php if ($kannEditieren): ?>
+                    <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $aKnr; ?>)">✏️ Editieren</button>
                 <?php endif; ?>
             </div>
             <div class="antwort-form-inline" id="antwort-form-<?php echo $aKnr; ?>">
@@ -356,8 +356,8 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                                     <div class="antwort-action">
                                         <?php echo getVoteButtons($knr, $thread['votes_up'] ?? 0, $thread['votes_down'] ?? 0, $thread['user_vote'] ?? 0, $thread['voters_up'] ?? '', $thread['voters_down'] ?? ''); ?>
                                         <button class="antwort-btn" onclick="zeigeAntwortForm(<?php echo $knr; ?>)">↩ Antworten</button>
-                                        <?php if ($istEigenerBeitrag): ?>
-                                            <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $knr; ?>, <?php echo $kannEditieren ? 'true' : 'false'; ?>)">✏️ Editieren</button>
+                                        <?php if ($kannEditieren): ?>
+                                            <button class="antwort-btn edit-btn" onclick="editiereBeitrag(<?php echo $knr; ?>)">✏️ Editieren</button>
                                         <?php endif; ?>
                                     </div>
                                     <div class="antwort-form-inline" id="antwort-form-<?php echo $knr; ?>">
@@ -481,10 +481,10 @@ function fuegeNeuenBeitragEin(bezugKnr, neueKnr, text) {
                 <span class="beitrag-id">#${neueKnr}</span>
                 <span class="neu-badge">neu</span>
             </div>
-            <div class="kommentar-text">${textHtml}</div>
+            <div class="kommentar-text" id="text-${neueKnr}">${textHtml}</div>
             <div class="antwort-action">
                 <button class="antwort-btn" onclick="zeigeAntwortForm(${neueKnr})">↩ Antworten</button>
-                <button class="antwort-btn edit-btn" onclick="editiereBeitrag(${neueKnr}, true)">✏️ Editieren</button>
+                <button class="antwort-btn edit-btn" onclick="editiereBeitrag(${neueKnr})">✏️ Editieren</button>
             </div>
             <div class="antwort-form-inline" id="antwort-form-${neueKnr}">
                 <textarea id="antwort-text-${neueKnr}" placeholder="Deine Antwort..."></textarea>
@@ -561,11 +561,7 @@ function sendeNeueFrage(kandId) {
 }
 
 // Edit-Funktionen
-function editiereBeitrag(knr, kannEditieren) {
-    if (!kannEditieren) {
-        alert('Editieren ist nur innerhalb von 3 Minuten nach dem Absenden möglich.');
-        return;
-    }
+function editiereBeitrag(knr) {
     document.querySelectorAll('.antwort-form-inline').forEach(function(form) {
         form.style.display = 'none';
     });
@@ -600,7 +596,14 @@ function speichereEdit(knr) {
             var textEl = document.getElementById('text-' + knr);
             var vollEl = document.getElementById('voll-' + knr);
             var textHtml = text.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/gi, '<a href="$1" target="_blank">$1</a>');
-            if (textEl) textEl.innerHTML = textHtml;
+            if (textEl) {
+                textEl.innerHTML = textHtml;
+                // Visuelles Feedback: kurz hervorheben
+                textEl.style.backgroundColor = '#d4edda';
+                setTimeout(function() {
+                    textEl.style.backgroundColor = '';
+                }, 1500);
+            }
             if (vollEl) vollEl.innerHTML = textHtml + ' <a href="#" class="weniger-link" onclick="zeigeKurz(' + knr + '); return false;">weniger</a>';
             versteckeEditForm(knr);
         } else {
