@@ -243,6 +243,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
             </div>
             <div class="antwort-form-inline" id="edit-form-<?php echo $aKnr; ?>">
                 <textarea id="edit-text-<?php echo $aKnr; ?>"><?php echo escape(decodeEntities($beitragText)); ?></textarea>
+                <p class="edit-hinweis">💡 Editieren ist nur 3 Minuten nach Absenden möglich.</p>
                 <button class="btn btn-small" onclick="speichereEdit(<?php echo $aKnr; ?>)">Speichern</button>
                 <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(<?php echo $aKnr; ?>)">Abbrechen</button>
             </div>
@@ -367,6 +368,7 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                                     </div>
                                     <div class="antwort-form-inline" id="edit-form-<?php echo $knr; ?>">
                                         <textarea id="edit-text-<?php echo $knr; ?>"><?php echo escape(decodeEntities($beitragText)); ?></textarea>
+                                        <p class="edit-hinweis">💡 Editieren ist nur 3 Minuten nach Absenden möglich.</p>
                                         <button class="btn btn-small" onclick="speichereEdit(<?php echo $knr; ?>)">Speichern</button>
                                         <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(<?php echo $knr; ?>)">Abbrechen</button>
                                     </div>
@@ -493,6 +495,7 @@ function fuegeNeuenBeitragEin(bezugKnr, neueKnr, text) {
             </div>
             <div class="antwort-form-inline" id="edit-form-${neueKnr}">
                 <textarea id="edit-text-${neueKnr}">${text}</textarea>
+                <p class="edit-hinweis">💡 Editieren ist nur 3 Minuten nach Absenden möglich.</p>
                 <button class="btn btn-small" onclick="speichereEdit(${neueKnr})">Speichern</button>
                 <button class="btn btn-small btn-secondary" onclick="versteckeEditForm(${neueKnr})">Abbrechen</button>
             </div>
@@ -598,14 +601,10 @@ function speichereEdit(knr) {
             var textHtml = text.replace(/\n/g, '<br>').replace(/(https?:\/\/[^\s<]+)/gi, '<a href="$1" target="_blank">$1</a>');
             if (textEl) {
                 textEl.innerHTML = textHtml;
-                // Visuelles Feedback: kurz hervorheben
-                textEl.style.backgroundColor = '#d4edda';
-                setTimeout(function() {
-                    textEl.style.backgroundColor = '';
-                }, 1500);
             }
             if (vollEl) vollEl.innerHTML = textHtml + ' <a href="#" class="weniger-link" onclick="zeigeKurz(' + knr + '); return false;">weniger</a>';
             versteckeEditForm(knr);
+            alert('Gespeichert. Auf der Gesamtseite wird die Änderung erst nach Neuladen sichtbar.');
         } else {
             alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
         }
