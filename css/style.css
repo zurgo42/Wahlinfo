@@ -592,7 +592,7 @@ body.dark-mode .dark-mode-toggle:hover {
 
 .ressort-prio {
     background: var(--mensa-hellgelb);
-    color: var(--mensa-anthrazit);
+    color: var(--mensa-dunkelblau);
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 600;
@@ -1576,7 +1576,7 @@ body.dark-mode .neue-frage-zeile:hover {
 
 .prio-value {
     background: var(--mensa-hellgelb);
-    color: var(--mensa-anthrazit);
+    color: var(--mensa-dunkelblau);
     padding: 2px 8px;
     border-radius: var(--radius-sm);
     font-size: 0.8rem;
@@ -1650,7 +1650,7 @@ body.dark-mode .team-select {
 body.dark-mode .ressort-prio,
 body.dark-mode .anforderung-card .bewertung {
     background: var(--mensa-hellgelb);
-    color: var(--mensa-anthrazit);
+    color: var(--mensa-dunkelblau);
 }
 
 @media (max-width: 480px) {
