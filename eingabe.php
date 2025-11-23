@@ -221,7 +221,7 @@ function processPhotoUpload($file, $mnr, $table) {
 
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = 'foto_' . $mnr . '.' . strtolower($extension);
-    $targetPath = __DIR__ . '/../img/' . $filename;
+    $targetPath = __DIR__ . '/img/' . $filename;
 
     if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
         return ['error' => true, 'message' => 'Fehler beim Hochladen.'];
@@ -357,9 +357,9 @@ include __DIR__ . '/includes/header.php';
             <div class="detail-header">
                 <div class="detail-photo">
                     <?php if (!empty($kand['bildfile'])): ?>
-                        <img src="../img/<?php echo escape($kand['bildfile']); ?>" alt="Dein Foto" id="preview-photo">
+                        <img src="img/<?php echo escape($kand['bildfile']); ?>" alt="Dein Foto" id="preview-photo">
                     <?php else: ?>
-                        <img src="../img/keinFoto.jpg" alt="Kein Foto" id="preview-photo">
+                        <img src="img/keinFoto.jpg" alt="Kein Foto" id="preview-photo">
                     <?php endif; ?>
 
                     <?php if ($editingAllowed): ?>

@@ -85,9 +85,9 @@ foreach ($aemter as $amt) {
             <a href="<?php echo $link; ?>">
                 <div class="card-image">
                     <?php if (!empty($bildfile)): ?>
-                        <img src="../img/<?php echo escape($bildfile); ?>" alt="Foto von <?php echo $vorname . ' ' . $name; ?>">
+                        <img src="img/<?php echo escape($bildfile); ?>" alt="Foto von <?php echo $vorname . ' ' . $name; ?>">
                     <?php else: ?>
-                        <img src="../leer.jpg" alt="Kein Foto vorhanden">
+                        <img src="img/leer.jpg" alt="Kein Foto vorhanden">
                     <?php endif; ?>
                 </div>
                 <div class="card-content">
