@@ -9,6 +9,17 @@ require_once __DIR__ . '/includes/config.php';
 $userMnr = getUserMnr();
 $pageTitle = 'Administration';
 
+// Admin-MNRs aus Datenbank laden (Fallback: Konstante)
+$adminMnrs = ADMIN_MNRS; // Default aus config.php
+try {
+    $dbAdmins = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'ADMIN_MNRS'");
+    if ($dbAdmins && !empty(trim($dbAdmins['setting_value']))) {
+        $adminMnrs = array_map('trim', explode(',', $dbAdmins['setting_value']));
+    }
+} catch (Exception $e) {
+    // Tabelle existiert noch nicht - Konstante verwenden
+}
+
 // FirstUser-Modus: Erlaubt initialen Admin-Zugang via GET-Parameter
 // Nur aktiv wenn noch keine Admin-MNRs in DB konfiguriert sind
 $firstUserMode = false;
@@ -25,18 +36,13 @@ if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
     }
 }
 
-// Admin-Prüfung - NUR aus Datenbank lesen
-if (!$firstUserMode) {
-    $adminMnrsString = getSetting('ADMIN_MNRS', '');
-    $adminMnrs = array_filter(array_map('trim', explode(',', $adminMnrsString)));
-
-    if (!$userMnr || !in_array($userMnr, $adminMnrs)) {
-        die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
-            <h2>Zugriff verweigert</h2>
-            <p>Diese Seite ist nur für Administratoren zugänglich.</p>
-            <a href="index.php">Zurück zur Startseite</a>
-        </div>');
-    }
+// Admin-Prüfung
+if (!$firstUserMode && (!$userMnr || !in_array($userMnr, $adminMnrs))) {
+    die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
+        <h2>Zugriff verweigert</h2>
+        <p>Diese Seite ist nur für Administratoren zugänglich.</p>
+        <a href="index.php">Zurück zur Startseite</a>
+    </div>');
 }
 
 // Aktiver Tab
