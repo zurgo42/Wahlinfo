@@ -1,3 +1,0 @@
-Zugang zu Subdomain aktive.mensa.de/wahl haben alle Mitglieder - unabhängig davon, ob sie die ANB etc. anerkannt haben oder nicht.
-
-Bei diskussion.php wird - demnächst - abgefragt, ob jemand die ANB anerkannt hat. Wenn nein, dann kann dieses M nur lesen und nicht schreiben - Ausnahme: Die Kandidaten können auch schreiben.
