@@ -175,64 +175,53 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
     <div class="detail-section">
         <h2>Ressort-Präferenzen</h2>
         <?php if ($hasRessort): ?>
-            <p class="section-note">Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren<br>(Prio <strong>5</strong> ist höchste Priorität):</p>
+            <p class="section-note">Im Falle meiner Wahl würde ich mich wie folgt für die folgenden Vorstandsressorts interessieren (Prio 5 ist höchste Priorität):</p>
 
             <?php
             // Ressorts laden
-            $ressortsData = dbFetchAll("SELECT * FROM ressortswahl ORDER BY id");
-            if ($ressortsData):
-                $ressorts = [];
-                foreach ($ressortsData as $r) {
-                    $ressorts[$r['id']] = $r['ressort'];
+            $ressortsData = dbFetchAll("SELECT id, ressort FROM " . TABLE_RESSORTS . " ORDER BY id ASC");
+
+            // Ressort-Präferenzen sammeln und nach Priorität sortieren
+            $prioList = [];
+            foreach ($ressortsData as $r) {
+                $rfeld = "r" . $r['id'];
+                if (!empty($kand[$rfeld]) && $kand[$rfeld] > 9999) {
+                    $prio = (int)floor($kand[$rfeld] / 10000);
+                    $bemId = $kand[$rfeld] % 10000;
+                    $bemerkung = '';
+                    if ($bemId > 0) {
+                        $bemRow = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$bemId]);
+                        if ($bemRow) {
+                            $bemerkung = decodeEntities($bemRow['bem']);
+                        }
+                    }
+                    $prioList[] = [
+                        'prio' => $prio,
+                        'name' => $r['ressort'],
+                        'bem' => $bemerkung
+                    ];
                 }
+            }
 
-                // Für jeden Vorstandsbereich (amt1, amt2, amt3)
-                for ($amtNr = 1; $amtNr <= 3; $amtNr++):
-                    if (empty($kand["amt$amtNr"])) continue;
+            // Nach Priorität sortieren (höchste zuerst)
+            usort($prioList, function($a, $b) {
+                return $b['prio'] - $a['prio'];
+            });
+            ?>
 
-                    // Amt-Name holen
-                    $amtRow = dbFetchOne("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = ?", [$amtNr]);
-                    $amtName = $amtRow ? $amtRow['amt'] : "Bereich $amtNr";
-                    ?>
-
-                    <h3><?php echo escape($amtName); ?></h3>
-                    <div class="ressort-list">
-                    <?php
-                    // Ressorts für diesen Bereich
-                    $found = false;
-                    foreach ($ressorts as $rid => $rname):
-                        $rfeld = "r$rid";
-                        if (!empty($kand[$rfeld]) && $kand[$rfeld] > 9999):
-                            $found = true;
-                            $prio = round($kand[$rfeld] / 10000);
-                            $bemId = $kand[$rfeld] - ($prio * 10000);
-                            $bemerkung = '';
-                            if ($bemId > 0) {
-                                $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [$bemId]);
-                                if ($bemRow) {
-                                    $bemerkung = $bemRow['bem'];
-                                }
-                            }
-                    ?>
-                        <div class="ressort-item">
-                            <div class="ressort-prio">Prio <?php echo $prio; ?></div>
-                            <div class="ressort-name"><?php echo escape($rname); ?></div>
-                        </div>
-                        <?php if (!empty($bemerkung)): ?>
-                            <div class="ressort-comment"><?php echo escape($bemerkung); ?></div>
+            <div class="ressort-praef-grid">
+                <?php foreach ($prioList as $item): ?>
+                    <div class="ressort-row">
+                        <span class="ressort-name"><?php echo escape($item['name']); ?></span>
+                        <span class="prio-value">Prio <?php echo $item['prio']; ?></span>
+                        <?php if (!empty($item['bem'])): ?>
+                            <span class="bem-text"><?php echo escape($item['bem']); ?></span>
                         <?php endif; ?>
-                    <?php
-                        endif;
-                    endforeach;
-
-                    if (!$found): ?>
-                        <p class="no-data">Keine Angaben</p>
-                    <?php endif; ?>
                     </div>
-                <?php endfor;
-            endif; ?>
+                <?php endforeach; ?>
+            </div>
         <?php else: ?>
-            <p class="no-data"><?php echo escape($kand['vorname']); ?> hat auf Anfrage keine bevorzugten Aufgaben/Ressortzuständigkeiten eingetragen.</p>
+            <p class="no-data"><?php echo escape($kand['vorname']); ?> hat keine bevorzugten Ressorts eingetragen.</p>
         <?php endif; ?>
     </div>
     <?php endif; ?>
