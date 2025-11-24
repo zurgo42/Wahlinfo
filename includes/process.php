@@ -159,6 +159,30 @@ function getUserMnr() {
     return null;
 }
 
+/**
+ * Gibt die richtigen Diskussions-Tabellennamen zurück
+ * Je nachdem ob Spielwiese aktiv ist
+ */
+function getDiskussionTabellen() {
+    $istSpielwiese = getSetting('SHOW_SPIELWIESE', '0') === '1';
+
+    if ($istSpielwiese) {
+        return [
+            'wahl' => TABLE_WAHLSPIEL,
+            'kommentare' => TABLE_WAHLSPIEL_KOMMENTARE,
+            'teilnehmer' => TABLE_WAHLSPIEL_TEILNEHMER,
+            'votes' => TABLE_WAHLSPIEL_VOTES
+        ];
+    }
+
+    return [
+        'wahl' => TABLE_WAHL,
+        'kommentare' => TABLE_KOMMENTARE,
+        'teilnehmer' => TABLE_TEILNEHMER,
+        'votes' => TABLE_VOTES
+    ];
+}
+
 // =============================================================================
 // Jahresbezogene Tabellen erstellen (Admin-Funktionen)
 // =============================================================================

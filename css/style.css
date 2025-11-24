@@ -1653,6 +1653,15 @@ body.dark-mode .anforderung-card .bewertung {
     color: #333333;
 }
 
+/* Dark Mode: Musterseite und Admin-Hinweise */
+body.dark-mode .container > div[style*="background: #fff3cd"],
+body.dark-mode .message.info,
+body.dark-mode .alert.alert-info {
+    background: #3a3a2a !important;
+    border-color: #555533 !important;
+    color: var(--text-primary);
+}
+
 @media (max-width: 480px) {
     .kandidat-header {
         padding: var(--spacing-xs) var(--spacing-sm);

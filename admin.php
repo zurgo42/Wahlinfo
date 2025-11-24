@@ -347,6 +347,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                              $_SERVER['REMOTE_ADDR'], $alterBeitrag['Medium'], $alterBeitrag['Mnr'], '']
                         );
 
+                        // Alten Beitrag löschen
+                        dbExecute("DELETE FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?", [$knr]);
+
                         $message = "Beitrag #{$knr} wurde durch #{$neueKnr} ersetzt und ins Log eingetragen";
                         $messageType = 'success';
                     } else {

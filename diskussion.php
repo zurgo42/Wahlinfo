@@ -12,18 +12,12 @@ require_once __DIR__ . '/includes/config.php';
 $userMnr = getUserMnr();
 $pageTitle = 'Diskussion';
 
-// Prüfen ob Spielwiese aktiv ist
-if (!showRealKandidaten()) {
-    include __DIR__ . '/includes/header.php';
-    echo '<div class="container">
-        <h1>Diskussion</h1>
-        <div class="alert alert-info">
-            Solange die Kandidatenliste nicht vorliegt, ist hier keine Diskussion möglich.
-        </div>
-    </div>';
-    include __DIR__ . '/includes/footer.php';
-    exit;
-}
+// Tabellennamen je nach Spielwiese/Arbeitsmodus laden
+$tables = getDiskussionTabellen();
+$TABLE_WAHL = $tables['wahl'];
+$TABLE_KOMMENTARE = $tables['kommentare'];
+$TABLE_TEILNEHMER = $tables['teilnehmer'];
+$TABLE_VOTES = $tables['votes'];
 
 // Konfiguration
 $kurzTextLaenge = 200; // Zeichen, ab denen gekürzt wird
@@ -71,23 +65,23 @@ $voteJoin = "";
 $voteSelect = ", 0 AS votes_up, 0 AS votes_down, 0 AS user_vote, '' AS voters_up, '' AS voters_down";
 if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
     $voteSelect = ",
-        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = 1) AS votes_up,
-        (SELECT COUNT(*) FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = -1) AS votes_down,
-        (SELECT vote FROM " . TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote,
+        (SELECT COUNT(*) FROM " . $TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = 1) AS votes_up,
+        (SELECT COUNT(*) FROM " . $TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.vote = -1) AS votes_down,
+        (SELECT vote FROM " . $TABLE_VOTES . " v WHERE v.Knr = k.Knr AND v.Mnr = ?) AS user_vote,
         (SELECT GROUP_CONCAT(CONCAT(t2.Vorname, ' ', t2.Name) SEPARATOR ', ')
-         FROM " . TABLE_VOTES . " v2
-         LEFT JOIN " . TABLE_TEILNEHMER . " t2 ON v2.Mnr COLLATE utf8mb4_unicode_ci = t2.Mnr COLLATE utf8mb4_unicode_ci
+         FROM " . $TABLE_VOTES . " v2
+         LEFT JOIN " . $TABLE_TEILNEHMER . " t2 ON v2.Mnr COLLATE utf8mb4_unicode_ci = t2.Mnr COLLATE utf8mb4_unicode_ci
          WHERE v2.Knr = k.Knr AND v2.vote = 1) AS voters_up,
         (SELECT GROUP_CONCAT(CONCAT(t3.Vorname, ' ', t3.Name) SEPARATOR ', ')
-         FROM " . TABLE_VOTES . " v3
-         LEFT JOIN " . TABLE_TEILNEHMER . " t3 ON v3.Mnr COLLATE utf8mb4_unicode_ci = t3.Mnr COLLATE utf8mb4_unicode_ci
+         FROM " . $TABLE_VOTES . " v3
+         LEFT JOIN " . $TABLE_TEILNEHMER . " t3 ON v3.Mnr COLLATE utf8mb4_unicode_ci = t3.Mnr COLLATE utf8mb4_unicode_ci
          WHERE v3.Knr = k.Knr AND v3.vote = -1) AS voters_down";
 }
 
 $alleKommentare = dbFetchAll(
     "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName $voteSelect
-     FROM " . TABLE_KOMMENTARE . " k
-     LEFT JOIN " . TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
+     FROM " . $TABLE_KOMMENTARE . " k
+     LEFT JOIN " . $TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
      WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
      GROUP BY k.Knr
      ORDER BY k.Datum ASC",
