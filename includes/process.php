@@ -103,6 +103,14 @@ function getKandidatenTable() {
     return getKandidatenTableForEdit();
 }
 
+/**
+ * Prüft ob Musterseite aktiv ist
+ */
+function isMusterseite() {
+    $musterseite = getSetting('MUSTERSEITE', '0');
+    return $musterseite === '1';
+}
+
 // =============================================================================
 // Benutzer-Authentifizierung
 // =============================================================================
@@ -113,13 +121,32 @@ function getKandidatenTable() {
  * Entwicklung (localhost): automatisch Test-M-Nr
  */
 function getUserMnr() {
-    // Produktion: SSO liefert M-Nr (anpassen je nach SSO-System)
-    if (isset($_SERVER['REMOTE_USER'])) {
-        return $_SERVER['REMOTE_USER'];
+    // Zugangs-Methode aus DB-Einstellungen
+    $zugangMethode = getSetting('ZUGANG_METHODE', 'GET');
+
+    // SSO: M-Nr aus Server-Variable
+    if ($zugangMethode === 'SSO') {
+        if (isset($_SERVER['REMOTE_USER'])) {
+            return $_SERVER['REMOTE_USER'];
+        }
+        // Fallback für Entwicklung
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+            return TEST_MNR;
+        }
+        return null;
     }
 
-    // Entwicklung/Sandbox: GET-Parameter erlauben (eingabe.php?mnr=0495018)
-    if (isset($_GET['mnr']) && preg_match('/^[0-9]{7}$/', $_GET['mnr'])) {
+    // POST: M-Nr aus POST-Parameter
+    if ($zugangMethode === 'POST') {
+        if (isset($_POST['mnr']) && preg_match('/^[0-9]{7,8}$/', $_POST['mnr'])) {
+            return $_POST['mnr'];
+        }
+        return null;
+    }
+
+    // GET (Standard): M-Nr aus GET-Parameter
+    if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
         return $_GET['mnr'];
     }
 
