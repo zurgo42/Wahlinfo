@@ -111,16 +111,18 @@ if ($dbDok && !empty($dbDok['setting_value'])) {
 }
 if (!empty($dokumente)):
 ?>
-<div class="dokumente-section" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-md); border-top: 1px solid var(--mensa-grau);">
-    <p style="color: #666; font-size: 0.9em;">
-        <strong>Nützliche Dokumente:</strong>
+<div class="dokumente-section" style="margin-top: var(--spacing-xl);">
+    <div style="background: var(--mensa-gelb); color: #333333; padding: 8px 15px; border-radius: var(--radius-sm); margin-bottom: 10px;">
+        <strong>Nützliche Dokumente</strong>
+    </div>
+    <p style="font-size: 0.9em;">
         <?php
         $links = [];
         foreach ($dokumente as $dok) {
             $title = escape($dok['titel']);
             $link = escape($dok['link']);
             $tooltip = !empty($dok['beschreibung']) ? ' title="' . escape($dok['beschreibung']) . '"' : '';
-            $links[] = '<a href="' . $link . '" target="_blank"' . $tooltip . '>' . $title . '</a>';
+            $links[] = '<a href="' . $link . '" target="_blank"' . $tooltip . ' style="color: var(--mensa-gelb);">' . $title . '</a>';
         }
         echo implode(' • ', $links);
         ?>
