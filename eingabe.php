@@ -18,22 +18,21 @@ $message = '';
 $messageType = '';
 
 /**
- * Protokolliert Änderungen in einer Log-Datei
+ * Protokolliert Änderungen in der Datenbank
  */
-function logChange($mnr, $action, $details = '') {
-    $logFile = __DIR__ . '/logs/eingabe_' . date('Y-m') . '.log';
-    $logDir = dirname($logFile);
+function logChangeToDB($mnr, $typ, $altId, $altText, $neuId, $neuText) {
+    $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
 
-    if (!is_dir($logDir)) {
-        mkdir($logDir, 0755, true);
+    try {
+        dbExecute(
+            "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_id, neu_text)
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [$typ, $mnr, $ip, $altId, $altText, $neuId, $neuText]
+        );
+    } catch (Exception $e) {
+        // Logging-Fehler sollten den Hauptprozess nicht blockieren
+        error_log("Logging-Fehler: " . $e->getMessage());
     }
-
-    $timestamp = date('Y-m-d H:i:s');
-    $ip = substr($_SERVER['REMOTE_ADDR'] ?? 'unknown', 0, 45);
-    $logEntry = sprintf("[%s] MNr: %s | IP: %s | %s | %s\n",
-        $timestamp, $mnr, $ip, $action, $details);
-
-    file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 }
 
 // =============================================================================
@@ -91,19 +90,44 @@ function processFormSubmission($mnr, $postData, $files) {
             $newBem = trim($postData["rbem$i"] ?? '');
             $oldWert = $kandidat["r$i"] ?? 0;
 
+            // Alte Werte extrahieren
+            $oldPrio = 0;
+            $oldBemId = 0;
+            $oldBemText = '';
+            if ($oldWert > 0) {
+                $oldPrio = (int)floor($oldWert / 10000);
+                $oldBemId = $oldWert % 10000;
+                if ($oldBemId > 0) {
+                    $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldBemId]);
+                    $oldBemText = $oldBem ? $oldBem['bem'] : '';
+                }
+            }
+
             // Neuen Wert berechnen
             $newWert = 0;
+            $neuBemId = 0;
             if ($newPrio > 0 || !empty($newBem)) {
-                $bemId = 0;
                 if (!empty($newBem)) {
                     // Immer neue Bemerkung erstellen
-                    $bemId = createNewBemerkung($newBem);
+                    $neuBemId = createNewBemerkung($newBem);
                 }
-                $newWert = $newPrio * 10000 + $bemId;
+                $newWert = $newPrio * 10000 + $neuBemId;
             }
 
             if ($newWert != $oldWert) {
                 $changedFields[] = "r$i: $oldWert -> $newWert";
+
+                // Logging: Ressort-Priorität geändert
+                if ($oldPrio != $newPrio || $oldBemText !== $newBem) {
+                    logChangeToDB(
+                        $mnr,
+                        'KANDIDAT_RESSORT',
+                        $oldBemId,
+                        "Ressort $i, Prio: $oldPrio, Bem: " . substr($oldBemText, 0, 100),
+                        $neuBemId,
+                        "Ressort $i, Prio: $newPrio, Bem: " . substr($newBem, 0, 100)
+                    );
+                }
             }
             $sql .= "r$i = ?, ";
             $params[] = $newWert;
@@ -139,19 +163,31 @@ function processFormSubmission($mnr, $postData, $files) {
 
                 // Neuen Wert berechnen
                 $newWert = 0;
+                $neuBemId = 0;
                 if ($newPrio > 0 || !empty($antwortText)) {
-                    $bemId = 0;
                     if (!empty($antwortText) && $antwortText !== $oldText) {
-                        $bemId = createNewBemerkung($antwortText);
+                        $neuBemId = createNewBemerkung($antwortText);
                     } elseif (!empty($antwortText)) {
-                        $bemId = $oldBemId; // Text unverändert, alte ID behalten
+                        $neuBemId = $oldBemId; // Text unverändert, alte ID behalten
                     }
-                    $newWert = $newPrio * 10000 + $bemId;
+                    $newWert = $newPrio * 10000 + $neuBemId;
                 }
 
                 if ($newWert != $oldWert) {
                     dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$newWert, $mnr]);
                     $changedFields[] = "$fieldName: $oldWert -> $newWert";
+
+                    // Logging: Prioritäts- oder Textänderung bei Kompetenz
+                    if ($oldPrio != $newPrio || $oldText !== $antwortText) {
+                        logChangeToDB(
+                            $mnr,
+                            'KANDIDAT_KOMPETENZ',
+                            $oldBemId,
+                            "Prio: $oldPrio, Text: " . substr($oldText, 0, 100),
+                            $neuBemId,
+                            "Prio: $newPrio, Text: " . substr($antwortText, 0, 100)
+                        );
+                    }
                 }
             } else {
                 // Normale Antworten (a1-a8, a16-a26)
@@ -166,10 +202,30 @@ function processFormSubmission($mnr, $postData, $files) {
                         $bemId = createNewBemerkung($antwortText);
                         dbExecute("UPDATE $table SET $fieldName = ? WHERE mnummer = ?", [$bemId, $mnr]);
                         $changedFields[] = "$fieldName: neue ID $bemId";
+
+                        // Logging: Textänderung
+                        logChangeToDB(
+                            $mnr,
+                            'KANDIDAT_ANTWORT',
+                            $oldWert,
+                            substr($oldText, 0, 200),
+                            $bemId,
+                            substr($antwortText, 0, 200)
+                        );
                     }
                 } elseif ($oldWert > 0) {
                     dbExecute("UPDATE $table SET $fieldName = 0 WHERE mnummer = ?", [$mnr]);
                     $changedFields[] = "$fieldName: gelöscht (war ID $oldWert)";
+
+                    // Logging: Antwort gelöscht
+                    logChangeToDB(
+                        $mnr,
+                        'KANDIDAT_ANTWORT',
+                        $oldWert,
+                        substr($oldText, 0, 200),
+                        0,
+                        '[gelöscht]'
+                    );
                 }
             }
         }
@@ -185,16 +241,10 @@ function processFormSubmission($mnr, $postData, $files) {
 
         $pdo->commit();
 
-        // Änderungen loggen
-        if (!empty($changedFields)) {
-            logChange($mnr, 'UPDATE', implode('; ', $changedFields));
-        }
-
         return ['type' => 'success', 'message' => 'Daten erfolgreich gespeichert.'];
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        logChange($mnr, 'ERROR', $e->getMessage());
         return ['type' => 'error', 'message' => 'Fehler: ' . $e->getMessage()];
     }
 }
