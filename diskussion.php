@@ -417,6 +417,34 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
     </div>
 </main>
 
+<?php
+// Dokumente anzeigen
+$dokumente = [];
+$dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
+if ($dbDok && !empty($dbDok['setting_value'])) {
+    $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+}
+if (!empty($dokumente)):
+?>
+<div class="container">
+    <div class="dokumente-section" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-md); border-top: 1px solid var(--mensa-grau);">
+        <p style="color: #666; font-size: 0.9em;">
+            <strong>Nützliche Dokumente:</strong>
+            <?php
+            $links = [];
+            foreach ($dokumente as $dok) {
+                $title = escape($dok['titel']);
+                $link = escape($dok['link']);
+                $tooltip = !empty($dok['beschreibung']) ? ' title="' . escape($dok['beschreibung']) . '"' : '';
+                $links[] = '<a href="' . $link . '" target="_blank"' . $tooltip . '>' . $title . '</a>';
+            }
+            echo implode(' • ', $links);
+            ?>
+        </p>
+    </div>
+</div>
+<?php endif; ?>
+
 <script>
 function toggleKandidatDiskussion(id) {
     var threads = document.getElementById('threads-' + id);
