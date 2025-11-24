@@ -45,6 +45,7 @@ define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
 define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
 define('TABLE_RESSORTS', 'ressortswahl');
 define('TABLE_ADRESSEN', 'adressenwahl');
+define('TABLE_AENDERUNGSLOG', 'aenderungslog');
 
 // Jahresabhängige Tabellen - Format: wahl[JAHR]...
 // Kandidaten, Kommentare, Teilnehmer, Votes

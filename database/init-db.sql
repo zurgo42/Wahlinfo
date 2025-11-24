@@ -34,6 +34,9 @@ INSERT INTO `einstellungenwahl` VALUES (5, 'ADMIN_MNRS', '', 'Admin M-Nummern (k
 INSERT INTO `einstellungenwahl` VALUES (6, 'SHOW_SPIELWIESE', '1', 'Spielwiese anzeigen (1=ja, 0=nein)');
 INSERT INTO `einstellungenwahl` VALUES (7, 'MAIL_TEXT_INITIAL', 'Liebe/r {VORNAME},\n\ndie Kandidateneintragung für die Vorstandswahl ist eröffnet.\n\nBitte trage deine Informationen unter folgendem Link ein:\n[LINK]\n\nMit freundlichen Grüßen', 'Initialnachricht an Kandidaten');
 INSERT INTO `einstellungenwahl` VALUES (8, 'MAIL_TEXT_ERINNERUNG', 'Liebe/r {VORNAME},\n\nerinnerung: Bitte vervollständige deine Kandidatendaten.\n\nMit freundlichen Grüßen', 'Erinnerungsmail an Kandidaten');
+INSERT INTO `einstellungenwahl` VALUES (9, 'ZUGANG_METHODE', 'GET', 'Zugangs-Methode: POST, GET oder SSO');
+INSERT INTO `einstellungenwahl` VALUES (10, 'MUSTERSEITE', '1', 'Musterseite anzeigen (1=ja, 0=nein)');
+INSERT INTO `einstellungenwahl` VALUES (11, 'LOGO_DATEI', 'img/logo.png', 'Pfad zur Logo-Datei');
 
 -- Ressorts
 DROP TABLE IF EXISTS `ressortswahl`;
@@ -231,6 +234,23 @@ CREATE TABLE `bemerkungenwahl` (
   `bem` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
   `schl` int UNSIGNED NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Änderungs-Logfile
+DROP TABLE IF EXISTS `aenderungslog`;
+CREATE TABLE `aenderungslog` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `typ` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `mnr` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `datum` datetime NULL DEFAULT current_timestamp,
+  `ip` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `alt_id` int NULL DEFAULT NULL,
+  `alt_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `neu_id` int NULL DEFAULT NULL,
+  `neu_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_datum`(`datum`),
+  INDEX `idx_mnr`(`mnr`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
