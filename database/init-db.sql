@@ -253,6 +253,76 @@ CREATE TABLE `aenderungslog` (
   INDEX `idx_mnr`(`mnr`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+-- =============================================================================
+-- SPIELWIESE-TABELLEN (für Musterseite)
+-- =============================================================================
+
+-- Spielwiese Kandidaten
+DROP TABLE IF EXISTS `wahlspiel`;
+CREATE TABLE `wahlspiel` (
+  `Knr` int NOT NULL,
+  `Leer` int NULL DEFAULT NULL,
+  `These` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Kommentar` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `pos` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `neg` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `mnummer` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `email` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `nachricht` tinyint NULL DEFAULT NULL,
+  `lfdnr` tinyint NULL DEFAULT NULL,
+  PRIMARY KEY (`Knr`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Spielwiese mit Daten aus spielwiesewahl füllen
+INSERT INTO `wahlspiel` (Knr, These, mnummer, email, nachricht, lfdnr)
+SELECT Knr, CONCAT(vorname, ' ', name) as These, mnummer, email, nachricht, id as lfdnr
+FROM `spielwiesewahl`
+WHERE Knr IS NOT NULL;
+
+-- Spielwiese Kommentare
+DROP TABLE IF EXISTS `wahlspielkommentare`;
+CREATE TABLE `wahlspielkommentare` (
+  `Knr` int NOT NULL,
+  `These` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `Kommentar` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `Bezug` int NULL DEFAULT NULL,
+  `IP` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Datum` datetime NULL DEFAULT NULL,
+  `Medium` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Mnr` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Verbergen` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Hinweis` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `pos` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `neg` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  PRIMARY KEY (`Knr`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Spielwiese Teilnehmer
+DROP TABLE IF EXISTS `wahlspielteilnehmer`;
+CREATE TABLE `wahlspielteilnehmer` (
+  `Mnr` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Vorname` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Nachricht` tinyint NULL DEFAULT NULL,
+  `Email` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `IP` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `Erstzugriff` datetime NULL DEFAULT NULL,
+  `Letzter` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`Mnr`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Spielwiese Votes
+DROP TABLE IF EXISTS `wahlspielvotes`;
+CREATE TABLE `wahlspielvotes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `Knr` int NOT NULL,
+  `Mnr` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vote` tinyint NOT NULL,
+  `datum` datetime NULL DEFAULT current_timestamp,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_vote`(`Knr`, `Mnr`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =============================================================================

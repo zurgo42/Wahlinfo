@@ -54,6 +54,12 @@ define('TABLE_KOMMENTARE', 'wahl' . WAHLJAHR . 'kommentare');
 define('TABLE_TEILNEHMER', 'wahl' . WAHLJAHR . 'teilnehmer');
 define('TABLE_VOTES', 'wahl' . WAHLJAHR . 'votes');
 
+// Spielwiese-Tabellen (für Musterseite)
+define('TABLE_WAHLSPIEL', 'wahlspiel');
+define('TABLE_WAHLSPIEL_KOMMENTARE', 'wahlspielkommentare');
+define('TABLE_WAHLSPIEL_TEILNEHMER', 'wahlspielteilnehmer');
+define('TABLE_WAHLSPIEL_VOTES', 'wahlspielvotes');
+
 // =============================================================================
 // Feature-Flags
 // =============================================================================
