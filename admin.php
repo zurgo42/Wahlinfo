@@ -231,7 +231,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'DEADLINE_EDITIEREN' => $_POST['DEADLINE_EDITIEREN'] ?? '',
                     'FEATURE_VOTING' => isset($_POST['FEATURE_VOTING']) ? '1' : '0',
                     'SHOW_SPIELWIESE' => isset($_POST['SHOW_SPIELWIESE']) ? '1' : '0',
-                    'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? ''
+                    'MUSTERSEITE' => isset($_POST['MUSTERSEITE']) ? '1' : '0',
+                    'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? '',
+                    'ZUGANG_METHODE' => $_POST['ZUGANG_METHODE'] ?? 'GET',
+                    'LOGO_DATEI' => $_POST['LOGO_DATEI'] ?? 'img/logo.png'
                 ];
                 foreach ($settings as $key => $value) {
                     dbExecute(
@@ -312,6 +315,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     );
                     $message = 'Dokument gelöscht';
                     $messageType = 'success';
+                }
+                break;
+
+            // === MODERATION ===
+            case 'beitrag_ersetzen':
+                $knr = (int)$_POST['knr'];
+                $neuerText = $_POST['neuer_text'] ?? '';
+
+                if ($knr > 0 && $neuerText) {
+                    // Alten Beitrag laden
+                    $alterBeitrag = dbFetchOne("SELECT * FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?", [$knr]);
+
+                    if ($alterBeitrag) {
+                        // Log-Eintrag erstellen
+                        dbExecute(
+                            "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_text)
+                             VALUES (?, ?, ?, ?, ?, ?)",
+                            ['ADMIN', $userMnr, $_SERVER['REMOTE_ADDR'], $knr, $alterBeitrag['These'], $neuerText]
+                        );
+
+                        // Neuen Beitrag erstellen (behält Autor)
+                        dbExecute(
+                            "INSERT INTO " . TABLE_KOMMENTARE . " (These, Kommentar, Bezug, IP, Datum, Medium, Mnr, Verbergen)
+                             VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)",
+                            [$neuerText, $alterBeitrag['Kommentar'], $alterBeitrag['Bezug'],
+                             $_SERVER['REMOTE_ADDR'], $alterBeitrag['Medium'], $alterBeitrag['Mnr'], '']
+                        );
+
+                        $neueKnr = dbLastInsertId();
+
+                        // Log-Eintrag mit neuer ID aktualisieren
+                        dbExecute(
+                            "UPDATE " . TABLE_AENDERUNGSLOG . " SET neu_id = ? WHERE id = LAST_INSERT_ID()",
+                            [$neueKnr]
+                        );
+
+                        $message = "Beitrag #{$knr} wurde durch #{$neueKnr} ersetzt und ins Log eingetragen";
+                        $messageType = 'success';
+                    } else {
+                        $message = 'Beitrag nicht gefunden';
+                        $messageType = 'error';
+                    }
+                } else {
+                    $message = 'Bitte alle Felder ausfüllen';
+                    $messageType = 'error';
                 }
                 break;
 
@@ -634,6 +682,7 @@ try {
         <a href="?tab=mailing" class="admin-tab <?php echo $activeTab === 'mailing' ? 'active' : ''; ?>">Mailing</a>
         <a href="?tab=archivierung" class="admin-tab <?php echo $activeTab === 'archivierung' ? 'active' : ''; ?>">Archivierung</a>
         <a href="?tab=dokumente" class="admin-tab <?php echo $activeTab === 'dokumente' ? 'active' : ''; ?>">Dokumente</a>
+        <a href="?tab=moderation" class="admin-tab <?php echo $activeTab === 'moderation' ? 'active' : ''; ?>">Moderation</a>
     </div>
 
     <div class="admin-section">
@@ -952,6 +1001,25 @@ try {
                     Ja (statt echte Kandidaten)
                 </label>
 
+                <label for="MUSTERSEITE">Musterseite verwenden:</label>
+                <label style="font-weight: normal;">
+                    <input type="checkbox" id="MUSTERSEITE" name="MUSTERSEITE"
+                           <?php echo (!empty($dbSettings['MUSTERSEITE']) && $dbSettings['MUSTERSEITE'] == '1') ? 'checked' : ''; ?>>
+                    Ja (inkl. Rollenliste für Tests)
+                </label>
+
+                <label for="ZUGANG_METHODE">Zugang per:</label>
+                <select id="ZUGANG_METHODE" name="ZUGANG_METHODE">
+                    <option value="GET" <?php echo ($dbSettings['ZUGANG_METHODE'] ?? 'GET') == 'GET' ? 'selected' : ''; ?>>GET</option>
+                    <option value="POST" <?php echo ($dbSettings['ZUGANG_METHODE'] ?? 'GET') == 'POST' ? 'selected' : ''; ?>>POST</option>
+                    <option value="SSO" <?php echo ($dbSettings['ZUGANG_METHODE'] ?? 'GET') == 'SSO' ? 'selected' : ''; ?>>SSO</option>
+                </select>
+
+                <label for="LOGO_DATEI">Logo-Datei:</label>
+                <input type="text" id="LOGO_DATEI" name="LOGO_DATEI"
+                       value="<?php echo escape($dbSettings['LOGO_DATEI'] ?? 'img/logo.png'); ?>"
+                       placeholder="z.B. img/logo.png">
+
                 <label for="ADMIN_MNRS">Admin M-Nummern (kommagetrennt):</label>
                 <input type="text" id="ADMIN_MNRS" name="ADMIN_MNRS"
                        value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? implode(',', ADMIN_MNRS)); ?>"
@@ -1179,6 +1247,42 @@ Das Wahlteam');
                 </div>
                 <div>
                     <button type="submit" class="btn-small btn-save">Dokument hinzufügen</button>
+                </div>
+            </div>
+        </form>
+
+        <?php elseif ($activeTab === 'moderation'): ?>
+        <!-- ================================================================= -->
+        <!-- MODERATION -->
+        <!-- ================================================================= -->
+        <h2>Beiträge moderieren</h2>
+        <p>Unangemessene oder rechtswidrige Beiträge können hier ersetzt werden.</p>
+
+        <div style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
+            <strong>Hinweis:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Der Originaltext bleibt in der Datenbank erhalten</li>
+                <li>Es wird ein neuer Beitrag mit Admin-Text erstellt</li>
+                <li>Der Autor bleibt unverändert</li>
+                <li>Alle Änderungen werden im Logfile protokolliert</li>
+            </ul>
+        </div>
+
+        <form method="post" action="?tab=moderation" onsubmit="return confirm('Beitrag wirklich ersetzen? Dies wird geloggt.');">
+            <input type="hidden" name="action" value="beitrag_ersetzen">
+            <div style="display: grid; gap: 15px; max-width: 800px;">
+                <div>
+                    <label for="knr"><strong>Beitrags-Nr. (Knr):</strong></label>
+                    <input type="number" id="knr" name="knr" required
+                           placeholder="z.B. 1234" style="width: 200px; padding: 8px;">
+                </div>
+                <div>
+                    <label for="neuer_text"><strong>Neuer Text:</strong></label>
+                    <textarea id="neuer_text" name="neuer_text" required
+                              style="width: 100%; min-height: 120px; padding: 8px;">*** Der Inhalt dieses Beitrags wurde als unangemessen oder rechtswidrig gemeldet und durch den Admin gelöscht ***</textarea>
+                </div>
+                <div>
+                    <button type="submit" class="btn-small btn-save">Beitrag ersetzen</button>
                 </div>
             </div>
         </form>

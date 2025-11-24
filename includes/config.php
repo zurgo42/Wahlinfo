@@ -43,6 +43,7 @@ define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
 define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
 define('TABLE_RESSORTS', 'ressortswahl');
 define('TABLE_ADRESSEN', 'adressenwahl');
+define('TABLE_AENDERUNGSLOG', 'aenderungslog');
 
 // Admin-Zugang (M-Nummern die Admin-Rechte haben)
 define('ADMIN_MNRS', ['0495018', '0123456']); // Hier Admin-MNrs eintragen
