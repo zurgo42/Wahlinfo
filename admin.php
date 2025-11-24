@@ -271,6 +271,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
 
+            // === DOKUMENTE ===
+            case 'dokument_add':
+                $titel = trim($_POST['titel'] ?? '');
+                $beschreibung = trim($_POST['beschreibung'] ?? '');
+                $link = trim($_POST['link'] ?? '');
+                if ($titel && $link) {
+                    $dokumente = [];
+                    $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
+                    if ($dbDok && !empty($dbDok['setting_value'])) {
+                        $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+                    }
+                    $dokumente[] = ['titel' => $titel, 'beschreibung' => $beschreibung, 'link' => $link];
+                    dbExecute(
+                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                         ON DUPLICATE KEY UPDATE setting_value = ?",
+                        ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
+                    );
+                    $message = 'Dokument hinzugefügt';
+                    $messageType = 'success';
+                } else {
+                    $message = 'Titel und Link sind erforderlich';
+                    $messageType = 'error';
+                }
+                break;
+
+            case 'dokument_delete':
+                $index = (int)$_POST['index'];
+                $dokumente = [];
+                $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
+                if ($dbDok && !empty($dbDok['setting_value'])) {
+                    $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+                }
+                if (isset($dokumente[$index])) {
+                    array_splice($dokumente, $index, 1);
+                    dbExecute(
+                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                         ON DUPLICATE KEY UPDATE setting_value = ?",
+                        ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
+                    );
+                    $message = 'Dokument gelöscht';
+                    $messageType = 'success';
+                }
+                break;
+
             // === MAILING ===
             case 'mail_text_speichern':
                 $mailKey = $_POST['mail_key'] ?? '';
@@ -589,6 +633,7 @@ try {
         <a href="?tab=einstellungen" class="admin-tab <?php echo $activeTab === 'einstellungen' ? 'active' : ''; ?>">Einstellungen</a>
         <a href="?tab=mailing" class="admin-tab <?php echo $activeTab === 'mailing' ? 'active' : ''; ?>">Mailing</a>
         <a href="?tab=archivierung" class="admin-tab <?php echo $activeTab === 'archivierung' ? 'active' : ''; ?>">Archivierung</a>
+        <a href="?tab=dokumente" class="admin-tab <?php echo $activeTab === 'dokumente' ? 'active' : ''; ?>">Dokumente</a>
     </div>
 
     <div class="admin-section">
@@ -1064,6 +1109,77 @@ Das Wahlteam');
                 <button type="submit" class="btn-small btn-save" style="padding: 10px 20px;">
                     Archiv erstellen
                 </button>
+            </div>
+        </form>
+
+        <?php elseif ($activeTab === 'dokumente'): ?>
+        <!-- ================================================================= -->
+        <!-- DOKUMENTE -->
+        <!-- ================================================================= -->
+        <h2>Dokumente verwalten</h2>
+        <p>Verlinkte Dokumente, die auf den Seiten Kandidaten und Diskussion angezeigt werden.</p>
+
+        <?php
+        $dokumente = [];
+        $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
+        if ($dbDok && !empty($dbDok['setting_value'])) {
+            $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+        }
+        ?>
+
+        <?php if (!empty($dokumente)): ?>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Beschreibung</th>
+                    <th>Link</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($dokumente as $index => $dok): ?>
+                <tr>
+                    <td><?php echo escape($dok['titel']); ?></td>
+                    <td><?php echo escape($dok['beschreibung']); ?></td>
+                    <td><a href="<?php echo escape($dok['link']); ?>" target="_blank"><?php echo escape($dok['link']); ?></a></td>
+                    <td>
+                        <form method="post" action="?tab=dokumente" style="display:inline;">
+                            <input type="hidden" name="action" value="dokument_delete">
+                            <input type="hidden" name="index" value="<?php echo $index; ?>">
+                            <button type="submit" class="btn-small btn-delete" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php else: ?>
+        <p><em>Noch keine Dokumente vorhanden.</em></p>
+        <?php endif; ?>
+
+        <h3>Neues Dokument hinzufügen</h3>
+        <form method="post" action="?tab=dokumente">
+            <input type="hidden" name="action" value="dokument_add">
+            <div style="display: grid; gap: 10px; max-width: 600px;">
+                <div>
+                    <label for="dok_titel"><strong>Titel:</strong></label>
+                    <input type="text" id="dok_titel" name="titel" required
+                           placeholder="z.B. Satzung" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                    <label for="dok_beschreibung"><strong>Beschreibung (Tooltip):</strong></label>
+                    <input type="text" id="dok_beschreibung" name="beschreibung"
+                           placeholder="z.B. Aktuelle Satzung des Vereins" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                    <label for="dok_link"><strong>Link:</strong></label>
+                    <input type="text" id="dok_link" name="link" required
+                           placeholder="z.B. unterlagen/satzung.pdf" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                    <button type="submit" class="btn-small btn-save">Dokument hinzufügen</button>
+                </div>
             </div>
         </form>
 
