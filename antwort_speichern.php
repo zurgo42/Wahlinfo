@@ -44,7 +44,7 @@ if ($action === 'edit') {
     try {
         // Prüfen ob der Beitrag dem User gehört und maximal 3 Minuten alt ist
         $kommentar = dbFetchOne(
-            "SELECT Mnr, Datum FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?",
+            "SELECT Mnr, Datum, These FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?",
             [$knr]
         );
 
@@ -64,6 +64,9 @@ if ($action === 'edit') {
             exit;
         }
 
+        // Alten Text speichern für Logging
+        $alterText = $kommentar['These'] ?? '';
+
         // Text bereinigen
         $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 
@@ -72,6 +75,16 @@ if ($action === 'edit') {
             "UPDATE " . TABLE_KOMMENTARE . " SET These = ? WHERE Knr = ?",
             [$text, $knr]
         );
+
+        // Änderung loggen (nur wenn Text sich wirklich geändert hat)
+        if ($alterText !== $text) {
+            $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
+            dbExecute(
+                "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_id, neu_text)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)",
+                ['DISKUSSION_EDIT', $userMnr, $ip, $knr, substr($alterText, 0, 500), $knr, substr($text, 0, 500)]
+            );
+        }
 
         echo json_encode(['success' => true, 'message' => 'Beitrag aktualisiert']);
         exit;
