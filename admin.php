@@ -328,27 +328,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $alterBeitrag = dbFetchOne("SELECT * FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?", [$knr]);
 
                     if ($alterBeitrag) {
+                        // Nächste Knr ermitteln (da kein auto_increment)
+                        $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . TABLE_KOMMENTARE);
+                        $neueKnr = ($maxKnr['max_knr'] ?? 2000) + 1;
+
                         // Log-Eintrag erstellen
-                        dbExecute(
-                            "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_text)
-                             VALUES (?, ?, ?, ?, ?, ?)",
-                            ['ADMIN', $userMnr, $_SERVER['REMOTE_ADDR'], $knr, $alterBeitrag['These'], $neuerText]
+                        $logId = dbExecute(
+                            "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_id, neu_text)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            ['ADMIN', $userMnr, $_SERVER['REMOTE_ADDR'], $knr, $alterBeitrag['These'], $neueKnr, $neuerText]
                         );
 
                         // Neuen Beitrag erstellen (behält Autor)
                         dbExecute(
-                            "INSERT INTO " . TABLE_KOMMENTARE . " (These, Kommentar, Bezug, IP, Datum, Medium, Mnr, Verbergen)
-                             VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)",
-                            [$neuerText, $alterBeitrag['Kommentar'], $alterBeitrag['Bezug'],
+                            "INSERT INTO " . TABLE_KOMMENTARE . " (Knr, These, Kommentar, Bezug, IP, Datum, Medium, Mnr, Verbergen)
+                             VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)",
+                            [$neueKnr, $neuerText, $alterBeitrag['Kommentar'], $alterBeitrag['Bezug'],
                              $_SERVER['REMOTE_ADDR'], $alterBeitrag['Medium'], $alterBeitrag['Mnr'], '']
-                        );
-
-                        $neueKnr = dbLastInsertId();
-
-                        // Log-Eintrag mit neuer ID aktualisieren
-                        dbExecute(
-                            "UPDATE " . TABLE_AENDERUNGSLOG . " SET neu_id = ? WHERE id = LAST_INSERT_ID()",
-                            [$neueKnr]
                         );
 
                         $message = "Beitrag #{$knr} wurde durch #{$neueKnr} ersetzt und ins Log eingetragen";

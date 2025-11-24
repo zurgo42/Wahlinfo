@@ -49,60 +49,24 @@
 
     <?php if (isMusterseite()): ?>
     <!-- Musterseiten-Hinweis mit Rollenliste -->
-    <div class="container" style="margin-top: 20px; margin-bottom: 20px;">
-        <div style="background: #fff3cd; padding: 20px; border-radius: var(--radius-sm); border: 2px solid #ffc107;">
-            <h3 style="margin-top: 0;">Dies ist eine Musterseite</h3>
-            <p>Um die Funktionalität zu testen, siehst du unter Kandidaten einige Musterkandidaten und ihre Vorstellung. Damit du das Diskussionstool ausprobieren kannst, darfst du verschiedene Rollen annehmen: Wähle eine der folgenden Personen und schlüpfe durch Klick auf den Link in deren Rolle, um mitzudiskutieren.</p>
+    <div class="container" style="margin-top: 10px; margin-bottom: 10px;">
+        <div style="background: #fff3cd; padding: 10px 15px; border-radius: var(--radius-sm); border: 1px solid #ffc107;">
+            <h4 style="margin: 0 0 5px 0; font-size: 0.9em;">Musterseite – Verschiedene Rollen testen</h4>
+            <p style="font-size: 0.75em; margin: 0 0 8px 0;">Wähle eine Testperson um das Diskussionstool auszuprobieren:</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 15px;">
-                <a href="?mnr=04932012" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Albert Einstein</strong><br>
-                    <small style="color: #666;">M-Nr. 04932012</small>
-                </a>
-                <a href="?mnr=04932011" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Werner Heisenberg</strong><br>
-                    <small style="color: #666;">M-Nr. 04932011</small>
-                </a>
-                <a href="?mnr=04932010" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Super MachtAllesToll</strong><br>
-                    <small style="color: #666;">M-Nr. 04932010</small>
-                </a>
-                <a href="?mnr=04932002" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Marie Curie</strong><br>
-                    <small style="color: #666;">M-Nr. 04932002</small>
-                </a>
-                <a href="?mnr=04932009" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Max Planck</strong><br>
-                    <small style="color: #666;">M-Nr. 04932009</small>
-                </a>
-                <a href="?mnr=04932007" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Hans Asperger</strong><br>
-                    <small style="color: #666;">M-Nr. 04932007</small>
-                </a>
-                <a href="?mnr=04932001" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Konrad Röntgen</strong><br>
-                    <small style="color: #666;">M-Nr. 04932001</small>
-                </a>
-                <a href="?mnr=04932004" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Anita Augspurg</strong><br>
-                    <small style="color: #666;">M-Nr. 04932004</small>
-                </a>
-                <a href="?mnr=04932003" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Emil Kraepelin</strong><br>
-                    <small style="color: #666;">M-Nr. 04932003</small>
-                </a>
-                <a href="?mnr=04932006" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Selma Lagerlöf</strong><br>
-                    <small style="color: #666;">M-Nr. 04932006</small>
-                </a>
-                <a href="?mnr=04932008" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Mileva Maric</strong><br>
-                    <small style="color: #666;">M-Nr. 04932008</small>
-                </a>
-                <a href="?mnr=04932005" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: var(--radius-sm); text-decoration: none; color: inherit;">
-                    <strong>Mutter Teresa</strong><br>
-                    <small style="color: #666;">M-Nr. 04932005</small>
-                </a>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                <a href="?mnr=04932012" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Albert Einstein</a>
+                <a href="?mnr=04932011" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Werner Heisenberg</a>
+                <a href="?mnr=04932010" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Super MachtAllesToll</a>
+                <a href="?mnr=04932002" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Marie Curie</a>
+                <a href="?mnr=04932009" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Max Planck</a>
+                <a href="?mnr=04932007" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Hans Asperger</a>
+                <a href="?mnr=04932001" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Konrad Röntgen</a>
+                <a href="?mnr=04932004" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Anita Augspurg</a>
+                <a href="?mnr=04932003" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Emil Kraepelin</a>
+                <a href="?mnr=04932006" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Selma Lagerlöf</a>
+                <a href="?mnr=04932008" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Mileva Maric</a>
+                <a href="?mnr=04932005" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Mutter Teresa</a>
             </div>
         </div>
     </div>
