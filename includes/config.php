@@ -32,33 +32,27 @@ define('DEADLINE_KANDIDATEN', '2025-11-01 00:00:00');
 define('DEADLINE_EDITIEREN', '2025-12-31 23:59:59');
 
 // =============================================================================
-// Tabellennamen
+// Tabellennamen - ALLE mit Prefix "wahl"
 // =============================================================================
 
-// Jahresunabhängige Tabellen
-define('TABLE_SPIELWIESE', 'spielwiesewahl');
-define('TABLE_KANDIDATEN', 'kandidatenwahl');
-define('TABLE_AEMTER', 'aemterwahl');
-define('TABLE_ANFORDERUNGEN', 'anforderungenwahl');
-define('TABLE_BEMERKUNGEN', 'bemerkungenwahl');
-define('TABLE_RESSORTS', 'ressortswahl');
-define('TABLE_ADRESSEN', 'adressenwahl');
-define('TABLE_AENDERUNGSLOG', 'aenderungslog');
+// Zeitlose Tabellen
+define('TABLE_AEMTER', 'wahlaemter');
+define('TABLE_ANFORDERUNGEN', 'wahlanforderungen');
+define('TABLE_BEMERKUNGEN', 'wahlbemerkungen');
+define('TABLE_RESSORTS', 'wahlressorts');
+define('TABLE_ADRESSEN', 'wahladressen');
+define('TABLE_AENDERUNGSLOG', 'wahlaenderungslog');
+define('TABLE_EINSTELLUNGEN', 'wahleinstellungen');
 
 // Admin-Zugang (M-Nummern die Admin-Rechte haben)
 define('ADMIN_MNRS', ['0495018', '0123456']); // Hier Admin-MNrs eintragen
 
-// Jahresabhängige Tabellen (für Diskussion)
-define('TABLE_WAHL', 'Wahl' . WAHLJAHR);
-define('TABLE_KOMMENTARE', 'Wahl' . WAHLJAHR . 'kommentare');
-define('TABLE_TEILNEHMER', 'Wahl' . WAHLJAHR . 'teilnehmer');
-define('TABLE_VOTES', 'Wahl' . WAHLJAHR . 'votes');
-
-// Spielwiese-Tabellen (für Musterseite)
-define('TABLE_WAHLSPIEL', 'wahlspiel');
-define('TABLE_WAHLSPIEL_KOMMENTARE', 'wahlspielkommentare');
-define('TABLE_WAHLSPIEL_TEILNEHMER', 'wahlspielteilnehmer');
-define('TABLE_WAHLSPIEL_VOTES', 'wahlspielvotes');
+// Jahresabhängige Tabellen - Format: wahl[JAHR]...
+// Kandidaten, Kommentare, Teilnehmer, Votes
+define('TABLE_KANDIDATEN', 'wahl' . WAHLJAHR . 'kandidaten');
+define('TABLE_KOMMENTARE', 'wahl' . WAHLJAHR . 'kommentare');
+define('TABLE_TEILNEHMER', 'wahl' . WAHLJAHR . 'teilnehmer');
+define('TABLE_VOTES', 'wahl' . WAHLJAHR . 'votes');
 
 // =============================================================================
 // Feature-Flags

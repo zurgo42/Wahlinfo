@@ -11,13 +11,9 @@ $pageTitle = 'Administration';
 
 // Admin-MNRs aus Datenbank laden (Fallback: Konstante)
 $adminMnrs = ADMIN_MNRS; // Default aus config.php
-try {
-    $dbAdmins = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'ADMIN_MNRS'");
-    if ($dbAdmins && !empty(trim($dbAdmins['setting_value']))) {
-        $adminMnrs = array_map('trim', explode(',', $dbAdmins['setting_value']));
-    }
-} catch (Exception $e) {
-    // Tabelle existiert noch nicht - Konstante verwenden
+$dbAdminsStr = getSetting('ADMIN_MNRS', '');
+if (!empty(trim($dbAdminsStr))) {
+    $adminMnrs = array_map('trim', explode(',', $dbAdminsStr));
 }
 
 // FirstUser-Modus: Erlaubt initialen Admin-Zugang via GET-Parameter
@@ -25,13 +21,8 @@ try {
 $firstUserMode = false;
 if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
     // Prüfen ob bereits Admins in DB konfiguriert
-    try {
-        $dbAdmins = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'ADMIN_MNRS'");
-        if (!$dbAdmins || empty(trim($dbAdmins['setting_value']))) {
-            $firstUserMode = true;
-        }
-    } catch (Exception $e) {
-        // Tabelle existiert noch nicht - FirstUser erlauben
+    $dbAdminsStr = getSetting('ADMIN_MNRS', '');
+    if (empty(trim($dbAdminsStr))) {
         $firstUserMode = true;
     }
 }
@@ -225,6 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // === EINSTELLUNGEN ===
             case 'einstellungen_save':
+                // Altes Wahljahr vor dem Speichern merken
+                $altesJahr = getSetting('WAHLJAHR', WAHLJAHR);
+
                 $settings = [
                     'WAHLJAHR' => $_POST['WAHLJAHR'] ?? '',
                     'DEADLINE_KANDIDATEN' => $_POST['DEADLINE_KANDIDATEN'] ?? '',
@@ -239,13 +233,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     foreach ($settings as $key => $value) {
                         dbExecute(
-                            "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                            "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
                              ON DUPLICATE KEY UPDATE setting_value = ?",
                             [$key, $value, $value]
                         );
                     }
-                    $message = 'Einstellungen gespeichert';
-                    $messageType = 'success';
+
+                    // Wenn Wahljahr geändert wurde, Tabellen automatisch erstellen
+                    $neuesJahr = $_POST['WAHLJAHR'] ?? '';
+                    if ($neuesJahr && $neuesJahr != $altesJahr && $neuesJahr != '2000') {
+                        $result = createYearTables($neuesJahr, $altesJahr);
+                        if ($result['success']) {
+                            $message = 'Einstellungen gespeichert. Tabellen für Jahr ' . $neuesJahr . ' wurden erstellt.';
+                            $messageType = 'success';
+                        } else {
+                            $message = 'Einstellungen gespeichert, aber: ' . $result['message'];
+                            $messageType = 'warning';
+                        }
+                    } else {
+                        $message = 'Einstellungen gespeichert';
+                        $messageType = 'success';
+                    }
                 } catch (Exception $e) {
                     $message = 'Fehler beim Speichern: ' . $e->getMessage();
                     $messageType = 'error';
@@ -279,46 +287,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
 
-            // === SPIELWIESE BEFÜLLEN ===
-            case 'spielwiese_fuellen':
-                try {
-                    // Alte Daten löschen
-                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_KOMMENTARE);
-                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_TEILNEHMER);
-                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_VOTES);
-                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL);
-
-                    // Kandidaten von spielwiesewahl zu wahlspiel kopieren
-                    dbExecute(
-                        "INSERT INTO " . TABLE_WAHLSPIEL . " (Knr, These, mnummer, email, nachricht, lfdnr)
-                         SELECT Knr, CONCAT(vorname, ' ', name) as These, mnummer, email, nachricht, id as lfdnr
-                         FROM " . TABLE_SPIELWIESE . "
-                         WHERE Knr IS NOT NULL"
-                    );
-                    $anzahl1 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL)['c'];
-
-                    $message = "Spielwiese erfolgreich befüllt: {$anzahl1} Kandidaten aus " . TABLE_SPIELWIESE;
-                    $messageType = 'success';
-                } catch (Exception $e) {
-                    $message = 'Fehler beim Befüllen: ' . $e->getMessage();
-                    $messageType = 'error';
-                }
-                break;
-
             // === DOKUMENTE ===
             case 'dokument_add':
                 $titel = trim($_POST['titel'] ?? '');
                 $beschreibung = trim($_POST['beschreibung'] ?? '');
                 $link = trim($_POST['link'] ?? '');
                 if ($titel && $link) {
-                    $dokumente = [];
-                    $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
-                    if ($dbDok && !empty($dbDok['setting_value'])) {
-                        $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
-                    }
+                    $dokumenteJson = getSetting('DOKUMENTE', '');
+                    $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
                     $dokumente[] = ['titel' => $titel, 'beschreibung' => $beschreibung, 'link' => $link];
                     dbExecute(
-                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                        "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
                          ON DUPLICATE KEY UPDATE setting_value = ?",
                         ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
                     );
@@ -332,15 +311,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             case 'dokument_delete':
                 $index = (int)$_POST['index'];
-                $dokumente = [];
-                $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
-                if ($dbDok && !empty($dbDok['setting_value'])) {
-                    $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
-                }
+                $dokumenteJson = getSetting('DOKUMENTE', '');
+                $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
                 if (isset($dokumente[$index])) {
                     array_splice($dokumente, $index, 1);
                     dbExecute(
-                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                        "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
                          ON DUPLICATE KEY UPDATE setting_value = ?",
                         ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
                     );
@@ -399,7 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mailText = $_POST['mail_text'] ?? '';
                 if (in_array($mailKey, ['MAIL_TEXT_INITIAL', 'MAIL_TEXT_ERINNERUNG'])) {
                     dbExecute(
-                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                        "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
                          ON DUPLICATE KEY UPDATE setting_value = ?",
                         [$mailKey, $mailText, $mailText]
                     );
@@ -493,7 +469,7 @@ $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY 
 // Einstellungen aus DB laden (falls Tabelle existiert)
 $dbSettings = [];
 try {
-    $settingsRows = dbFetchAll("SELECT setting_key, setting_value FROM einstellungenwahl");
+    $settingsRows = dbFetchAll("SELECT setting_key, setting_value FROM " . TABLE_EINSTELLUNGEN);
     foreach ($settingsRows as $row) {
         $dbSettings[$row['setting_key']] = $row['setting_value'];
     }
@@ -1004,8 +980,13 @@ try {
 
             <div class="settings-grid">
                 <label for="WAHLJAHR">Wahljahr:</label>
-                <input type="text" id="WAHLJAHR" name="WAHLJAHR"
-                       value="<?php echo escape($dbSettings['WAHLJAHR'] ?? WAHLJAHR); ?>">
+                <div>
+                    <input type="text" id="WAHLJAHR" name="WAHLJAHR"
+                           value="<?php echo escape($dbSettings['WAHLJAHR'] ?? WAHLJAHR); ?>">
+                    <div class="message info" style="margin-top: 8px; font-size: 0.9rem;">
+                        <strong>Hinweis:</strong> Jahr 2000 = Spielwiese/Test. Bei Jahreswechsel werden automatisch neue Tabellen erstellt und Kandidaten vom Vorjahr kopiert.
+                    </div>
+                </div>
 
                 <label for="DEADLINE_KANDIDATEN">Kandidaten-Stichtag:</label>
                 <input type="text" id="DEADLINE_KANDIDATEN" name="DEADLINE_KANDIDATEN"
@@ -1060,24 +1041,6 @@ try {
                 <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">Speichern</button>
             </div>
         </form>
-
-        <!-- Spielwiese befüllen -->
-        <div style="margin-top: 40px; padding: 20px; border: 2px solid var(--mensa-hellgelb); border-radius: var(--radius-sm); background: var(--bg-secondary);">
-            <h3>Spielwiese-Daten aktualisieren</h3>
-            <p class="message info" style="margin-bottom: 15px;">
-                Kopiert die Test-Kandidaten von <strong><?php echo TABLE_SPIELWIESE; ?></strong> in die Diskussions-Tabellen
-                (<?php echo TABLE_WAHLSPIEL; ?>*). Dadurch können die Test-Kandidaten in der Musterseite diskutiert werden.
-            </p>
-            <p class="message warning" style="margin-bottom: 15px;">
-                <strong>Achtung:</strong> Alle bisherigen Diskussions-Daten in den Spielwiese-Tabellen werden gelöscht!
-            </p>
-            <form method="post" action="?tab=einstellungen" onsubmit="return confirm('Wirklich Spielwiese-Daten überschreiben?');">
-                <input type="hidden" name="action" value="spielwiese_fuellen">
-                <button type="submit" class="btn-small" style="padding: 10px 20px; font-size: 1rem; background: var(--mensa-gelb); color: #333;">
-                    Spielwiese jetzt befüllen
-                </button>
-            </form>
-        </div>
 
         <?php elseif ($activeTab === 'mailing'): ?>
         <!-- ================================================================= -->
@@ -1236,11 +1199,8 @@ Das Wahlteam');
         <p>Verlinkte Dokumente, die auf den Seiten Kandidaten und Diskussion angezeigt werden.</p>
 
         <?php
-        $dokumente = [];
-        $dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
-        if ($dbDok && !empty($dbDok['setting_value'])) {
-            $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
-        }
+        $dokumenteJson = getSetting('DOKUMENTE', '');
+        $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
         ?>
 
         <?php if (!empty($dokumente)): ?>
