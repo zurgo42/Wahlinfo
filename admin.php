@@ -288,23 +288,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_VOTES);
                     dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL);
 
-                    // Daten von wahl2025 zu wahlspiel kopieren
-                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL . " SELECT * FROM " . TABLE_WAHL);
-                    $anzahl1 = dbLastInsertId() ? 1 : dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL)['c'];
+                    // Kandidaten von spielwiesewahl zu wahlspiel kopieren
+                    dbExecute(
+                        "INSERT INTO " . TABLE_WAHLSPIEL . " (Knr, These, mnummer, email, nachricht, lfdnr)
+                         SELECT Knr, CONCAT(vorname, ' ', name) as These, mnummer, email, nachricht, id as lfdnr
+                         FROM " . TABLE_SPIELWIESE . "
+                         WHERE Knr IS NOT NULL"
+                    );
+                    $anzahl1 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL)['c'];
 
-                    // Kommentare kopieren
-                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_KOMMENTARE . " SELECT * FROM " . TABLE_KOMMENTARE);
-                    $anzahl2 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_KOMMENTARE)['c'];
-
-                    // Teilnehmer kopieren
-                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_TEILNEHMER . " SELECT * FROM " . TABLE_TEILNEHMER);
-                    $anzahl3 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_TEILNEHMER)['c'];
-
-                    // Votes kopieren
-                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_VOTES . " SELECT * FROM " . TABLE_VOTES);
-                    $anzahl4 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_VOTES)['c'];
-
-                    $message = "Spielwiese erfolgreich befüllt: {$anzahl1} Kandidaten, {$anzahl2} Kommentare, {$anzahl3} Teilnehmer, {$anzahl4} Votes";
+                    $message = "Spielwiese erfolgreich befüllt: {$anzahl1} Kandidaten aus " . TABLE_SPIELWIESE;
                     $messageType = 'success';
                 } catch (Exception $e) {
                     $message = 'Fehler beim Befüllen: ' . $e->getMessage();
@@ -1072,11 +1065,11 @@ try {
         <div style="margin-top: 40px; padding: 20px; border: 2px solid var(--mensa-hellgelb); border-radius: var(--radius-sm); background: var(--bg-secondary);">
             <h3>Spielwiese-Daten aktualisieren</h3>
             <p class="message info" style="margin-bottom: 15px;">
-                Kopiert die aktuellen Daten von <strong><?php echo TABLE_WAHL; ?></strong> in die Spielwiese-Tabellen
-                (<?php echo TABLE_WAHLSPIEL; ?>). Dies ist nützlich um die Musterseite mit echten Daten zu befüllen.
+                Kopiert die Test-Kandidaten von <strong><?php echo TABLE_SPIELWIESE; ?></strong> in die Diskussions-Tabellen
+                (<?php echo TABLE_WAHLSPIEL; ?>*). Dadurch können die Test-Kandidaten in der Musterseite diskutiert werden.
             </p>
             <p class="message warning" style="margin-bottom: 15px;">
-                <strong>Achtung:</strong> Alle bisherigen Spielwiese-Daten werden überschrieben!
+                <strong>Achtung:</strong> Alle bisherigen Diskussions-Daten in den Spielwiese-Tabellen werden gelöscht!
             </p>
             <form method="post" action="?tab=einstellungen" onsubmit="return confirm('Wirklich Spielwiese-Daten überschreiben?');">
                 <input type="hidden" name="action" value="spielwiese_fuellen">
@@ -1212,7 +1205,7 @@ Das Wahlteam');
         <h2>Tabellen archivieren</h2>
         <p>Dupliziert die wahljahrbezogenen Tabellen mit Jahres-Prefix für das Archiv.</p>
 
-        <div style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
+        <div class="admin-hinweis" style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
             <strong>Hinweis:</strong> Diese Funktion erstellt Kopien der folgenden Tabellen:
             <ul style="margin: 10px 0 0 20px;">
                 <li>adressenwahl → wahl[JAHR]_adressenwahl</li>
@@ -1313,7 +1306,7 @@ Das Wahlteam');
         <h2>Beiträge moderieren</h2>
         <p>Unangemessene oder rechtswidrige Beiträge können hier ersetzt werden.</p>
 
-        <div style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
+        <div class="admin-hinweis" style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
             <strong>Hinweis:</strong>
             <ul style="margin: 10px 0 0 20px;">
                 <li>Der Originaltext bleibt in der Datenbank erhalten</li>

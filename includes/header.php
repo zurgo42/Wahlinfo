@@ -73,18 +73,18 @@
             <p style="font-size: 0.75em; margin: 0 0 8px 0;">Wähle eine Testperson um das Diskussionstool auszuprobieren:</p>
 
             <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                <a href="?mnr=04932012" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Albert Einstein</a>
-                <a href="?mnr=04932011" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Werner Heisenberg</a>
-                <a href="?mnr=04932010" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Super MachtAllesToll</a>
-                <a href="?mnr=04932002" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Marie Curie</a>
-                <a href="?mnr=04932009" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Max Planck</a>
-                <a href="?mnr=04932007" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Hans Asperger</a>
-                <a href="?mnr=04932001" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Konrad Röntgen</a>
-                <a href="?mnr=04932004" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Anita Augspurg</a>
-                <a href="?mnr=04932003" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Emil Kraepelin</a>
-                <a href="?mnr=04932006" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Selma Lagerlöf</a>
-                <a href="?mnr=04932008" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Mileva Maric</a>
-                <a href="?mnr=04932005" style="padding: 3px 8px; background: white; border: 1px solid #ddd; border-radius: 3px; text-decoration: none; color: inherit; font-size: 0.75em;">Mutter Teresa</a>
+                <a href="?mnr=04932012" class="musterseite-btn">Albert Einstein</a>
+                <a href="?mnr=04932011" class="musterseite-btn">Werner Heisenberg</a>
+                <a href="?mnr=04932010" class="musterseite-btn">Super MachtAllesToll</a>
+                <a href="?mnr=04932002" class="musterseite-btn">Marie Curie</a>
+                <a href="?mnr=04932009" class="musterseite-btn">Max Planck</a>
+                <a href="?mnr=04932007" class="musterseite-btn">Hans Asperger</a>
+                <a href="?mnr=04932001" class="musterseite-btn">Konrad Röntgen</a>
+                <a href="?mnr=04932004" class="musterseite-btn">Anita Augspurg</a>
+                <a href="?mnr=04932003" class="musterseite-btn">Emil Kraepelin</a>
+                <a href="?mnr=04932006" class="musterseite-btn">Selma Lagerlöf</a>
+                <a href="?mnr=04932008" class="musterseite-btn">Mileva Maric</a>
+                <a href="?mnr=04932005" class="musterseite-btn">Mutter Teresa</a>
             </div>
         </div>
     </div>
