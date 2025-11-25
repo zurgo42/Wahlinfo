@@ -84,14 +84,34 @@ CREATE TABLE `wahlanforderungen` (
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-INSERT INTO `wahlanforderungen` VALUES (1, '01', 'Wieviel deiner Zeit kannst du regelmäßig für diese Funktion einsetzen?', NULL, 10);
-INSERT INTO `wahlanforderungen` VALUES (2, '02', 'Hast du Erfahrung im Umgang mit Menschen? Welche?', NULL, 9);
-INSERT INTO `wahlanforderungen` VALUES (3, '03', 'Über welche Kommunikationsmedien erreicht man dich?', NULL, 8);
-INSERT INTO `wahlanforderungen` VALUES (4, '04', 'Wie lange bist du im Verein, was war dein Interesse?', NULL, 8);
-INSERT INTO `wahlanforderungen` VALUES (5, '05', 'Hattest du schon eine verantwortungsvolle Funktion im Verein?', NULL, 8);
-INSERT INTO `wahlanforderungen` VALUES (6, '06', 'Hast du ähnliche Aufgaben in deinem Berufsleben?', NULL, 8);
-INSERT INTO `wahlanforderungen` VALUES (7, '07', 'Wie steht es um Führungskompetenz und Teamfähigkeit?', NULL, 7);
-INSERT INTO `wahlanforderungen` VALUES (8, '08', 'Was ist die Hauptmotivation für deine Kandidatur?', NULL, 6);
+INSERT INTO `wahlanforderungen` VALUES (102, '01', 'Wieviel deiner Zeit kannst du regelmäßig für diese Funktion einsetzen?', NULL, 10);
+INSERT INTO `wahlanforderungen` VALUES (104, '02', 'Hast du Erfahrung im Umgang mit Menschen? Welche?', NULL, 9);
+INSERT INTO `wahlanforderungen` VALUES (105, '03', 'Gute Erreichbarkeit ist wichtig. Über welche Kommunikationsmedien erreicht man dich?', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (106, '04', 'Wie lange bist du im Verein, was war dein Interesse?', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (107, '05', 'Hattest du schon eine verantwortungsvolle Funktion in unserem Verein? Welche?', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (108, '06', 'Hast/hattest du ähnliche Aufgaben in deinem Berufsleben? Welche?', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (109, '07', 'Wie sieht es bei dir mit Führungskompetenz und Teamfähigkeit aus?', NULL, 7);
+INSERT INTO `wahlanforderungen` VALUES (110, '08', 'Was ist die Hauptmotivation für deine Kandidatur?', NULL, 6);
+INSERT INTO `wahlanforderungen` VALUES (111, '10', 'Englisch in Wort und Schrift', NULL, 6);
+INSERT INTO `wahlanforderungen` VALUES (112, '09', 'Repräsentationsfähigkeit: Kannst du als "Galionsfigur" für den Verein auftreten?', NULL, 6);
+INSERT INTO `wahlanforderungen` VALUES (113, '12', 'Finanzerfahrung: Bilanzen lesen, Budgets aufstellen, mit Vereinsgeld umgehen', NULL, 5);
+INSERT INTO `wahlanforderungen` VALUES (114, '11', 'Organisationserfahrung: Wie man Abläufe organisiert, Mitarbeiter führt, den Laden am Laufen hält, ...', NULL, 5);
+INSERT INTO `wahlanforderungen` VALUES (115, '13', 'IT-Erfahrung', NULL, 4);
+INSERT INTO `wahlanforderungen` VALUES (116, '14', 'Erfahrung in Strategieentwicklung', NULL, 4);
+INSERT INTO `wahlanforderungen` VALUES (117, '15', 'Juristisches Wissen, Erfahrung in rechtlichen Problemstellungen?', NULL, 3);
+INSERT INTO `wahlanforderungen` VALUES (127, 'FK01', 'Freude am Umgang mit Menschen', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (128, 'PK01', 'Tatkraft, Ergreifen von Initiative', NULL, 9);
+INSERT INTO `wahlanforderungen` VALUES (129, 'PK02', 'Bereitschaft zur Verantwortungsübernahme, Entscheidungsfreude', NULL, 9);
+INSERT INTO `wahlanforderungen` VALUES (130, 'PK03', 'Kompromiss- und Konsensfähigkeit', NULL, 9);
+INSERT INTO `wahlanforderungen` VALUES (131, 'PK04', 'Lösungsorientierung', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (132, 'PK05', 'Organisationsfähigkeit, Delegationsfähigkeit und Zeitmanagement', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (133, 'PK06', 'Bereitschaft zur Nutzung notwendiger moderner Technik im Rahmen der Vereinsaufgaben', NULL, 5);
+INSERT INTO `wahlanforderungen` VALUES (134, 'SK01', 'Motivationskompetenz', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (135, 'SK02', 'Team-Fähigkeit', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (136, 'SK03', 'Vertrauensbildende Arbeitsweise mit allen Vereins-Aktiven und -Dienstleistern', NULL, 8);
+INSERT INTO `wahlanforderungen` VALUES (137, 'SK04', 'Kommunikationsfähigkeit', NULL, 7);
+INSERT INTO `wahlanforderungen` VALUES (138, 'SK05', 'Verhandlungsgeschick', NULL, 7);
+INSERT INTO `wahlanforderungen` VALUES (227, 'T', 'Mindestalter für den Vorstand 25 Jahre - wie siehst du das?', NULL, 10);
 
 -- Adressen/Zugriffe
 DROP TABLE IF EXISTS `wahladressen`;
@@ -238,9 +258,18 @@ CREATE TABLE `wahl2000kandidaten` (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Beispiel-Kandidaten für Spielwiese
-INSERT INTO `wahl2000kandidaten` VALUES (1, 1, 'Max', 'Mustermann', '0000001', 1234567890, 'max@example.com', NULL, 'keinFoto.jpg', 'm', 'Ich kandidiere für den Vorsitz, weil mir der Verein am Herzen liegt.', '', '', NULL, 1, 0, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (2, 2, 'Erika', 'Musterfrau', '0000002', 1234567891, 'erika@example.com', NULL, 'keinFoto.jpg', 'w', 'Als Kassenwartin möchte ich für Transparenz sorgen.', '', '', NULL, 0, 0, 1, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (3, 3, 'Hans', 'Beispiel', '0000003', 1234567892, 'hans@example.com', NULL, 'keinFoto.jpg', 'm', 'Ich bringe 10 Jahre Vereinserfahrung mit.', '', '', NULL, 0, 1, 0, 0, 0);
+INSERT INTO `wahl2000kandidaten` VALUES (118, 1, 'Konrad', 'Röntgen', '04932001', 1990925099, 'hermann.meier@mensa.de', NULL, 'konradRöntgen_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (119, 2, 'Marie', 'Curie', '04932002', 2772798551, NULL, NULL, 'marieCurie_75.jpg', 'w', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (120, 3, 'Emil', 'Kraepelin', '04932003', 3921590506, NULL, NULL, 'emilKraepelin_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (121, 4, 'Anita', 'Augspurg', '04932004', 1587752557, NULL, NULL, 'anitaAugspurg_75.jpg', 'w', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (122, 5, 'Mutter', 'Teresa', '04932005', 3017953922, NULL, NULL, 'mutterTeresa_75.jpg', 'w', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (124, 6, 'Selma', 'Lagerlöf', '04932006', 2659342381, NULL, NULL, 'selmaLagerlöf_75.jpg', 'w', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (125, 7, 'Hans', 'Asperger', '04932007', 1289025884, NULL, NULL, 'hansAsperger_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (126, 8, 'Mileva', 'Maric', '04932008', 3020407826, NULL, NULL, 'milevaMaric_75.jpg', 'w', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (127, 9, 'Max', 'Planck', '04932009', 2922778382, NULL, NULL, 'maxPlanck_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (112, 12, 'Super', 'MachtAllesToll', '04932010', 2995205301, NULL, NULL, '_Mann_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (116, 14, 'Werner', 'Heisenberg', '04932011', 3370114463, NULL, NULL, 'wernerHeisenberg_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (117, 16, 'Albert', 'Einstein', '04912113', 3825802204, 'albert.einstein@mensa.de', NULL, 'albertEinstein_75.jpg', 'm', NULL, '', '', NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- Kommentare 2000 (Spielwiese)
 DROP TABLE IF EXISTS `wahl2000kommentare`;
