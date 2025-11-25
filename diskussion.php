@@ -12,9 +12,9 @@ require_once __DIR__ . '/includes/config.php';
 $userMnr = getUserMnr();
 $pageTitle = 'Diskussion';
 
-// Tabellennamen je nach Spielwiese/Arbeitsmodus laden
+// Tabellennamen je nach WAHLJAHR laden
 $tables = getDiskussionTabellen();
-$TABLE_WAHL = $tables['wahl'];
+$TABLE_KANDIDATEN = $tables['kandidaten'];
 $TABLE_KOMMENTARE = $tables['kommentare'];
 $TABLE_TEILNEHMER = $tables['teilnehmer'];
 $TABLE_VOTES = $tables['votes'];
@@ -37,16 +37,34 @@ function getAutorName($kommentar) {
     return $mnr ? "MNr $mnr" : 'Unbekannt';
 }
 
+/**
+ * Gibt die Ämter eines Kandidaten zurück als Array
+ */
+function getKandidatenAemter($kandidat) {
+    global $TABLE_AEMTER;
+    $aemter = [];
+
+    for ($i = 1; $i <= 5; $i++) {
+        if (!empty($kandidat["amt$i"]) && $kandidat["amt$i"] == '1') {
+            $row = dbFetchOne("SELECT amt FROM " . TABLE_AEMTER . " WHERE id = ?", [$i]);
+            if ($row) {
+                $aemter[] = $row['amt'];
+            }
+        }
+    }
+
+    return $aemter;
+}
+
 // =============================================================================
 // DATEN LADEN
 // =============================================================================
 
-// Alle Kandidaten laden (aus Wahl-Tabelle für Diskussion)
-$kandidatenTable = getWahlTable();
+// Alle Kandidaten laden (wahl[JAHR]kandidaten)
 $kandidaten = dbFetchAll(
-    "SELECT Knr, These, mnummer
-     FROM $kandidatenTable
-     ORDER BY These ASC"
+    "SELECT Knr, vorname, name, mnummer, amt1, amt2, amt3, amt4, amt5
+     FROM " . $TABLE_KANDIDATEN . "
+     ORDER BY name, vorname ASC"
 );
 
 // Fotos aus kandidatenwahl laden (bildfile nach mnummer)
@@ -288,9 +306,17 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                 $kandName = 'Allgemeine Fragen & Diskussion';
                 $fotoDatei = '';
             } else {
-                // Name aus These extrahieren (Format: "Vorname Name<br>kandidiert als...")
-                $theseParts = explode('<br>', $kand['These'] ?? '');
-                $kandName = trim($theseParts[0]);
+                // Name und Ämter aus Kandidaten-Daten
+                $vorname = trim($kand['vorname'] ?? '');
+                $name = trim($kand['name'] ?? '');
+                $kandName = $vorname . ' ' . $name;
+
+                // Ämter ermitteln
+                $aemter = getKandidatenAemter($kand);
+                if (!empty($aemter)) {
+                    $kandName .= ': kandidiert für ' . implode(', ', $aemter);
+                }
+
                 $mnummer = $kand['mnummer'] ?? '';
                 $fotoDatei = $fotoNachMnummer[$mnummer] ?? 'keinFoto.jpg';
             }
@@ -414,9 +440,9 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
 <?php
 // Dokumente anzeigen
 $dokumente = [];
-$dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
-if ($dbDok && !empty($dbDok['setting_value'])) {
-    $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+$dokumenteJson = getSetting('DOKUMENTE', '');
+if (!empty($dokumenteJson)) {
+    $dokumente = json_decode($dokumenteJson, true) ?: [];
 }
 if (!empty($dokumente)):
 ?>

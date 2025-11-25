@@ -105,9 +105,9 @@ foreach ($aemter as $amt) {
 <?php
 // Dokumente anzeigen
 $dokumente = [];
-$dbDok = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'DOKUMENTE'");
-if ($dbDok && !empty($dbDok['setting_value'])) {
-    $dokumente = json_decode($dbDok['setting_value'], true) ?: [];
+$dokumenteJson = getSetting('DOKUMENTE', '');
+if (!empty($dokumenteJson)) {
+    $dokumente = json_decode($dokumenteJson, true) ?: [];
 }
 if (!empty($dokumente)):
 ?>
