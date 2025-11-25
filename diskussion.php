@@ -99,7 +99,7 @@ if (defined('FEATURE_VOTING') && FEATURE_VOTING) {
 $alleKommentare = dbFetchAll(
     "SELECT k.*, t.Vorname AS AutorVorname, t.Name AS AutorName $voteSelect
      FROM " . $TABLE_KOMMENTARE . " k
-     LEFT JOIN " . $TABLE_TEILNEHMER . " t ON k.Mnr = t.Mnr
+     LEFT JOIN " . $TABLE_TEILNEHMER . " t ON k.Mnr COLLATE utf8mb4_unicode_ci = t.Mnr COLLATE utf8mb4_unicode_ci
      WHERE (k.Verbergen IS NULL OR k.Verbergen = '' OR k.Verbergen = '0')
      GROUP BY k.Knr
      ORDER BY k.Datum ASC",
@@ -311,11 +311,9 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                 $name = trim($kand['name'] ?? '');
                 $kandName = $vorname . ' ' . $name;
 
-                // Ämter ermitteln
+                // Ämter ermitteln (getrennt für kursive Darstellung)
                 $aemter = getKandidatenAemter($kand);
-                if (!empty($aemter)) {
-                    $kandName .= ': kandidiert für ' . implode(', ', $aemter);
-                }
+                $aemterText = !empty($aemter) ? ': kandidiert für ' . implode(', ', $aemter) : '';
 
                 $mnummer = $kand['mnummer'] ?? '';
                 $fotoDatei = $fotoNachMnummer[$mnummer] ?? 'keinFoto.jpg';
@@ -348,7 +346,12 @@ function zeigeAntwortenRekursiv($knr, $antwortenNachBezug, $kurzTextLaenge, $neu
                     <?php else: ?>
                         <img src="img/<?php echo escape($fotoDatei); ?>" alt="" class="kandidat-foto" onerror="this.src='img/keinFoto.jpg'">
                     <?php endif; ?>
-                    <span class="kandidat-name"><?php echo escape($kandName); ?></span>
+                    <span class="kandidat-name">
+                        <?php echo escape($kandName); ?>
+                        <?php if (!$istAllgemein && !empty($aemterText)): ?>
+                            <em style="font-weight: normal;"><?php echo escape($aemterText); ?></em>
+                        <?php endif; ?>
+                    </span>
                     <span class="beitrag-count"><?php echo $anzahlBeitraege; ?> Beiträge</span>
                     <?php if ($hatNeueBeitraege): ?><span class="neu-badge">neu</span><?php endif; ?>
                     <span class="toggle-icon" id="icon-<?php echo $kandId; ?>">▼</span>

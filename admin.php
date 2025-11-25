@@ -176,8 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'anforderung_update':
                 $id = (int)$_POST['id'];
                 dbExecute(
-                    "UPDATE " . TABLE_ANFORDERUNGEN . " SET anforderung = ? WHERE id = ?",
-                    [$_POST['anforderung'], $id]
+                    "UPDATE " . TABLE_ANFORDERUNGEN . " SET Nr = ?, Anforderung = ?, Punkte = ? WHERE id = ?",
+                    [$_POST['nr'], $_POST['anforderung'], $_POST['punkte'], $id]
                 );
                 $message = 'Anforderung aktualisiert';
                 $messageType = 'success';
@@ -194,8 +194,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $maxId = dbFetchOne("SELECT MAX(id) as max_id FROM " . TABLE_ANFORDERUNGEN);
                 $newId = ($maxId['max_id'] ?? 0) + 1;
                 dbExecute(
-                    "INSERT INTO " . TABLE_ANFORDERUNGEN . " (id, anforderung) VALUES (?, ?)",
-                    [$newId, $_POST['anforderung']]
+                    "INSERT INTO " . TABLE_ANFORDERUNGEN . " (id, Nr, Anforderung, Punkte) VALUES (?, ?, ?, ?)",
+                    [$newId, $_POST['nr'], $_POST['anforderung'], $_POST['punkte']]
                 );
                 $message = 'Anforderung hinzugefügt';
                 $messageType = 'success';
@@ -219,12 +219,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Altes Wahljahr vor dem Speichern merken
                 $altesJahr = getSetting('WAHLJAHR', WAHLJAHR);
 
+                // Jahres-Validierung: nur 2000 oder >= aktuelles Jahr
+                $neuesJahr = (int)($_POST['WAHLJAHR'] ?? 0);
+                $aktuellesJahr = (int)date('Y');
+
+                if ($neuesJahr != 2000 && $neuesJahr < $aktuellesJahr) {
+                    $message = 'Ungültiges Jahr! Nur 2000 (Spielwiese) oder ' . $aktuellesJahr . ' und höher erlaubt.';
+                    $messageType = 'error';
+                    break;
+                }
+
                 $settings = [
-                    'WAHLJAHR' => $_POST['WAHLJAHR'] ?? '',
+                    'WAHLJAHR' => $neuesJahr,
                     'DEADLINE_KANDIDATEN' => $_POST['DEADLINE_KANDIDATEN'] ?? '',
                     'DEADLINE_EDITIEREN' => $_POST['DEADLINE_EDITIEREN'] ?? '',
                     'FEATURE_VOTING' => isset($_POST['FEATURE_VOTING']) ? '1' : '0',
-                    'SHOW_SPIELWIESE' => isset($_POST['SHOW_SPIELWIESE']) ? '1' : '0',
                     'MUSTERSEITE' => isset($_POST['MUSTERSEITE']) ? '1' : '0',
                     'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? '',
                     'ZUGANG_METHODE' => $_POST['ZUGANG_METHODE'] ?? 'GET',
@@ -240,8 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     // Wenn Wahljahr geändert wurde, Tabellen automatisch erstellen
-                    $neuesJahr = $_POST['WAHLJAHR'] ?? '';
-                    if ($neuesJahr && $neuesJahr != $altesJahr && $neuesJahr != '2000') {
+                    if ($neuesJahr && $neuesJahr != $altesJahr && $neuesJahr != 2000) {
                         $result = createYearTables($neuesJahr, $altesJahr);
                         if ($result['success']) {
                             $message = 'Einstellungen gespeichert. Tabellen für Jahr ' . $neuesJahr . ' wurden erstellt.';
@@ -914,9 +922,11 @@ try {
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th style="width: 80px;">ID</th>
+                    <th style="width: 60px;">ID</th>
+                    <th style="width: 80px;">Nr</th>
                     <th>Anforderung/Frage</th>
-                    <th style="width: 250px;">Aktionen</th>
+                    <th style="width: 80px;">Punkte</th>
+                    <th style="width: 150px;">Aktionen</th>
                 </tr>
             </thead>
             <tbody>
@@ -926,7 +936,9 @@ try {
                         <input type="hidden" name="action" value="anforderung_update">
                         <input type="hidden" name="id" value="<?php echo $anf['id']; ?>">
                         <td><?php echo $anf['id']; ?></td>
-                        <td><textarea name="anforderung"><?php echo escape($anf['Anforderung'] ?? $anf['anforderung'] ?? ''); ?></textarea></td>
+                        <td><input type="text" name="nr" value="<?php echo escape($anf['Nr'] ?? ''); ?>" style="width: 60px;"></td>
+                        <td><textarea name="anforderung" style="min-height: 60px;"><?php echo escape($anf['Anforderung'] ?? ''); ?></textarea></td>
+                        <td><input type="number" name="punkte" value="<?php echo escape($anf['Punkte'] ?? ''); ?>" style="width: 60px;"></td>
                         <td>
                             <div class="btn-group">
                                 <button type="submit" class="btn-small btn-save">Speichern</button>
@@ -935,7 +947,7 @@ try {
                     </form>
                 </tr>
                 <tr>
-                    <td colspan="3" style="text-align: right; padding-top: 0;">
+                    <td colspan="5" style="text-align: right; padding-top: 0;">
                         <?php if ($idx > 0): ?>
                             <form method="post" action="?tab=anforderungen" style="display: inline;">
                                 <input type="hidden" name="action" value="anforderung_swap">
@@ -959,7 +971,9 @@ try {
                     <form method="post" action="?tab=anforderungen">
                         <input type="hidden" name="action" value="anforderung_add">
                         <td>Neu</td>
-                        <td><textarea name="anforderung" placeholder="Neue Anforderung/Frage..."></textarea></td>
+                        <td><input type="text" name="nr" placeholder="Nr" style="width: 60px;"></td>
+                        <td><textarea name="anforderung" placeholder="Neue Anforderung/Frage..." style="min-height: 60px;"></textarea></td>
+                        <td><input type="number" name="punkte" placeholder="Pkt" style="width: 60px;"></td>
                         <td>
                             <button type="submit" class="btn-small btn-add">Hinzufügen</button>
                         </td>
@@ -981,8 +995,11 @@ try {
             <div class="settings-grid">
                 <label for="WAHLJAHR">Wahljahr:</label>
                 <div>
-                    <input type="text" id="WAHLJAHR" name="WAHLJAHR"
-                           value="<?php echo escape($dbSettings['WAHLJAHR'] ?? WAHLJAHR); ?>">
+                    <input type="number" id="WAHLJAHR" name="WAHLJAHR"
+                           value="<?php echo escape($dbSettings['WAHLJAHR'] ?? WAHLJAHR); ?>"
+                           min="2000"
+                           max="2100"
+                           step="1">
                     <div class="message info" style="margin-top: 8px; font-size: 0.9rem;">
                         <strong>Hinweis:</strong> Jahr 2000 = Spielwiese/Test. Bei Jahreswechsel werden automatisch neue Tabellen erstellt und Kandidaten vom Vorjahr kopiert.
                     </div>
@@ -1003,13 +1020,6 @@ try {
                     <input type="checkbox" id="FEATURE_VOTING" name="FEATURE_VOTING"
                            <?php echo (isset($dbSettings['FEATURE_VOTING']) ? $dbSettings['FEATURE_VOTING'] : FEATURE_VOTING) ? 'checked' : ''; ?>>
                     Ja
-                </label>
-
-                <label for="SHOW_SPIELWIESE">Spielwiese anzeigen:</label>
-                <label style="font-weight: normal;">
-                    <input type="checkbox" id="SHOW_SPIELWIESE" name="SHOW_SPIELWIESE"
-                           <?php echo (!empty($dbSettings['SHOW_SPIELWIESE']) && $dbSettings['SHOW_SPIELWIESE'] == '1') ? 'checked' : ''; ?>>
-                    Ja (statt echte Kandidaten)
                 </label>
 
                 <label for="MUSTERSEITE">Musterseite verwenden:</label>
