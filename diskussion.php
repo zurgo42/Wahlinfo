@@ -67,7 +67,7 @@ $kandidaten = dbFetchAll(
      ORDER BY name, vorname ASC"
 );
 
-// Fotos aus kandidatenwahl laden (bildfile nach mnummer)
+// Fotos aus wahl[JAHR]kandidaten laden (bildfile nach mnummer)
 $fotoNachMnummer = [];
 $fotoDaten = dbFetchAll(
     "SELECT mnummer, bildfile FROM " . TABLE_KANDIDATEN

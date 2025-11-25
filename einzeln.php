@@ -235,7 +235,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
         <?php
         // Alle Anforderungen laden - nach Nr sortieren
-        $anforderungen = dbFetchAll("SELECT * FROM anforderungenwahl ORDER BY Nr ASC");
+        $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY Nr ASC");
 
         if (count($anforderungen) > 0):
         ?>
@@ -253,7 +253,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
                 if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
                     $hasAllgemein = true;
-                    $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [(int)$kand[$afeld]]);
+                    $bemRow = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [(int)$kand[$afeld]]);
                     if ($bemRow) {
                         $antwort = decodeEntities($bemRow['bem']);
                     }
@@ -304,7 +304,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
                         $bemId = $wert - ($k * 10000);
                         $bewertung = $skala5a[$k] ?? $k;
                         if ($bemId > 0) {
-                            $bemRow = dbFetchOne("SELECT bem FROM bemerkungenwahl WHERE id = ?", [$bemId]);
+                            $bemRow = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$bemId]);
                             if ($bemRow) {
                                 $bemerkung = decodeEntities($bemRow['bem']);
                             }
