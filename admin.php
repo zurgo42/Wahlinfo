@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             case 'kandidat_delete':
                 $id = (int)$_POST['id'];
-                dbExecute("DELETE FROM " . TABLE_KANDIDATEN . " WHERE id = ?", [$id]);
+                dbExecute("DELETE FROM " . getKandidatenTable() . " WHERE id = ?", [$id]);
                 $message = 'Kandidat gelöscht';
                 $messageType = 'success';
                 break;
@@ -390,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $gesendet = 0;
                 $fehler = 0;
 
-                $kandidatenMail = dbFetchAll("SELECT id, vorname, name, email, mnummer FROM " . TABLE_KANDIDATEN . " WHERE email != '' AND email IS NOT NULL");
+                $kandidatenMail = dbFetchAll("SELECT id, vorname, name, email, mnummer FROM " . getKandidatenTable() . " WHERE email != '' AND email IS NOT NULL");
                 foreach ($kandidatenMail as $k) {
                     // Platzhalter ersetzen
                     $text = str_replace(
@@ -425,7 +425,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Nur Kandidaten ohne eingetragene Daten (z.B. ohne Adresse)
                 $kandidatenMail = dbFetchAll(
                     "SELECT k.id, k.vorname, k.name, k.email, k.mnummer
-                     FROM " . TABLE_KANDIDATEN . " k
+                     FROM " . getKandidatenTable() . " k
                      LEFT JOIN " . TABLE_ADRESSEN . " a ON k.mnummer = a.mnummer
                      WHERE k.email != '' AND k.email IS NOT NULL
                      AND (a.mnummer IS NULL OR a.strasse IS NULL OR a.strasse = '')"
@@ -461,10 +461,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // DATEN LADEN
 // =============================================================================
 
-$kandidaten = dbFetchAll("SELECT * FROM " . TABLE_KANDIDATEN . " ORDER BY name, vorname");
+$kandidaten = dbFetchAll("SELECT * FROM " . getKandidatenTable() . " ORDER BY name, vorname");
 $ressorts = dbFetchAll("SELECT * FROM " . TABLE_RESSORTS . " ORDER BY id");
 $aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id > 0 ORDER BY id");
-$anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY id");
+$anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY Nr ASC");
 
 // Einstellungen aus DB laden (falls Tabelle existiert)
 $dbSettings = [];

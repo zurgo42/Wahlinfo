@@ -9,6 +9,13 @@
 
 require_once __DIR__ . '/includes/config.php';
 
+// Tabellennamen dynamisch laden basierend auf WAHLJAHR
+$tables = getDiskussionTabellen();
+$TABLE_KANDIDATEN = $tables['kandidaten'];
+$TABLE_KOMMENTARE = $tables['kommentare'];
+$TABLE_TEILNEHMER = $tables['teilnehmer'];
+$TABLE_VOTES = $tables['votes'];
+
 header('Content-Type: application/json');
 
 // Feature-Check
