@@ -70,7 +70,7 @@ $kandidaten = dbFetchAll(
 // Fotos aus wahl[JAHR]kandidaten laden (bildfile nach mnummer)
 $fotoNachMnummer = [];
 $fotoDaten = dbFetchAll(
-    "SELECT mnummer, bildfile FROM " . TABLE_KANDIDATEN
+    "SELECT mnummer, bildfile FROM " . $TABLE_KANDIDATEN
 );
 foreach ($fotoDaten as $foto) {
     if (!empty($foto['mnummer']) && !empty($foto['bildfile'])) {
