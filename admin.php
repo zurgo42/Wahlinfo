@@ -268,9 +268,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $messageType = 'error';
                 } else {
                     $tabellen = [
-                        TABLE_ADRESSEN => "wahl{$jahr}_adressenwahl",
-                        TABLE_BEMERKUNGEN => "wahl{$jahr}_bemerkungenwahl",
-                        TABLE_KANDIDATEN => "wahl{$jahr}_kandidatenwahl"
+                        TABLE_ADRESSEN => "wahl{$jahr}adressen",
+                        TABLE_BEMERKUNGEN => "wahl{$jahr}bemerkungen",
+                        'wahl' . $jahr . 'kandidaten' => "wahl{$jahr}kandidaten_archiv"
                     ];
                     $erfolg = 0;
                     foreach ($tabellen as $quelle => $ziel) {
@@ -1171,9 +1171,9 @@ Das Wahlteam');
         <div class="admin-hinweis" style="background: #fff3cd; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #ffc107;">
             <strong>Hinweis:</strong> Diese Funktion erstellt Kopien der folgenden Tabellen:
             <ul style="margin: 10px 0 0 20px;">
-                <li>adressenwahl → wahl[JAHR]_adressenwahl</li>
-                <li>bemerkungenwahl → wahl[JAHR]_bemerkungenwahl</li>
-                <li>kandidatenwahl → wahl[JAHR]_kandidatenwahl</li>
+                <li>wahladressen → wahl[JAHR]adressen</li>
+                <li>wahlbemerkungen → wahl[JAHR]bemerkungen</li>
+                <li>wahl[AKTUELLES_JAHR]kandidaten → wahl[JAHR]kandidaten_archiv</li>
             </ul>
         </div>
 
