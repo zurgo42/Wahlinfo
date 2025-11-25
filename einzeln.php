@@ -337,6 +337,48 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 
         <?php endif; // Ende $isVorstand ?>
 
+        <?php if ($isVorstand && count($anforderungen) > 15): ?>
+        <!-- Weitere Kompetenzen (16-28) - FK, PK, SK, T - nur für Vorstand -->
+        <h3>Fach-, Persönliche und Soziale Kompetenzen</h3>
+        <p class="section-note">
+            Weitere wichtige Kompetenzen für Vorstandsarbeit.
+        </p>
+
+        <div class="anforderungen-grid">
+            <?php
+            $hasWeitere = false;
+            for ($i = 15; $i < min(28, count($anforderungen)); $i++) {
+                $anf = $anforderungen[$i];
+                $nr = $i + 1;
+                $afeld = "a$nr";
+                $antwort = '';
+
+                if (!empty($kand[$afeld]) && $kand[$afeld] > 0) {
+                    $hasWeitere = true;
+                    $bemRow = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [(int)$kand[$afeld]]);
+                    if ($bemRow) {
+                        $antwort = decodeEntities($bemRow['bem']);
+                    }
+                }
+                ?>
+                <div class="anforderung-card">
+                    <div class="frage">
+                        <span class="nr"><?php echo escape($anf['Nr'] ?? $nr); ?></span>
+                        <?php echo isset($anf['Anforderung']) ? decodeEntities($anf['Anforderung']) : ''; ?>
+                    </div>
+                    <?php if (!empty($antwort)) { ?>
+                        <div class="antwort"><?php echo escape($antwort); ?></div>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </div>
+
+        <?php if (!$hasWeitere): ?>
+            <p class="no-data">Von <?php echo escape($kand['vorname']); ?> liegen hierzu keine Antworten vor.</p>
+        <?php endif; ?>
+
+        <?php endif; // Ende $isVorstand && count > 15 ?>
+
         <?php endif; // Ende count($anforderungen) ?>
     </div>
 

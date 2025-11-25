@@ -138,8 +138,8 @@ function processFormSubmission($mnr, $postData, $files) {
 
         dbExecute($sql, $params);
 
-        // Antworten speichern (a1-a26) - IMMER neue ID erstellen!
-        for ($i = 1; $i <= 26; $i++) {
+        // Antworten speichern (a1-a28) - IMMER neue ID erstellen!
+        for ($i = 1; $i <= 28; $i++) {
             $fieldName = "a$i";
             $antwortText = trim($postData[$fieldName] ?? '');
             $oldWert = $kandidat[$fieldName] ?? 0;
@@ -190,7 +190,7 @@ function processFormSubmission($mnr, $postData, $files) {
                     }
                 }
             } else {
-                // Normale Antworten (a1-a8, a16-a26)
+                // Normale Antworten (a1-a8, a16-a28)
                 $oldText = '';
                 if ($oldWert > 0) {
                     $oldBem = dbFetchOne("SELECT bem FROM " . TABLE_BEMERKUNGEN . " WHERE id = ?", [$oldWert]);
@@ -296,7 +296,7 @@ if ($userMnr) {
 
     if ($kand) {
         // Antworten laden
-        for ($i = 1; $i <= 26; $i++) {
+        for ($i = 1; $i <= 28; $i++) {
             $wert = $kand["a$i"] ?? 0;
 
             // Für Kompetenzen (9-15): Wert ist kodiert als Priorität*10000 + BemerkungID
@@ -640,6 +640,38 @@ include __DIR__ . '/includes/header.php';
                                         <?php endif; ?>
                                         <?php echo escape($antworten[$nr] ?? ''); ?>
                                     </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php } ?>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($isVorstand && count($anforderungen) > 15): ?>
+                <!-- Weitere Kompetenzen (16-28) - FK, PK, SK, T - nur für Vorstand -->
+                <h3>Fach-, Persönliche und Soziale Kompetenzen</h3>
+                <p class="section-note">
+                    Weitere wichtige Kompetenzen für Vorstandsarbeit.
+                </p>
+
+                <div class="anforderungen-grid">
+                    <?php
+                    for ($i = 15; $i < min(28, count($anforderungen)); $i++) {
+                        $anf = $anforderungen[$i];
+                        $nr = $i + 1;
+                        $antwort = $antworten[$nr] ?? '';
+                    ?>
+                        <div class="anforderung-card">
+                            <div class="frage">
+                                <span class="nr"><?php echo escape($anf['Nr'] ?? $nr); ?></span>
+                                <?php echo decodeEntities($anf['Anforderung'] ?? ''); ?>
+                            </div>
+                            <?php if ($editingAllowed): ?>
+                                <textarea name="a<?php echo $nr; ?>" rows="4" class="eingabe-textarea"
+                                          placeholder="Deine Antwort..."><?php echo escape($antwort); ?></textarea>
+                            <?php else: ?>
+                                <?php if (!empty($antwort)): ?>
+                                    <div class="antwort"><?php echo escape($antwort); ?></div>
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>

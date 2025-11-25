@@ -176,6 +176,34 @@ CREATE TABLE `wahl2025kandidaten` (
   `amt3` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `amt4` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   `amt5` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+  `a1` int NULL DEFAULT NULL,
+  `a2` int NULL DEFAULT NULL,
+  `a3` int NULL DEFAULT NULL,
+  `a4` int NULL DEFAULT NULL,
+  `a5` int NULL DEFAULT NULL,
+  `a6` int NULL DEFAULT NULL,
+  `a7` int NULL DEFAULT NULL,
+  `a8` int NULL DEFAULT NULL,
+  `a9` int NULL DEFAULT NULL,
+  `a10` int NULL DEFAULT NULL,
+  `a11` int NULL DEFAULT NULL,
+  `a12` int NULL DEFAULT NULL,
+  `a13` int NULL DEFAULT NULL,
+  `a14` int NULL DEFAULT NULL,
+  `a15` int NULL DEFAULT NULL,
+  `a16` int NULL DEFAULT NULL,
+  `a17` int NULL DEFAULT NULL,
+  `a18` int NULL DEFAULT NULL,
+  `a19` int NULL DEFAULT NULL,
+  `a20` int NULL DEFAULT NULL,
+  `a21` int NULL DEFAULT NULL,
+  `a22` int NULL DEFAULT NULL,
+  `a23` int NULL DEFAULT NULL,
+  `a24` int NULL DEFAULT NULL,
+  `a25` int NULL DEFAULT NULL,
+  `a26` int NULL DEFAULT NULL,
+  `a27` int NULL DEFAULT NULL,
+  `a28` int NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `idx_knr`(`Knr`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
@@ -253,23 +281,51 @@ CREATE TABLE `wahl2000kandidaten` (
   `amt3` tinyint NULL DEFAULT NULL,
   `amt4` tinyint NULL DEFAULT NULL,
   `amt5` tinyint NULL DEFAULT NULL,
+  `a1` int NULL DEFAULT NULL,
+  `a2` int NULL DEFAULT NULL,
+  `a3` int NULL DEFAULT NULL,
+  `a4` int NULL DEFAULT NULL,
+  `a5` int NULL DEFAULT NULL,
+  `a6` int NULL DEFAULT NULL,
+  `a7` int NULL DEFAULT NULL,
+  `a8` int NULL DEFAULT NULL,
+  `a9` int NULL DEFAULT NULL,
+  `a10` int NULL DEFAULT NULL,
+  `a11` int NULL DEFAULT NULL,
+  `a12` int NULL DEFAULT NULL,
+  `a13` int NULL DEFAULT NULL,
+  `a14` int NULL DEFAULT NULL,
+  `a15` int NULL DEFAULT NULL,
+  `a16` int NULL DEFAULT NULL,
+  `a17` int NULL DEFAULT NULL,
+  `a18` int NULL DEFAULT NULL,
+  `a19` int NULL DEFAULT NULL,
+  `a20` int NULL DEFAULT NULL,
+  `a21` int NULL DEFAULT NULL,
+  `a22` int NULL DEFAULT NULL,
+  `a23` int NULL DEFAULT NULL,
+  `a24` int NULL DEFAULT NULL,
+  `a25` int NULL DEFAULT NULL,
+  `a26` int NULL DEFAULT NULL,
+  `a27` int NULL DEFAULT NULL,
+  `a28` int NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `idx_knr`(`Knr`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- Beispiel-Kandidaten für Spielwiese
-INSERT INTO `wahl2000kandidaten` VALUES (118, 1, 'Konrad', 'Röntgen', '04932001', 1990925099, 'hermann.meier@mensa.de', NULL, 'konradRöntgen_75.jpg', 'm', NULL, '', '', NULL, 1, 0, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (119, 2, 'Marie', 'Curie', '04932002', 2772798551, NULL, NULL, 'marieCurie_75.jpg', 'w', NULL, '', '', NULL, 0, 1, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (120, 3, 'Emil', 'Kraepelin', '04932003', 3921590506, NULL, NULL, 'emilKraepelin_75.jpg', 'm', NULL, '', '', NULL, 0, 0, 1, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (121, 4, 'Anita', 'Augspurg', '04932004', 1587752557, NULL, NULL, 'anitaAugspurg_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 0, 1, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (122, 5, 'Mutter', 'Teresa', '04932005', 3017953922, NULL, NULL, 'mutterTeresa_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 0, 0, 1);
-INSERT INTO `wahl2000kandidaten` VALUES (124, 6, 'Selma', 'Lagerlöf', '04932006', 2659342381, NULL, NULL, 'selmaLagerlöf_75.jpg', 'w', NULL, '', '', NULL, 1, 0, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (125, 7, 'Hans', 'Asperger', '04932007', 1289025884, NULL, NULL, 'hansAsperger_75.jpg', 'm', NULL, '', '', NULL, 0, 1, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (126, 8, 'Mileva', 'Maric', '04932008', 3020407826, NULL, NULL, 'milevaMaric_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 1, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (127, 9, 'Max', 'Planck', '04932009', 2922778382, NULL, NULL, 'maxPlanck_75.jpg', 'm', NULL, '', '', NULL, 1, 1, 0, 0, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (112, 12, 'Super', 'MachtAllesToll', '04932010', 2995205301, NULL, NULL, '_Mann_75.jpg', 'm', NULL, '', '', NULL, 1, 1, 1, 1, 1);
-INSERT INTO `wahl2000kandidaten` VALUES (116, 14, 'Werner', 'Heisenberg', '04932011', 3370114463, NULL, NULL, 'wernerHeisenberg_75.jpg', 'm', NULL, '', '', NULL, 0, 0, 0, 1, 0);
-INSERT INTO `wahl2000kandidaten` VALUES (117, 16, 'Albert', 'Einstein', '04912113', 3825802204, 'albert.einstein@mensa.de', NULL, 'albertEinstein_75.jpg', 'm', NULL, '', '', NULL, 1, 0, 0, 0, 1);
+-- Beispiel-Kandidaten für Spielwiese (a1-a28 sind NULL für Test-Kandidaten)
+INSERT INTO `wahl2000kandidaten` VALUES (118, 1, 'Konrad', 'Röntgen', '04932001', 1990925099, 'hermann.meier@mensa.de', NULL, 'konradRöntgen_75.jpg', 'm', NULL, '', '', NULL, 1, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (119, 2, 'Marie', 'Curie', '04932002', 2772798551, NULL, NULL, 'marieCurie_75.jpg', 'w', NULL, '', '', NULL, 0, 1, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (120, 3, 'Emil', 'Kraepelin', '04932003', 3921590506, NULL, NULL, 'emilKraepelin_75.jpg', 'm', NULL, '', '', NULL, 0, 0, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (121, 4, 'Anita', 'Augspurg', '04932004', 1587752557, NULL, NULL, 'anitaAugspurg_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (122, 5, 'Mutter', 'Teresa', '04932005', 3017953922, NULL, NULL, 'mutterTeresa_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 0, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (124, 6, 'Selma', 'Lagerlöf', '04932006', 2659342381, NULL, NULL, 'selmaLagerlöf_75.jpg', 'w', NULL, '', '', NULL, 1, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (125, 7, 'Hans', 'Asperger', '04932007', 1289025884, NULL, NULL, 'hansAsperger_75.jpg', 'm', NULL, '', '', NULL, 0, 1, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (126, 8, 'Mileva', 'Maric', '04932008', 3020407826, NULL, NULL, 'milevaMaric_75.jpg', 'w', NULL, '', '', NULL, 0, 0, 1, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (127, 9, 'Max', 'Planck', '04932009', 2922778382, NULL, NULL, 'maxPlanck_75.jpg', 'm', NULL, '', '', NULL, 1, 1, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (112, 12, 'Super', 'MachtAllesToll', '04932010', 2995205301, NULL, NULL, '_Mann_75.jpg', 'm', NULL, '', '', NULL, 1, 1, 1, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (116, 14, 'Werner', 'Heisenberg', '04932011', 3370114463, NULL, NULL, 'wernerHeisenberg_75.jpg', 'm', NULL, '', '', NULL, 0, 0, 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `wahl2000kandidaten` VALUES (117, 16, 'Albert', 'Einstein', '04912113', 3825802204, 'albert.einstein@mensa.de', NULL, 'albertEinstein_75.jpg', 'm', NULL, '', '', NULL, 1, 0, 0, 0, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- Kommentare 2000 (Spielwiese)
 DROP TABLE IF EXISTS `wahl2000kommentare`;
