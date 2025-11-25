@@ -236,15 +236,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'ZUGANG_METHODE' => $_POST['ZUGANG_METHODE'] ?? 'GET',
                     'LOGO_DATEI' => $_POST['LOGO_DATEI'] ?? 'img/logo.png'
                 ];
-                foreach ($settings as $key => $value) {
-                    dbExecute(
-                        "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
-                         ON DUPLICATE KEY UPDATE setting_value = ?",
-                        [$key, $value, $value]
-                    );
+                try {
+                    foreach ($settings as $key => $value) {
+                        dbExecute(
+                            "INSERT INTO einstellungenwahl (setting_key, setting_value) VALUES (?, ?)
+                             ON DUPLICATE KEY UPDATE setting_value = ?",
+                            [$key, $value, $value]
+                        );
+                    }
+                    $message = 'Einstellungen gespeichert';
+                    $messageType = 'success';
+                } catch (Exception $e) {
+                    $message = 'Fehler beim Speichern: ' . $e->getMessage();
+                    $messageType = 'error';
                 }
-                $message = 'Einstellungen gespeichert';
-                $messageType = 'success';
                 break;
 
             // === ARCHIVIERUNG ===
@@ -271,6 +276,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $message = "{$erfolg} von 3 Tabellen für {$jahr} archiviert";
                     $messageType = $erfolg > 0 ? 'success' : 'error';
+                }
+                break;
+
+            // === SPIELWIESE BEFÜLLEN ===
+            case 'spielwiese_fuellen':
+                try {
+                    // Alte Daten löschen
+                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_KOMMENTARE);
+                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_TEILNEHMER);
+                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL_VOTES);
+                    dbExecute("TRUNCATE TABLE " . TABLE_WAHLSPIEL);
+
+                    // Daten von wahl2025 zu wahlspiel kopieren
+                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL . " SELECT * FROM " . TABLE_WAHL);
+                    $anzahl1 = dbLastInsertId() ? 1 : dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL)['c'];
+
+                    // Kommentare kopieren
+                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_KOMMENTARE . " SELECT * FROM " . TABLE_KOMMENTARE);
+                    $anzahl2 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_KOMMENTARE)['c'];
+
+                    // Teilnehmer kopieren
+                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_TEILNEHMER . " SELECT * FROM " . TABLE_TEILNEHMER);
+                    $anzahl3 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_TEILNEHMER)['c'];
+
+                    // Votes kopieren
+                    dbExecute("INSERT INTO " . TABLE_WAHLSPIEL_VOTES . " SELECT * FROM " . TABLE_VOTES);
+                    $anzahl4 = dbFetchOne("SELECT COUNT(*) as c FROM " . TABLE_WAHLSPIEL_VOTES)['c'];
+
+                    $message = "Spielwiese erfolgreich befüllt: {$anzahl1} Kandidaten, {$anzahl2} Kommentare, {$anzahl3} Teilnehmer, {$anzahl4} Votes";
+                    $messageType = 'success';
+                } catch (Exception $e) {
+                    $message = 'Fehler beim Befüllen: ' . $e->getMessage();
+                    $messageType = 'error';
                 }
                 break;
 
@@ -1029,6 +1067,24 @@ try {
                 <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">Speichern</button>
             </div>
         </form>
+
+        <!-- Spielwiese befüllen -->
+        <div style="margin-top: 40px; padding: 20px; border: 2px solid var(--mensa-hellgelb); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+            <h3>Spielwiese-Daten aktualisieren</h3>
+            <p class="message info" style="margin-bottom: 15px;">
+                Kopiert die aktuellen Daten von <strong><?php echo TABLE_WAHL; ?></strong> in die Spielwiese-Tabellen
+                (<?php echo TABLE_WAHLSPIEL; ?>). Dies ist nützlich um die Musterseite mit echten Daten zu befüllen.
+            </p>
+            <p class="message warning" style="margin-bottom: 15px;">
+                <strong>Achtung:</strong> Alle bisherigen Spielwiese-Daten werden überschrieben!
+            </p>
+            <form method="post" action="?tab=einstellungen" onsubmit="return confirm('Wirklich Spielwiese-Daten überschreiben?');">
+                <input type="hidden" name="action" value="spielwiese_fuellen">
+                <button type="submit" class="btn-small" style="padding: 10px 20px; font-size: 1rem; background: var(--mensa-gelb); color: #333;">
+                    Spielwiese jetzt befüllen
+                </button>
+            </form>
+        </div>
 
         <?php elseif ($activeTab === 'mailing'): ?>
         <!-- ================================================================= -->

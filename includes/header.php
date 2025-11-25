@@ -43,8 +43,26 @@
 
     <!-- Navigation -->
     <nav class="main-nav">
-        <a href="index.php" class="nav-link">Kandidaten</a>
-        <a href="diskussion.php" class="nav-link">Diskussion</a>
+        <a href="<?php echo buildUrl('index.php'); ?>" class="nav-link">Kandidaten</a>
+        <a href="<?php echo buildUrl('diskussion.php'); ?>" class="nav-link">Diskussion</a>
+        <?php
+        $currentUserMnr = getUserMnr();
+        if ($currentUserMnr) {
+            // Versuche Benutzername zu holen
+            $tables = getDiskussionTabellen();
+            $benutzer = dbFetchOne(
+                "SELECT Vorname, Name FROM " . $tables['teilnehmer'] . " WHERE Mnr = ?",
+                [$currentUserMnr]
+            );
+
+            if ($benutzer && !empty($benutzer['Vorname']) && !empty($benutzer['Name'])) {
+                $userDisplay = escape($benutzer['Vorname'] . ' ' . $benutzer['Name']);
+            } else {
+                $userDisplay = 'M' . substr($currentUserMnr, 3);
+            }
+            echo '<span class="nav-user">eingeloggt: ' . $userDisplay . '</span>';
+        }
+        ?>
     </nav>
 
     <?php if (isMusterseite()): ?>

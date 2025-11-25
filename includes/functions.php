@@ -144,4 +144,28 @@ function decodeEntities($str) {
     if ($str === null) return '';
     return html_entity_decode($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
+
+/**
+ * Generiert eine URL mit M-Nummer Parameter wenn GET-Modus aktiv ist
+ */
+function buildUrl($path, $extraParams = []) {
+    $url = $path;
+    $params = $extraParams;
+
+    // Im GET-Modus M-Nummer anhängen
+    $zugangMethode = getSetting('ZUGANG_METHODE', 'GET');
+    if ($zugangMethode === 'GET') {
+        $mnr = getUserMnr();
+        if ($mnr) {
+            $params['mnr'] = $mnr;
+        }
+    }
+
+    if (!empty($params)) {
+        $url .= (strpos($path, '?') === false ? '?' : '&');
+        $url .= http_build_query($params);
+    }
+
+    return $url;
+}
 ?>
