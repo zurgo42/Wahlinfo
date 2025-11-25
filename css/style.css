@@ -169,6 +169,14 @@ body.dark-mode .dark-mode-toggle:hover {
     color: var(--mensa-dunkelblau);
 }
 
+.nav-user {
+    color: white;
+    font-size: 0.85rem;
+    margin-left: auto;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    opacity: 0.9;
+}
+
 /* Container */
 .container {
     max-width: 1400px;
@@ -1656,10 +1664,23 @@ body.dark-mode .anforderung-card .bewertung {
 /* Dark Mode: Musterseite und Admin-Hinweise */
 body.dark-mode .container > div[style*="background: #fff3cd"],
 body.dark-mode .message.info,
-body.dark-mode .alert.alert-info {
+body.dark-mode .alert.alert-info,
+body.dark-mode .message.warning {
     background: #3a3a2a !important;
     border-color: #555533 !important;
     color: var(--text-primary);
+}
+
+body.dark-mode .message.success {
+    background: #1a3a1a !important;
+    border-color: #28a745 !important;
+    color: #90ee90 !important;
+}
+
+body.dark-mode .message.error {
+    background: #3a1a1a !important;
+    border-color: #dc3545 !important;
+    color: #ff6b6b !important;
 }
 
 @media (max-width: 480px) {
