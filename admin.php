@@ -59,8 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $amt3 = isset($_POST['amt3']) ? '1' : '';
                 $amt4 = isset($_POST['amt4']) ? '1' : '';
                 $amt5 = isset($_POST['amt5']) ? '1' : '';
+                $kandidatenTable = getKandidatenTable();
                 dbExecute(
-                    "UPDATE " . TABLE_KANDIDATEN . " SET
+                    "UPDATE " . $kandidatenTable . " SET
                      vorname = ?, name = ?, mnummer = ?, email = ?,
                      amt1 = ?, amt2 = ?, amt3 = ?, amt4 = ?, amt5 = ?
                      WHERE id = ?",
@@ -84,8 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $amt3 = isset($_POST['amt3']) ? '1' : '';
                 $amt4 = isset($_POST['amt4']) ? '1' : '';
                 $amt5 = isset($_POST['amt5']) ? '1' : '';
+                $kandidatenTable = getKandidatenTable();
                 dbExecute(
-                    "INSERT INTO " . TABLE_KANDIDATEN . " (vorname, name, mnummer, email, amt1, amt2, amt3, amt4, amt5)
+                    "INSERT INTO " . $kandidatenTable . " (vorname, name, mnummer, email, amt1, amt2, amt3, amt4, amt5)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [$_POST['vorname'], $_POST['name'], $_POST['mnummer'],
                      $_POST['email'], $amt1, $amt2, $amt3, $amt4, $amt5]
@@ -414,7 +416,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (mail($k['email'], $betreff, $text, $headers)) {
                         // Zeitstempel in nachricht speichern
-                        dbExecute("UPDATE " . TABLE_KANDIDATEN . " SET nachricht = ? WHERE id = ?",
+                        $kandidatenTable = getKandidatenTable();
+                        dbExecute("UPDATE " . $kandidatenTable . " SET nachricht = ? WHERE id = ?",
                             [date('Y-m-d H:i:s'), $k['id']]);
                         $gesendet++;
                     } else {
