@@ -342,12 +342,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $neuerText = $_POST['neuer_text'] ?? '';
 
                 if ($knr > 0 && $neuerText) {
+                    $kommentareTable = getKommentareTable();
+
                     // Alten Beitrag laden
-                    $alterBeitrag = dbFetchOne("SELECT * FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?", [$knr]);
+                    $alterBeitrag = dbFetchOne("SELECT * FROM " . $kommentareTable . " WHERE Knr = ?", [$knr]);
 
                     if ($alterBeitrag) {
                         // Nächste Knr ermitteln (da kein auto_increment)
-                        $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . TABLE_KOMMENTARE);
+                        $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . $kommentareTable);
                         $neueKnr = ($maxKnr['max_knr'] ?? 2000) + 1;
 
                         // Log-Eintrag erstellen
@@ -359,14 +361,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // Neuen Beitrag erstellen (behält Autor)
                         dbExecute(
-                            "INSERT INTO " . TABLE_KOMMENTARE . " (Knr, These, Kommentar, Bezug, IP, Datum, Medium, Mnr, Verbergen)
+                            "INSERT INTO " . $kommentareTable . " (Knr, These, Kommentar, Bezug, IP, Datum, Medium, Mnr, Verbergen)
                              VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)",
                             [$neueKnr, $neuerText, $alterBeitrag['Kommentar'], $alterBeitrag['Bezug'],
                              $_SERVER['REMOTE_ADDR'], $alterBeitrag['Medium'], $alterBeitrag['Mnr'], '']
                         );
 
                         // Alten Beitrag löschen
-                        dbExecute("DELETE FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?", [$knr]);
+                        dbExecute("DELETE FROM " . $kommentareTable . " WHERE Knr = ?", [$knr]);
 
                         $message = "Beitrag #{$knr} wurde durch #{$neueKnr} ersetzt und ins Log eingetragen";
                         $messageType = 'success';
