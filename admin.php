@@ -470,7 +470,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // DATEN LADEN
 // =============================================================================
 
-$kandidaten = dbFetchAll("SELECT * FROM " . getKandidatenTable() . " ORDER BY name, vorname");
+// Dynamische Tabellennamen basierend auf aktuellem WAHLJAHR (aus DB-Einstellungen)
+$kandidatenTable = getKandidatenTable();
+
+$kandidaten = dbFetchAll("SELECT * FROM " . $kandidatenTable . " ORDER BY name, vorname");
 $ressorts = dbFetchAll("SELECT * FROM " . TABLE_RESSORTS . " ORDER BY id");
 $aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id > 0 ORDER BY id");
 $anforderungen = dbFetchAll("SELECT * FROM " . TABLE_ANFORDERUNGEN . " ORDER BY Nr ASC");
