@@ -55,13 +55,13 @@ try {
     if ($vote === 0) {
         // Vote entfernen
         dbExecute(
-            "DELETE FROM " . TABLE_VOTES . " WHERE Knr = ? AND Mnr = ?",
+            "DELETE FROM " . $TABLE_VOTES . " WHERE Knr = ? AND Mnr = ?",
             [$knr, $userMnr]
         );
     } else {
         // Vote setzen oder aktualisieren (UPSERT)
         dbExecute(
-            "INSERT INTO " . TABLE_VOTES . " (Knr, Mnr, vote, datum)
+            "INSERT INTO " . $TABLE_VOTES . " (Knr, Mnr, vote, datum)
              VALUES (?, ?, ?, NOW())
              ON DUPLICATE KEY UPDATE vote = ?, datum = NOW()",
             [$knr, $userMnr, $vote, $vote]
@@ -73,13 +73,13 @@ try {
         "SELECT
             SUM(CASE WHEN vote = 1 THEN 1 ELSE 0 END) as up,
             SUM(CASE WHEN vote = -1 THEN 1 ELSE 0 END) as down
-         FROM " . TABLE_VOTES . " WHERE Knr = ?",
+         FROM " . $TABLE_VOTES . " WHERE Knr = ?",
         [$knr]
     );
 
     // Eigener Vote
     $userVote = dbFetchOne(
-        "SELECT vote FROM " . TABLE_VOTES . " WHERE Knr = ? AND Mnr = ?",
+        "SELECT vote FROM " . $TABLE_VOTES . " WHERE Knr = ? AND Mnr = ?",
         [$knr, $userMnr]
     );
 

@@ -51,7 +51,7 @@ if ($action === 'edit') {
     try {
         // Prüfen ob der Beitrag dem User gehört und maximal 3 Minuten alt ist
         $kommentar = dbFetchOne(
-            "SELECT Mnr, Datum, These FROM " . TABLE_KOMMENTARE . " WHERE Knr = ?",
+            "SELECT Mnr, Datum, These FROM " . $TABLE_KOMMENTARE . " WHERE Knr = ?",
             [$knr]
         );
 
@@ -79,7 +79,7 @@ if ($action === 'edit') {
 
         // Update
         dbExecute(
-            "UPDATE " . TABLE_KOMMENTARE . " SET These = ? WHERE Knr = ?",
+            "UPDATE " . $TABLE_KOMMENTARE . " SET These = ? WHERE Knr = ?",
             [$text, $knr]
         );
 
@@ -87,7 +87,7 @@ if ($action === 'edit') {
         if ($alterText !== $text) {
             $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 45);
             dbExecute(
-                "INSERT INTO " . TABLE_AENDERUNGSLOG . " (typ, mnr, ip, alt_id, alt_text, neu_id, neu_text)
+                "INSERT INTO waehlaenderungslog (typ, mnr, ip, alt_id, alt_text, neu_id, neu_text)
                  VALUES (?, ?, ?, ?, ?, ?, ?)",
                 ['DISKUSSION_EDIT', $userMnr, $ip, $knr, substr($alterText, 0, 500), $knr, substr($text, 0, 500)]
             );
@@ -126,33 +126,33 @@ $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 15);
 try {
     // Prüfen ob Benutzer in Teilnehmer-Tabelle existiert
     $teilnehmer = dbFetchOne(
-        "SELECT Mnr, Vorname, Name FROM " . TABLE_TEILNEHMER . " WHERE Mnr = ?",
+        "SELECT Mnr, Vorname, Name FROM " . $TABLE_TEILNEHMER . " WHERE Mnr = ?",
         [$userMnr]
     );
 
     // Falls nicht, Benutzer anlegen (mit Platzhalter-Namen)
     if (!$teilnehmer) {
         dbExecute(
-            "INSERT INTO " . TABLE_TEILNEHMER . " (Mnr, Vorname, Name, Erstzugriff, Letzter, IP)
+            "INSERT INTO " . $TABLE_TEILNEHMER . " (Mnr, Vorname, Name, Erstzugriff, Letzter, IP)
              VALUES (?, ?, ?, NOW(), NOW(), ?)",
             [$userMnr, 'Teilnehmer', $userMnr, $ip]
         );
     } else {
         // Letzten Zugriff aktualisieren
         dbExecute(
-            "UPDATE " . TABLE_TEILNEHMER . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
+            "UPDATE " . $TABLE_TEILNEHMER . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
             [$ip, $userMnr]
         );
     }
 
     // Nächste Knr ermitteln (da kein auto_increment)
-    $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . TABLE_KOMMENTARE);
+    $maxKnr = dbFetchOne("SELECT MAX(Knr) as max_knr FROM " . $TABLE_KOMMENTARE);
     $neueKnr = ($maxKnr['max_knr'] ?? 2000) + 1;
 
     // Antwort speichern
     $pdo = getPdo();
     $stmt = $pdo->prepare(
-        "INSERT INTO " . TABLE_KOMMENTARE . " (Knr, These, Bezug, Mnr, Datum, IP, Medium)
+        "INSERT INTO " . $TABLE_KOMMENTARE . " (Knr, These, Bezug, Mnr, Datum, IP, Medium)
          VALUES (?, ?, ?, ?, NOW(), ?, ?)"
     );
     $stmt->execute([
