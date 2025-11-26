@@ -530,6 +530,12 @@ function sendeAntwort(bezugKnr) {
     formData.append('bezug', bezugKnr);
     formData.append('text', text);
 
+    // M-Nr auch im POST-Body mitsenden (für POST-Methode)
+    const mnr = getMnrParam();
+    if (mnr) {
+        formData.append('mnr', mnr);
+    }
+
     fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
@@ -625,6 +631,12 @@ function sendeNeueFrage(kandId) {
     formData.append('bezug', kandId);
     formData.append('text', text);
 
+    // M-Nr auch im POST-Body mitsenden (für POST-Methode)
+    const mnr = getMnrParam();
+    if (mnr) {
+        formData.append('mnr', mnr);
+    }
+
     fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
@@ -668,6 +680,12 @@ function speichereEdit(knr) {
     formData.append('text', text);
     formData.append('action', 'edit');
 
+    // M-Nr auch im POST-Body mitsenden (für POST-Methode)
+    const mnr = getMnrParam();
+    if (mnr) {
+        formData.append('mnr', mnr);
+    }
+
     fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
@@ -710,6 +728,12 @@ function vote(knr, voteValue) {
     var formData = new FormData();
     formData.append('knr', knr);
     formData.append('vote', voteValue);
+
+    // M-Nr auch im POST-Body mitsenden (für POST-Methode)
+    const mnr = getMnrParam();
+    if (mnr) {
+        formData.append('mnr', mnr);
+    }
 
     fetch(buildUrl('vote_speichern.php'), {
         method: 'POST',
