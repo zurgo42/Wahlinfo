@@ -471,6 +471,20 @@ if (!empty($dokumente)):
 <?php endif; ?>
 
 <script>
+// M-Nr aus URL extrahieren und für AJAX-Requests verwenden
+function getMnrParam() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('mnr');
+}
+
+function buildUrl(baseUrl) {
+    const mnr = getMnrParam();
+    if (mnr) {
+        return baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'mnr=' + encodeURIComponent(mnr);
+    }
+    return baseUrl;
+}
+
 function toggleKandidatDiskussion(id) {
     var threads = document.getElementById('threads-' + id);
     var icon = document.getElementById('icon-' + id);
@@ -516,7 +530,7 @@ function sendeAntwort(bezugKnr) {
     formData.append('bezug', bezugKnr);
     formData.append('text', text);
 
-    fetch('antwort_speichern.php', {
+    fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
     })
@@ -611,7 +625,7 @@ function sendeNeueFrage(kandId) {
     formData.append('bezug', kandId);
     formData.append('text', text);
 
-    fetch('antwort_speichern.php', {
+    fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
     })
@@ -654,7 +668,7 @@ function speichereEdit(knr) {
     formData.append('text', text);
     formData.append('action', 'edit');
 
-    fetch('antwort_speichern.php', {
+    fetch(buildUrl('antwort_speichern.php'), {
         method: 'POST',
         body: formData
     })
@@ -697,7 +711,7 @@ function vote(knr, voteValue) {
     formData.append('knr', knr);
     formData.append('vote', voteValue);
 
-    fetch('vote_speichern.php', {
+    fetch(buildUrl('vote_speichern.php'), {
         method: 'POST',
         body: formData
     })

@@ -234,6 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'DEADLINE_KANDIDATEN' => $_POST['DEADLINE_KANDIDATEN'] ?? '',
                     'DEADLINE_EDITIEREN' => $_POST['DEADLINE_EDITIEREN'] ?? '',
                     'FEATURE_VOTING' => isset($_POST['FEATURE_VOTING']) ? '1' : '0',
+                    'SHOW_PK_SK' => isset($_POST['SHOW_PK_SK']) ? '1' : '0',
                     'MUSTERSEITE' => isset($_POST['MUSTERSEITE']) ? '1' : '0',
                     'ADMIN_MNRS' => $_POST['ADMIN_MNRS'] ?? '',
                     'ZUGANG_METHODE' => $_POST['ZUGANG_METHODE'] ?? 'GET',
@@ -1020,6 +1021,13 @@ try {
                     <input type="checkbox" id="FEATURE_VOTING" name="FEATURE_VOTING"
                            <?php echo (isset($dbSettings['FEATURE_VOTING']) ? $dbSettings['FEATURE_VOTING'] : FEATURE_VOTING) ? 'checked' : ''; ?>>
                     Ja
+                </label>
+
+                <label for="SHOW_PK_SK">PK/SK Anforderungen anzeigen:</label>
+                <label style="font-weight: normal;">
+                    <input type="checkbox" id="SHOW_PK_SK" name="SHOW_PK_SK"
+                           <?php echo (!empty($dbSettings['SHOW_PK_SK']) && $dbSettings['SHOW_PK_SK'] == '1') ? 'checked' : ''; ?>>
+                    Ja (FK, PK, SK, T - Anforderungen 16-28)
                 </label>
 
                 <label for="MUSTERSEITE">Musterseite verwenden:</label>
