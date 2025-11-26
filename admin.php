@@ -29,10 +29,25 @@ if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
 
 // Admin-Prüfung
 if (!$firstUserMode && (!$userMnr || !in_array($userMnr, $adminMnrs))) {
+    $zugangMethode = getSetting('ZUGANG_METHODE', 'GET');
+
+    // Hilfreiche Fehlermeldung für GET-Modus ohne M-Nr
+    if ($zugangMethode === 'GET' && !$userMnr) {
+        die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
+            <h2>Zugriff verweigert</h2>
+            <p>Der Admin-Bereich ist nur mit einer gültigen M-Nummer zugänglich.</p>
+            <p style="color: #666; font-size: 0.9em;">Bitte rufen Sie die Seite mit dem Parameter <code style="background: #f0f0f0; padding: 2px 6px;">?mnr=IHRE_MNUMMER</code> auf.</p>
+            <p style="color: #666; font-size: 0.9em;">Beispiel: <code style="background: #f0f0f0; padding: 2px 6px;">admin.php?mnr=04932001</code></p>
+            <a href="' . buildUrl('index.php') . '">Zurück zur Startseite</a>
+        </div>');
+    }
+
+    // Allgemeine Fehlermeldung (M-Nr vorhanden, aber nicht berechtigt)
     die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
         <h2>Zugriff verweigert</h2>
         <p>Diese Seite ist nur für Administratoren zugänglich.</p>
-        <a href="index.php">Zurück zur Startseite</a>
+        ' . ($userMnr ? '<p style="color: #666; font-size: 0.9em;">Ihre M-Nummer ist nicht als Admin registriert.</p>' : '') . '
+        <a href="' . buildUrl('index.php') . '">Zurück zur Startseite</a>
     </div>');
 }
 
