@@ -540,7 +540,14 @@ function sendeAntwort(bezugKnr) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error('Server-Fehler: ' + response.status + ' - ' + text.substring(0, 200));
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Neuen Beitrag sofort anzeigen
@@ -548,11 +555,12 @@ function sendeAntwort(bezugKnr) {
             document.getElementById('antwort-text-' + bezugKnr).value = '';
             versteckeAntwortForm(bezugKnr);
         } else {
-            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler') + (data.debug ? '\nDebug: ' + JSON.stringify(data.debug) : ''));
         }
     })
     .catch(error => {
-        alert('Fehler beim Speichern: ' + error);
+        console.error('Fetch-Fehler:', error);
+        alert('Fehler beim Speichern: ' + error.message);
     });
 }
 
@@ -641,17 +649,25 @@ function sendeNeueFrage(kandId) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error('Server-Fehler: ' + response.status + ' - ' + text.substring(0, 200));
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Seite neu laden um Thread-Struktur korrekt anzuzeigen
             location.reload();
         } else {
-            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler') + (data.debug ? '\nDebug: ' + JSON.stringify(data.debug) : ''));
         }
     })
     .catch(error => {
-        alert('Fehler beim Speichern: ' + error);
+        console.error('Fetch-Fehler:', error);
+        alert('Fehler beim Speichern: ' + error.message);
     });
 }
 
@@ -690,7 +706,14 @@ function speichereEdit(knr) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error('Server-Fehler: ' + response.status + ' - ' + text.substring(0, 200));
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Text aktualisieren
@@ -704,11 +727,12 @@ function speichereEdit(knr) {
             versteckeEditForm(knr);
             alert('Deine Änderung wurde gespeichert.');
         } else {
-            alert('Fehler: ' + (data.message || 'Unbekannter Fehler'));
+            alert('Fehler: ' + (data.message || 'Unbekannter Fehler') + (data.debug ? '\nDebug: ' + JSON.stringify(data.debug) : ''));
         }
     })
     .catch(error => {
-        alert('Fehler beim Speichern: ' + error);
+        console.error('Fetch-Fehler:', error);
+        alert('Fehler beim Speichern: ' + error.message);
     });
 }
 
