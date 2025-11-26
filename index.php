@@ -76,10 +76,11 @@ foreach ($aemter as $amt) {
         <article class="candidate-card">
             <?php
             // Eigene Karte -> eingabe.php (wenn Editieren erlaubt), sonst -> einzeln.php
+            $mnrParam = $userMnr ? '?mnr=' . urlencode($userMnr) : '';
             if ($userMnr && $userMnr === $kandidat['mnummer'] && isEditingAllowed()) {
-                $link = "eingabe.php?mnr=" . urlencode($mnummer);
+                $link = "eingabe.php" . $mnrParam;
             } else {
-                $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId;
+                $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId . ($userMnr ? "&amp;mnr=" . urlencode($userMnr) : '');
             }
             ?>
             <a href="<?php echo $link; ?>">

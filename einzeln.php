@@ -24,7 +24,7 @@ if (!isDetailViewPublic() && $userMnr !== $zeige) {
     include 'includes/header.php';
     echo '<div class="alert alert-warning">Die Kandidatenprofile sind noch nicht öffentlich zugänglich.</div>';
     echo '<p>Die Profile werden ab ' . date('d.m.Y, H:i', strtotime(getDeadlineEditieren())) . ' Uhr freigeschaltet.</p>';
-    echo '<a href="index.php" class="btn">Zurück zur Übersicht</a>';
+    echo '<a href="' . buildUrl('index.php') . '" class="btn">Zurück zur Übersicht</a>';
     include 'includes/footer.php';
     exit;
 }
@@ -39,7 +39,7 @@ if (!$kand) {
     $pageTitle = 'Kandidat nicht gefunden';
     include 'includes/header.php';
     echo '<div class="alert alert-warning">Dieser Kandidat wurde nicht gefunden.</div>';
-    echo '<a href="index.php" class="btn">Zurück zur Übersicht</a>';
+    echo '<a href="' . buildUrl('index.php') . '" class="btn">Zurück zur Übersicht</a>';
     include 'includes/footer.php';
     exit;
 }
@@ -385,7 +385,7 @@ $skala5a = ['', 'keine', 'wenig', 'etwas', 'gut', 'sehr gut'];
 </div>
 
 <div class="detail-actions">
-    <a href="index.php" class="btn">Zurück zur Übersicht</a>
+    <a href="<?php echo buildUrl('index.php'); ?>" class="btn">Zurück zur Übersicht</a>
 </div>
 
 <?php
