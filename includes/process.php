@@ -139,10 +139,14 @@ function getUserMnr() {
         return null;
     }
 
-    // POST: M-Nr aus POST-Parameter
+    // POST: M-Nr aus POST-Parameter, fallback auf GET
     if ($zugangMethode === 'POST') {
         if (isset($_POST['mnr']) && preg_match('/^[0-9]{7,8}$/', $_POST['mnr'])) {
             return $_POST['mnr'];
+        }
+        // Fallback auf GET-Parameter (für AJAX-Requests via URL)
+        if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
+            return $_GET['mnr'];
         }
         return null;
     }
