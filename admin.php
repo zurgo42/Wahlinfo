@@ -54,6 +54,9 @@ if (!$firstUserMode && (!$userMnr || !in_array($userMnr, $adminMnrs))) {
 // Aktiver Tab
 $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'kandidaten';
 
+// M-Nr Parameter für alle internen Links
+$mnrParam = $userMnr ? '&mnr=' . urlencode($userMnr) : '';
+
 // =============================================================================
 // AKTIONEN VERARBEITEN
 // =============================================================================
@@ -712,15 +715,15 @@ try {
 
     <!-- Tabs -->
     <div class="admin-tabs">
-        <a href="?tab=kandidaten" class="admin-tab <?php echo $activeTab === 'kandidaten' ? 'active' : ''; ?>">Kandidaten</a>
-        <a href="?tab=ressorts" class="admin-tab <?php echo $activeTab === 'ressorts' ? 'active' : ''; ?>">Ressorts</a>
-        <a href="?tab=aemter" class="admin-tab <?php echo $activeTab === 'aemter' ? 'active' : ''; ?>">Ämter</a>
-        <a href="?tab=anforderungen" class="admin-tab <?php echo $activeTab === 'anforderungen' ? 'active' : ''; ?>">Anforderungen</a>
-        <a href="?tab=einstellungen" class="admin-tab <?php echo $activeTab === 'einstellungen' ? 'active' : ''; ?>">Einstellungen</a>
-        <a href="?tab=mailing" class="admin-tab <?php echo $activeTab === 'mailing' ? 'active' : ''; ?>">Mailing</a>
-        <a href="?tab=archivierung" class="admin-tab <?php echo $activeTab === 'archivierung' ? 'active' : ''; ?>">Archivierung</a>
-        <a href="?tab=dokumente" class="admin-tab <?php echo $activeTab === 'dokumente' ? 'active' : ''; ?>">Dokumente</a>
-        <a href="?tab=moderation" class="admin-tab <?php echo $activeTab === 'moderation' ? 'active' : ''; ?>">Moderation</a>
+        <a href="?tab=kandidaten<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'kandidaten' ? 'active' : ''; ?>">Kandidaten</a>
+        <a href="?tab=ressorts<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'ressorts' ? 'active' : ''; ?>">Ressorts</a>
+        <a href="?tab=aemter<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'aemter' ? 'active' : ''; ?>">Ämter</a>
+        <a href="?tab=anforderungen<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'anforderungen' ? 'active' : ''; ?>">Anforderungen</a>
+        <a href="?tab=einstellungen<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'einstellungen' ? 'active' : ''; ?>">Einstellungen</a>
+        <a href="?tab=mailing<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'mailing' ? 'active' : ''; ?>">Mailing</a>
+        <a href="?tab=archivierung<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'archivierung' ? 'active' : ''; ?>">Archivierung</a>
+        <a href="?tab=dokumente<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'dokumente' ? 'active' : ''; ?>">Dokumente</a>
+        <a href="?tab=moderation<?php echo $mnrParam; ?>" class="admin-tab <?php echo $activeTab === 'moderation' ? 'active' : ''; ?>">Moderation</a>
     </div>
 
     <div class="admin-section">
@@ -756,7 +759,7 @@ try {
             <tbody>
                 <?php foreach ($kandidaten as $k): ?>
                 <tr>
-                    <form method="post" action="?tab=kandidaten">
+                    <form method="post" action="?tab=kandidaten<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="kandidat_update">
                         <input type="hidden" name="id" value="<?php echo $k['id']; ?>">
                         <td><?php echo $k['id']; ?></td>
@@ -781,7 +784,7 @@ try {
                 </tr>
                 <tr>
                     <td colspan="7" style="text-align: right; padding-top: 0;">
-                        <form method="post" action="?tab=kandidaten" style="display: inline;"
+                        <form method="post" action="?tab=kandidaten<?php echo $mnrParam; ?>" style="display: inline;"
                               onsubmit="return confirm('Kandidat wirklich löschen?');">
                             <input type="hidden" name="action" value="kandidat_delete">
                             <input type="hidden" name="id" value="<?php echo $k['id']; ?>">
@@ -793,7 +796,7 @@ try {
 
                 <!-- Neue Zeile -->
                 <tr class="new-row">
-                    <form method="post" action="?tab=kandidaten">
+                    <form method="post" action="?tab=kandidaten<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="kandidat_add">
                         <td>Neu</td>
                         <td><input type="text" name="vorname" placeholder="Vorname"></td>
@@ -834,7 +837,7 @@ try {
             <tbody>
                 <?php foreach ($ressorts as $idx => $r): ?>
                 <tr>
-                    <form method="post" action="?tab=ressorts">
+                    <form method="post" action="?tab=ressorts<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="ressort_update">
                         <input type="hidden" name="id" value="<?php echo $r['id']; ?>">
                         <td><?php echo $r['id']; ?></td>
@@ -849,14 +852,14 @@ try {
                 <tr>
                     <td colspan="3" style="text-align: right; padding-top: 0;">
                         <?php if ($idx > 0): ?>
-                            <form method="post" action="?tab=ressorts" style="display: inline;">
+                            <form method="post" action="?tab=ressorts<?php echo $mnrParam; ?>" style="display: inline;">
                                 <input type="hidden" name="action" value="ressort_swap">
                                 <input type="hidden" name="id1" value="<?php echo $r['id']; ?>">
                                 <input type="hidden" name="id2" value="<?php echo $ressorts[$idx-1]['id']; ?>">
                                 <button type="submit" class="btn-small" style="background: #6c757d; color: white;">↑ Tauschen</button>
                             </form>
                         <?php endif; ?>
-                        <form method="post" action="?tab=ressorts" style="display: inline;"
+                        <form method="post" action="?tab=ressorts<?php echo $mnrParam; ?>" style="display: inline;"
                               onsubmit="return confirm('Ressort wirklich löschen?');">
                             <input type="hidden" name="action" value="ressort_delete">
                             <input type="hidden" name="id" value="<?php echo $r['id']; ?>">
@@ -868,7 +871,7 @@ try {
 
                 <!-- Neue Zeile -->
                 <tr class="new-row">
-                    <form method="post" action="?tab=ressorts">
+                    <form method="post" action="?tab=ressorts<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="ressort_add">
                         <td>Neu</td>
                         <td><input type="text" name="ressort" placeholder="Ressort-Name"></td>
@@ -898,7 +901,7 @@ try {
             <tbody>
                 <?php foreach ($aemter as $a): ?>
                 <tr>
-                    <form method="post" action="?tab=aemter">
+                    <form method="post" action="?tab=aemter<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="amt_update">
                         <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
                         <td><?php echo $a['id']; ?></td>
@@ -912,7 +915,7 @@ try {
                 </tr>
                 <tr>
                     <td colspan="3" style="text-align: right; padding-top: 0;">
-                        <form method="post" action="?tab=aemter" style="display: inline;"
+                        <form method="post" action="?tab=aemter<?php echo $mnrParam; ?>" style="display: inline;"
                               onsubmit="return confirm('Amt wirklich löschen?');">
                             <input type="hidden" name="action" value="amt_delete">
                             <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
@@ -924,7 +927,7 @@ try {
 
                 <!-- Neue Zeile -->
                 <tr class="new-row">
-                    <form method="post" action="?tab=aemter">
+                    <form method="post" action="?tab=aemter<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="amt_add">
                         <td>Neu</td>
                         <td><input type="text" name="amt" placeholder="Amt/Position"></td>
@@ -956,7 +959,7 @@ try {
             <tbody>
                 <?php foreach ($anforderungen as $idx => $anf): ?>
                 <tr>
-                    <form method="post" action="?tab=anforderungen">
+                    <form method="post" action="?tab=anforderungen<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="anforderung_update">
                         <input type="hidden" name="id" value="<?php echo $anf['id']; ?>">
                         <td><?php echo $anf['id']; ?></td>
@@ -973,14 +976,14 @@ try {
                 <tr>
                     <td colspan="5" style="text-align: right; padding-top: 0;">
                         <?php if ($idx > 0): ?>
-                            <form method="post" action="?tab=anforderungen" style="display: inline;">
+                            <form method="post" action="?tab=anforderungen<?php echo $mnrParam; ?>" style="display: inline;">
                                 <input type="hidden" name="action" value="anforderung_swap">
                                 <input type="hidden" name="id1" value="<?php echo $anf['id']; ?>">
                                 <input type="hidden" name="id2" value="<?php echo $anforderungen[$idx-1]['id']; ?>">
                                 <button type="submit" class="btn-small" style="background: #6c757d; color: white;">↑ Tauschen</button>
                             </form>
                         <?php endif; ?>
-                        <form method="post" action="?tab=anforderungen" style="display: inline;"
+                        <form method="post" action="?tab=anforderungen<?php echo $mnrParam; ?>" style="display: inline;"
                               onsubmit="return confirm('Anforderung wirklich löschen?');">
                             <input type="hidden" name="action" value="anforderung_delete">
                             <input type="hidden" name="id" value="<?php echo $anf['id']; ?>">
@@ -992,7 +995,7 @@ try {
 
                 <!-- Neue Zeile -->
                 <tr class="new-row">
-                    <form method="post" action="?tab=anforderungen">
+                    <form method="post" action="?tab=anforderungen<?php echo $mnrParam; ?>">
                         <input type="hidden" name="action" value="anforderung_add">
                         <td>Neu</td>
                         <td><input type="text" name="nr" placeholder="Nr" style="width: 60px;"></td>
@@ -1013,7 +1016,7 @@ try {
         <h2>Einstellungen</h2>
         <p>Wahl-Einstellungen bearbeiten und speichern.</p>
 
-        <form method="post" action="?tab=einstellungen">
+        <form method="post" action="?tab=einstellungen<?php echo $mnrParam; ?>">
             <input type="hidden" name="action" value="einstellungen_save">
 
             <div class="settings-grid">
@@ -1095,7 +1098,7 @@ try {
         <p style="color: var(--text-secondary); font-size: 0.9rem;">
             Benachrichtigt alle Kandidaten, dass sie ihre Daten eintragen können.
         </p>
-        <form method="post" action="?tab=mailing">
+        <form method="post" action="?tab=mailing<?php echo $mnrParam; ?>">
             <input type="hidden" name="action" value="mail_initial_senden">
             <div style="margin-bottom: 15px;">
                 <label for="betreff_initial"><strong>Betreff:</strong></label>
@@ -1136,7 +1139,7 @@ Das Wahlteam');
                 </button>
             </div>
         </form>
-        <form method="post" action="?tab=mailing" style="display: none;">
+        <form method="post" action="?tab=mailing<?php echo $mnrParam; ?>" style="display: none;">
             <input type="hidden" name="action" value="mail_text_speichern">
             <input type="hidden" name="mail_key" value="MAIL_TEXT_INITIAL">
             <input type="hidden" name="mail_text" id="mail_text_initial_hidden">
@@ -1155,7 +1158,7 @@ Das Wahlteam');
         <p style="color: var(--text-secondary); font-size: 0.9rem;">
             Wird nur an Kandidaten gesendet, die ihre Daten noch nicht eingetragen haben.
         </p>
-        <form method="post" action="?tab=mailing">
+        <form method="post" action="?tab=mailing<?php echo $mnrParam; ?>">
             <input type="hidden" name="action" value="mail_erinnerung_senden">
             <div style="margin-bottom: 15px;">
                 <label for="betreff_erinnerung"><strong>Betreff:</strong></label>
@@ -1190,7 +1193,7 @@ Das Wahlteam');
                 </button>
             </div>
         </form>
-        <form method="post" action="?tab=mailing" style="display: none;">
+        <form method="post" action="?tab=mailing<?php echo $mnrParam; ?>" style="display: none;">
             <input type="hidden" name="action" value="mail_text_speichern">
             <input type="hidden" name="mail_key" value="MAIL_TEXT_ERINNERUNG">
             <input type="hidden" name="mail_text" id="mail_text_erinnerung_hidden">
@@ -1218,7 +1221,7 @@ Das Wahlteam');
             </ul>
         </div>
 
-        <form method="post" action="?tab=archivierung" onsubmit="return confirm('Tabellen wirklich archivieren? Bestehende Archive werden NICHT überschrieben.');">
+        <form method="post" action="?tab=archivierung<?php echo $mnrParam; ?>" onsubmit="return confirm('Tabellen wirklich archivieren? Bestehende Archive werden NICHT überschrieben.');">
             <input type="hidden" name="action" value="archiv_erstellen">
             <div style="display: flex; gap: 15px; align-items: center;">
                 <label for="archiv_jahr"><strong>Archivjahr:</strong></label>
@@ -1261,7 +1264,7 @@ Das Wahlteam');
                     <td><?php echo escape($dok['beschreibung']); ?></td>
                     <td><a href="<?php echo escape($dok['link']); ?>" target="_blank"><?php echo escape($dok['link']); ?></a></td>
                     <td>
-                        <form method="post" action="?tab=dokumente" style="display:inline;">
+                        <form method="post" action="?tab=dokumente<?php echo $mnrParam; ?>" style="display:inline;">
                             <input type="hidden" name="action" value="dokument_delete">
                             <input type="hidden" name="index" value="<?php echo $index; ?>">
                             <button type="submit" class="btn-small btn-delete" onclick="return confirm('Wirklich löschen?')">Löschen</button>
@@ -1276,7 +1279,7 @@ Das Wahlteam');
         <?php endif; ?>
 
         <h3>Neues Dokument hinzufügen</h3>
-        <form method="post" action="?tab=dokumente">
+        <form method="post" action="?tab=dokumente<?php echo $mnrParam; ?>">
             <input type="hidden" name="action" value="dokument_add">
             <div style="display: grid; gap: 10px; max-width: 600px;">
                 <div>
@@ -1317,7 +1320,7 @@ Das Wahlteam');
             </ul>
         </div>
 
-        <form method="post" action="?tab=moderation" onsubmit="return confirm('Beitrag wirklich ersetzen? Dies wird geloggt.');">
+        <form method="post" action="?tab=moderation<?php echo $mnrParam; ?>" onsubmit="return confirm('Beitrag wirklich ersetzen? Dies wird geloggt.');">
             <input type="hidden" name="action" value="beitrag_ersetzen">
             <div style="display: grid; gap: 15px; max-width: 800px;">
                 <div>
