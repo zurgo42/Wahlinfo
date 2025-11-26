@@ -647,7 +647,7 @@ include __DIR__ . '/includes/header.php';
                 </div>
                 <?php endif; ?>
 
-                <?php if ($isVorstand && count($anforderungen) > 15): ?>
+                <?php if ($isVorstand && count($anforderungen) > 15 && getSetting('SHOW_PK_SK', '0') == '1'): ?>
                 <!-- Weitere Kompetenzen (16-28) - FK, PK, SK, T - nur für Vorstand -->
                 <h3>Fach-, Persönliche und Soziale Kompetenzen</h3>
                 <p class="section-note">
