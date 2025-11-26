@@ -75,11 +75,24 @@ foreach ($aemter as $amt) {
 
         <article class="candidate-card">
             <?php
-            // Eigene Karte -> eingabe.php (wenn Editieren erlaubt), sonst -> einzeln.php
-            $mnrParam = $userMnr ? '?mnr=' . urlencode($userMnr) : '';
-            if ($userMnr && $userMnr === $kandidat['mnummer'] && isEditingAllowed()) {
-                $link = "eingabe.php" . $mnrParam;
+            // Link-Logik:
+            // - Musterseite + Editieren erlaubt: Jede Karte -> eingabe.php mit Kandidaten-M-Nr
+            // - Produktion + eigene Karte + Editieren erlaubt: eingabe.php mit eigener M-Nr
+            // - Sonst: einzeln.php mit aktueller User-M-Nr
+
+            if (isEditingAllowed()) {
+                if (isMusterseite()) {
+                    // Spielwiese: Man kann als jede Testperson editieren
+                    $link = "eingabe.php?mnr=" . urlencode($mnummer);
+                } elseif ($userMnr && $userMnr === $kandidat['mnummer']) {
+                    // Produktion: Nur eigene Karte editierbar
+                    $link = "eingabe.php?mnr=" . urlencode($userMnr);
+                } else {
+                    // Andere Kandidaten -> einzeln
+                    $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId . ($userMnr ? "&amp;mnr=" . urlencode($userMnr) : '');
+                }
             } else {
+                // Editieren nicht erlaubt -> nur einzeln
                 $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId . ($userMnr ? "&amp;mnr=" . urlencode($userMnr) : '');
             }
             ?>
