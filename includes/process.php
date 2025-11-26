@@ -151,15 +151,12 @@ function getUserMnr() {
         return null;
     }
 
-    // GET (Standard): M-Nr aus GET-Parameter
-    if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
-        return $_GET['mnr'];
-    }
-
-    // Entwicklung: localhost bekommt Test-M-Nr
-    $host = $_SERVER['HTTP_HOST'] ?? '';
-    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-        return TEST_MNR;
+    // GET (Standard): M-Nr NUR aus GET-Parameter, keine Fallbacks
+    if ($zugangMethode === 'GET') {
+        if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
+            return $_GET['mnr'];
+        }
+        return null;
     }
 
     return null;
