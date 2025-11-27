@@ -316,6 +316,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
 
+            // === JSON EXPORT ===
+            case 'json_export':
+                $aktuellesJahr = (int)getSetting('WAHLJAHR', date('Y'));
+                $pdo = getPdo();
+
+                // Alle Tabellen mit "wahl" Prefix finden
+                $tables = dbFetchAll("SHOW TABLES LIKE 'wahl%'");
+                $export = [
+                    'export_date' => date('Y-m-d H:i:s'),
+                    'excluded_year' => $aktuellesJahr,
+                    'tables' => []
+                ];
+
+                $exportedCount = 0;
+                foreach ($tables as $tableRow) {
+                    $tableName = reset($tableRow);
+
+                    // Prüfen ob Tabelle vom aktuellen Jahr ist (überspringen)
+                    if (preg_match('/^wahl(\d{4})/', $tableName, $matches)) {
+                        $tableYear = (int)$matches[1];
+                        if ($tableYear === $aktuellesJahr) {
+                            continue; // Aktuelles Jahr überspringen
+                        }
+                    }
+
+                    // Tabellendaten exportieren
+                    $data = dbFetchAll("SELECT * FROM `{$tableName}`");
+                    $export['tables'][$tableName] = [
+                        'rows' => $data,
+                        'count' => count($data)
+                    ];
+                    $exportedCount++;
+                }
+
+                // JSON-Datei erstellen und direkt zum Download anbieten
+                $filename = 'wahlinfo_export_' . date('Y-m-d_H-i-s') . '.json';
+                $jsonContent = json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+                // Exports-Verzeichnis erstellen und Datei speichern
+                if (!is_dir(__DIR__ . '/exports')) {
+                    mkdir(__DIR__ . '/exports', 0755, true);
+                }
+                $filepath = __DIR__ . '/exports/' . $filename;
+                file_put_contents($filepath, $jsonContent);
+
+                // Direkt zum Download anbieten
+                header('Content-Type: application/json; charset=utf-8');
+                header('Content-Disposition: attachment; filename="' . $filename . '"');
+                header('Content-Length: ' . strlen($jsonContent));
+                echo $jsonContent;
+                exit;
+                break;
+
+            // === JSON IMPORT ===
+            case 'json_import':
+                if (!isset($_FILES['json_file']) || $_FILES['json_file']['error'] !== UPLOAD_ERR_OK) {
+                    $message = 'Fehler beim Hochladen der Datei';
+                    $messageType = 'error';
+                    break;
+                }
+
+                $jsonContent = file_get_contents($_FILES['json_file']['tmp_name']);
+                $import = json_decode($jsonContent, true);
+
+                if (!$import || !isset($import['tables'])) {
+                    $message = 'Ungültige JSON-Datei';
+                    $messageType = 'error';
+                    break;
+                }
+
+                $pdo = getPdo();
+                $importedCount = 0;
+                $errors = [];
+
+                try {
+                    $pdo->beginTransaction();
+
+                    foreach ($import['tables'] as $tableName => $tableData) {
+                        // Tabelle leeren
+                        dbExecute("TRUNCATE TABLE `{$tableName}`");
+
+                        // Daten einfügen
+                        if (!empty($tableData['rows'])) {
+                            foreach ($tableData['rows'] as $row) {
+                                $columns = array_keys($row);
+                                $placeholders = array_fill(0, count($columns), '?');
+                                $sql = "INSERT INTO `{$tableName}` (`" . implode('`, `', $columns) . "`)
+                                        VALUES (" . implode(', ', $placeholders) . ")";
+                                dbExecute($sql, array_values($row));
+                            }
+                        }
+                        $importedCount++;
+                    }
+
+                    $pdo->commit();
+                    $message = "Import erfolgreich: {$importedCount} Tabellen importiert aus " . basename($_FILES['json_file']['name']);
+                    $messageType = 'success';
+
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $message = 'Fehler beim Import: ' . $e->getMessage();
+                    $messageType = 'error';
+                }
+                break;
+
             // === DOKUMENTE ===
             case 'dokument_add':
                 $titel = trim($_POST['titel'] ?? '');
@@ -1234,6 +1339,57 @@ Das Wahlteam');
                 </button>
             </div>
         </form>
+
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #ddd;">
+
+        <!-- JSON Export/Import -->
+        <h2>JSON Backup & Restore</h2>
+        <p>Exportieren und Importieren aller Wahl-Datenbank-Tabellen (außer laufendes Jahr <?php echo getSetting('WAHLJAHR', date('Y')); ?>).</p>
+
+        <div class="admin-hinweis" style="background: #e7f3ff; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #2196F3;">
+            <strong>ℹ️ Funktionsweise:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li><strong>Export:</strong> Alle Tabellen mit "wahl"-Prefix werden in eine JSON-Datei exportiert (außer Tabellen des laufenden Jahres)</li>
+                <li><strong>Import:</strong> Alle in der JSON-Datei enthaltenen Tabellen werden geleert und mit den importierten Daten befüllt</li>
+            </ul>
+        </div>
+
+        <div class="admin-hinweis" style="background: #ffebee; padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px; border: 1px solid #f44336;">
+            <strong>⚠️ WARNUNG:</strong> Der Import löscht alle bestehenden Daten in den betroffenen Tabellen!
+        </div>
+
+        <!-- Export -->
+        <div style="margin-bottom: 30px;">
+            <h3>Export</h3>
+            <form method="post" action="?tab=archivierung<?php echo $mnrParam; ?>">
+                <input type="hidden" name="action" value="json_export">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px;">
+                    📥 JSON-Export erstellen
+                </button>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Exportiert alle Wahl-Tabellen (außer Jahr <?php echo getSetting('WAHLJAHR', date('Y')); ?>) nach <code>/exports/</code>
+                </p>
+            </form>
+        </div>
+
+        <!-- Import -->
+        <div>
+            <h3>Import</h3>
+            <form method="post" action="?tab=archivierung<?php echo $mnrParam; ?>" enctype="multipart/form-data"
+                  onsubmit="return confirm('ACHTUNG: Alle Daten in den importierten Tabellen werden gelöscht! Fortfahren?');">
+                <input type="hidden" name="action" value="json_import">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <label for="json_file"><strong>JSON-Datei:</strong></label>
+                    <input type="file" id="json_file" name="json_file" accept=".json" required style="padding: 8px;">
+                    <button type="submit" class="btn-small" style="padding: 10px 20px; background: #f44336; color: white;">
+                        📤 JSON importieren
+                    </button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #d32f2f;">
+                    ⚠️ Löscht alle bestehenden Daten und ersetzt sie durch den Import!
+                </p>
+            </form>
+        </div>
 
         <?php elseif ($activeTab === 'dokumente'): ?>
         <!-- ================================================================= -->

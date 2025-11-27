@@ -1,0 +1,19 @@
+# JSON Exports
+/exports/
+
+# Uploaded images
+/img/foto_*.jpg
+/img/foto_*.jpeg
+/img/foto_*.png
+/img/foto_*.gif
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
