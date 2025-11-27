@@ -1736,3 +1736,132 @@ body.dark-mode .musterseite-btn:hover {
     color: #6c757d;
 }
 
+/* =============================================================================
+   Dokumente-Sektion (oberhalb Footer)
+   ============================================================================= */
+
+.dokumente-container {
+    background: var(--bg-card);
+    border-top: 3px solid var(--mensa-gelb);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+}
+
+.dokumente-header {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.dokumente-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Desktop: Kompakte Links mit Tooltip */
+.dokumente-desktop {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.dokument-link {
+    color: var(--mensa-dunkelblau);
+    text-decoration: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.dokument-link:hover {
+    background: var(--mensa-hellblau);
+    color: var(--white);
+    text-decoration: none;
+}
+
+.dokument-separator {
+    color: var(--text-secondary);
+    margin: 0 var(--spacing-xs);
+}
+
+/* Mobile: Cards (versteckt auf Desktop) */
+.dokumente-mobile {
+    display: none;
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 768px) {
+    .dokumente-container {
+        padding: var(--spacing-md);
+    }
+
+    /* Desktop-Links verstecken */
+    .dokumente-desktop {
+        display: none;
+    }
+
+    /* Mobile Cards anzeigen */
+    .dokumente-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .dokument-card {
+        background: var(--bg-secondary);
+        border-left: 3px solid var(--mensa-gelb);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .dokument-card-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .dokument-card-title a {
+        color: var(--mensa-dunkelblau);
+        text-decoration: none;
+        font-size: 0.95rem;
+    }
+
+    .dokument-card-title a:hover {
+        text-decoration: underline;
+    }
+
+    .dokument-card-desc {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+}
+
+/* Dark Mode Anpassungen */
+body.dark-mode .dokumente-container {
+    background: #2a2a2a;
+    border-top-color: var(--mensa-hellgelb);
+}
+
+body.dark-mode .dokument-link {
+    color: var(--mensa-hellblau);
+}
+
+body.dark-mode .dokument-link:hover {
+    background: var(--mensa-dunkelblau);
+    color: var(--white);
+}
+
+body.dark-mode .dokument-card {
+    background: #333;
+    border-left-color: var(--mensa-hellgelb);
+}
+
+body.dark-mode .dokument-card-title a {
+    color: var(--mensa-hellblau);
+}
