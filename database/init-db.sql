@@ -115,6 +115,18 @@ CREATE TABLE IF NOT EXISTS `wahlaenderungslog` (
   INDEX `idx_mnr`(`mnr`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
+-- Dokumente (leer)
+CREATE TABLE IF NOT EXISTS `wahldokumente` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titel` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `beschreibung` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL,
+  `link` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `erstellt` datetime NULL DEFAULT current_timestamp,
+  `reihenfolge` int NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  INDEX `idx_reihenfolge`(`reihenfolge`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- WAHL 2025 - ECHTE WAHL (Beispiel für aktuelles Jahr)
 -- =============================================================================
