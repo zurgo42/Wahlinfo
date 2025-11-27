@@ -43,6 +43,7 @@ define('TABLE_RESSORTS', 'wahlressorts');
 define('TABLE_ADRESSEN', 'wahladressen');
 define('TABLE_AENDERUNGSLOG', 'wahlaenderungslog');
 define('TABLE_EINSTELLUNGEN', 'wahleinstellungen');
+define('TABLE_DOKUMENTE', 'wahldokumente');
 
 // Admin-Zugang (M-Nummern die Admin-Rechte haben)
 define('ADMIN_MNRS', ['0495018', '0123456']); // Hier Admin-MNrs eintragen

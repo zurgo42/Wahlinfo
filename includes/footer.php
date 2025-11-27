@@ -2,11 +2,7 @@
 
     <?php
     // Dokumente anzeigen (oberhalb Footer)
-    $dokumente = [];
-    $dokumenteJson = getSetting('DOKUMENTE', '');
-    if (!empty($dokumenteJson)) {
-        $dokumente = json_decode($dokumenteJson, true) ?: [];
-    }
+    $dokumente = dbFetchAll("SELECT * FROM " . TABLE_DOKUMENTE . " ORDER BY reihenfolge, id");
     if (!empty($dokumente)):
     ?>
     <div class="dokumente-container">

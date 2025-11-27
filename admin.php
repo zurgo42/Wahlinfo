@@ -427,13 +427,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $beschreibung = trim($_POST['beschreibung'] ?? '');
                 $link = trim($_POST['link'] ?? '');
                 if ($titel && $link) {
-                    $dokumenteJson = getSetting('DOKUMENTE', '');
-                    $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
-                    $dokumente[] = ['titel' => $titel, 'beschreibung' => $beschreibung, 'link' => $link];
                     dbExecute(
-                        "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
-                         ON DUPLICATE KEY UPDATE setting_value = ?",
-                        ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
+                        "INSERT INTO " . TABLE_DOKUMENTE . " (titel, beschreibung, link) VALUES (?, ?, ?)",
+                        [$titel, $beschreibung, $link]
                     );
                     $message = 'Dokument hinzugefügt';
                     $messageType = 'success';
@@ -444,15 +440,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
 
             case 'dokument_delete':
-                $index = (int)$_POST['index'];
-                $dokumenteJson = getSetting('DOKUMENTE', '');
-                $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
-                if (isset($dokumente[$index])) {
-                    array_splice($dokumente, $index, 1);
+                $id = (int)$_POST['id'];
+                if ($id > 0) {
                     dbExecute(
-                        "INSERT INTO " . TABLE_EINSTELLUNGEN . " (setting_key, setting_value) VALUES (?, ?)
-                         ON DUPLICATE KEY UPDATE setting_value = ?",
-                        ['DOKUMENTE', json_encode($dokumente), json_encode($dokumente)]
+                        "DELETE FROM " . TABLE_DOKUMENTE . " WHERE id = ?",
+                        [$id]
                     );
                     $message = 'Dokument gelöscht';
                     $messageType = 'success';
@@ -1399,8 +1391,7 @@ Das Wahlteam');
         <p>Verlinkte Dokumente, die auf den Seiten Kandidaten und Diskussion angezeigt werden.</p>
 
         <?php
-        $dokumenteJson = getSetting('DOKUMENTE', '');
-        $dokumente = !empty($dokumenteJson) ? json_decode($dokumenteJson, true) ?: [] : [];
+        $dokumente = dbFetchAll("SELECT * FROM " . TABLE_DOKUMENTE . " ORDER BY reihenfolge, id");
         ?>
 
         <?php if (!empty($dokumente)): ?>
@@ -1414,7 +1405,7 @@ Das Wahlteam');
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($dokumente as $index => $dok): ?>
+                <?php foreach ($dokumente as $dok): ?>
                 <tr>
                     <td><?php echo escape($dok['titel']); ?></td>
                     <td><?php echo escape($dok['beschreibung']); ?></td>
@@ -1422,7 +1413,7 @@ Das Wahlteam');
                     <td>
                         <form method="post" action="?tab=dokumente<?php echo $mnrParam; ?>" style="display:inline;">
                             <input type="hidden" name="action" value="dokument_delete">
-                            <input type="hidden" name="index" value="<?php echo $index; ?>">
+                            <input type="hidden" name="id" value="<?php echo $dok['id']; ?>">
                             <button type="submit" class="btn-small btn-delete" onclick="return confirm('Wirklich löschen?')">Löschen</button>
                         </form>
                     </td>
