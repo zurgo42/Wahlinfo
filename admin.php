@@ -318,7 +318,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // === JSON EXPORT ===
             case 'json_export':
-                $aktuellesJahr = (int)getSetting('WAHLJAHR', date('Y'));
+                // Aktuelles Wahljahr aus Config lesen
+                $aktuellesJahr = WAHLJAHR; // z.B. 2025
                 $pdo = getPdo();
 
                 // Alle Tabellen mit "wahl" Prefix finden
@@ -333,11 +334,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 foreach ($tables as $tableRow) {
                     $tableName = reset($tableRow);
 
-                    // Prüfen ob Tabelle vom aktuellen Jahr ist (überspringen)
+                    // Nur wahl2000* (Spielwiese) exportieren, NICHT das aktuelle Produktionsjahr
+                    // Exportiert werden: wahl2000*, wahleinstellungen, wahlressorts, wahldokumente, etc.
+                    // NICHT exportiert: wahl2025* (oder welches Jahr auch immer aktuell ist)
                     if (preg_match('/^wahl(\d{4})/', $tableName, $matches)) {
-                        $tableYear = (int)$matches[1];
-                        if ($tableYear === $aktuellesJahr) {
-                            continue; // Aktuelles Jahr überspringen
+                        $tableYear = $matches[1];
+                        if ($tableYear == $aktuellesJahr) {
+                            continue; // Aktuelles Produktionsjahr überspringen
                         }
                     }
 
