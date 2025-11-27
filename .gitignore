@@ -1,10 +1,7 @@
-# Konfigurationsdatei mit Zugangsdaten
-includes/config.php
-
 # JSON Exports
 /exports/
 
-# Hochgeladene Bilder
+# Uploaded images
 /img/foto_*.jpg
 /img/foto_*.jpeg
 /img/foto_*.png
@@ -20,7 +17,3 @@ includes/config.php
 *.swp
 *.swo
 *~
-
-# OS
-.DS_Store
-Thumbs.db
