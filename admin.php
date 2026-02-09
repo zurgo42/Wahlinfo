@@ -15,7 +15,7 @@ $firstUserMode = false;
 if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
     // Prüfen ob bereits Admins in DB konfiguriert
     try {
-        $dbAdmins = dbFetchOne("SELECT setting_value FROM einstellungenwahl WHERE setting_key = 'ADMIN_MNRS'");
+        $dbAdmins = dbFetchOne("SELECT setting_value FROM " . TABLE_EINSTELLUNGEN . " WHERE setting_key = 'ADMIN_MNRS'");
         if (!$dbAdmins || empty(trim($dbAdmins['setting_value']))) {
             $firstUserMode = true;
         }
@@ -25,13 +25,18 @@ if (isset($_GET['firstuser']) && $_GET['firstuser'] === '1') {
     }
 }
 
-// Admin-Prüfung
-if (!$firstUserMode && (!$userMnr || !in_array($userMnr, ADMIN_MNRS))) {
-    die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
-        <h2>Zugriff verweigert</h2>
-        <p>Diese Seite ist nur für Administratoren zugänglich.</p>
-        <a href="index.php">Zurück zur Startseite</a>
-    </div>');
+// Admin-Prüfung - NUR aus Datenbank lesen
+if (!$firstUserMode) {
+    $adminMnrsString = getSetting('ADMIN_MNRS', '');
+    $adminMnrs = array_filter(array_map('trim', explode(',', $adminMnrsString)));
+
+    if (!$userMnr || !in_array($userMnr, $adminMnrs)) {
+        die('<div style="padding: 40px; font-family: sans-serif; text-align: center;">
+            <h2>Zugriff verweigert</h2>
+            <p>Diese Seite ist nur für Administratoren zugänglich.</p>
+            <a href="index.php">Zurück zur Startseite</a>
+        </div>');
+    }
 }
 
 // Aktiver Tab
@@ -230,6 +235,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $message = 'Einstellungen gespeichert';
                 $messageType = 'success';
+                break;
+
+            // === E-MAIL VERSAND ===
+            case 'send_email':
+                $empfaengerMnr = trim($_POST['empfaenger_mnr'] ?? '');
+                $betreff = trim($_POST['betreff'] ?? '');
+                $nachrichtText = trim($_POST['nachricht'] ?? '');
+
+                if (empty($empfaengerMnr) || empty($betreff) || empty($nachrichtText)) {
+                    $message = 'Bitte alle Felder ausfüllen';
+                    $messageType = 'error';
+                    break;
+                }
+
+                // Kandidat-Daten holen für E-Mail-Adresse
+                $kandidat = dbFetchOne("SELECT * FROM " . TABLE_KANDIDATEN . " WHERE mnummer = ?", [$empfaengerMnr]);
+                if (!$kandidat) {
+                    $message = 'Kandidat nicht gefunden';
+                    $messageType = 'error';
+                    break;
+                }
+
+                // E-Mail-Adresse konstruieren (anpassen an euer System!)
+                // Beispiel: M-Nummer@domain.de oder aus Kandidaten-Tabelle
+                $empfaengerEmail = $kandidat['email'] ?? ($empfaengerMnr . '@example.com');
+
+                // E-Mail versenden
+                $headers = "From: Wahlinfo <noreply@example.com>\r\n";
+                $headers .= "Reply-To: admin@example.com\r\n";
+                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+                $emailBody = "Hallo " . $kandidat['vorname'] . " " . $kandidat['name'] . ",\n\n";
+                $emailBody .= $nachrichtText . "\n\n";
+                $emailBody .= "---\n";
+                $emailBody .= "Diese E-Mail wurde über das Wahlinfo-System versendet.\n";
+
+                if (mail($empfaengerEmail, $betreff, $emailBody, $headers)) {
+                    $message = "E-Mail erfolgreich versendet an " . $kandidat['vorname'] . " " . $kandidat['name'] . " (" . $empfaengerEmail . ")";
+                    $messageType = 'success';
+                } else {
+                    $message = 'Fehler beim E-Mail-Versand. Bitte Serverkonfiguration prüfen.';
+                    $messageType = 'error';
+                }
                 break;
         }
     } catch (Exception $e) {
@@ -465,6 +513,7 @@ try {
         <a href="?tab=ressorts" class="admin-tab <?php echo $activeTab === 'ressorts' ? 'active' : ''; ?>">Ressorts</a>
         <a href="?tab=aemter" class="admin-tab <?php echo $activeTab === 'aemter' ? 'active' : ''; ?>">Ämter</a>
         <a href="?tab=anforderungen" class="admin-tab <?php echo $activeTab === 'anforderungen' ? 'active' : ''; ?>">Anforderungen</a>
+        <a href="?tab=email" class="admin-tab <?php echo $activeTab === 'email' ? 'active' : ''; ?>">E-Mail</a>
         <a href="?tab=einstellungen" class="admin-tab <?php echo $activeTab === 'einstellungen' ? 'active' : ''; ?>">Einstellungen</a>
     </div>
 
@@ -779,12 +828,58 @@ try {
 
                 <label for="ADMIN_MNRS">Admin M-Nummern (kommagetrennt):</label>
                 <input type="text" id="ADMIN_MNRS" name="ADMIN_MNRS"
-                       value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? implode(',', ADMIN_MNRS)); ?>"
+                       value="<?php echo escape($dbSettings['ADMIN_MNRS'] ?? ''); ?>"
                        placeholder="z.B. 0495018,0123456">
             </div>
 
             <div style="margin-top: 20px;">
                 <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">Speichern</button>
+            </div>
+        </form>
+
+        <?php elseif ($activeTab === 'email'): ?>
+        <!-- ================================================================= -->
+        <!-- E-MAIL VERSAND -->
+        <!-- ================================================================= -->
+        <h2>E-Mail an Kandidaten senden</h2>
+        <p>Versende eine individuelle E-Mail an einen Kandidaten.</p>
+
+        <form method="post" action="?tab=email">
+            <input type="hidden" name="action" value="send_email">
+
+            <div class="settings-grid" style="max-width: 800px;">
+                <label for="empfaenger_mnr">Empfänger:</label>
+                <select id="empfaenger_mnr" name="empfaenger_mnr" required style="padding: 8px;">
+                    <option value="">-- Kandidat auswählen --</option>
+                    <?php foreach ($kandidaten as $k): ?>
+                        <option value="<?php echo escape($k['mnummer']); ?>">
+                            <?php echo escape($k['vorname'] . ' ' . $k['name'] . ' (M' . substr($k['mnummer'], 3) . ')'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <label for="betreff">Betreff:</label>
+                <input type="text" id="betreff" name="betreff" required
+                       placeholder="z.B. Deine Kandidatur für Vorstand"
+                       style="padding: 8px;">
+
+                <label for="nachricht">Nachricht:</label>
+                <textarea id="nachricht" name="nachricht" required
+                          rows="15" style="padding: 8px; font-family: monospace;"
+                          placeholder="Liebe/r ...,&#10;&#10;...&#10;&#10;Viele Grüße"></textarea>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-small btn-save" style="padding: 10px 20px; font-size: 1rem;">E-Mail senden</button>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 4px; border-left: 4px solid #ffc107;">
+                <strong>Hinweis:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Die E-Mail wird an die hinterlegte E-Mail-Adresse des Kandidaten gesendet</li>
+                    <li>Falls keine E-Mail-Adresse hinterlegt ist, wird die M-Nummer verwendet</li>
+                    <li>Bitte stelle sicher, dass der Mail-Server korrekt konfiguriert ist</li>
+                </ul>
             </div>
         </form>
 

@@ -1,0 +1,26 @@
+# Konfigurationsdatei mit Zugangsdaten
+includes/config.php
+
+# JSON Exports
+/exports/
+
+# Hochgeladene Bilder
+/img/foto_*.jpg
+/img/foto_*.jpeg
+/img/foto_*.png
+/img/foto_*.gif
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
