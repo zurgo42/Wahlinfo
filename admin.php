@@ -257,9 +257,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
 
-                // E-Mail-Adresse konstruieren (anpassen an euer System!)
-                // Beispiel: M-Nummer@domain.de oder aus Kandidaten-Tabelle
-                $empfaengerEmail = $kandidat['email'] ?? ($empfaengerMnr . '@example.com');
+                // E-Mail-Adresse aus Datenbank holen
+                $empfaengerEmail = trim($kandidat['email'] ?? '');
+                if (empty($empfaengerEmail)) {
+                    $message = 'Kandidat hat keine E-Mail-Adresse hinterlegt. Bitte zuerst E-Mail-Adresse nachtragen.';
+                    $messageType = 'error';
+                    break;
+                }
 
                 // E-Mail versenden
                 $headers = "From: Wahlinfo <noreply@example.com>\r\n";
