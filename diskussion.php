@@ -62,7 +62,7 @@ function getKandidatenAemter($kandidat) {
 
 // Alle Kandidaten laden (wahl[JAHR]kandidaten)
 $kandidaten = dbFetchAll(
-    "SELECT Knr, vorname, name, mnummer, amt1, amt2, amt3, amt4, amt5
+    "SELECT id AS Knr, vorname, name, mnummer, amt1, amt2, amt3, amt4, amt5
      FROM " . $TABLE_KANDIDATEN . "
      ORDER BY name, vorname ASC"
 );
