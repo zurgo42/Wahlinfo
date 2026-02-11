@@ -230,7 +230,7 @@ function sendDiskussionsMail($bezug, $text, $autorName) {
     $diskussionUrl = $baseUrl . $scriptPath . '/diskussion.php';
 
     // Mail-Inhalt erstellen
-    $subject = "Neuer Diskussionsbeitrag - Mensa Wahlinfo";
+    $subject = "Neuer Diskussionsbeitrag - MinD Wahlinfo-Tool";
     $message = "Es wurde ein neuer Beitrag in der Diskussion zur Wahl erstellt:\n\n";
     $message .= "Von: " . $autorName . "\n\n";
     $message .= "---\n";
@@ -249,6 +249,14 @@ function sendDiskussionsMail($bezug, $text, $autorName) {
         return;
     }
 
+    // Antwort auf Beitrag (Bezug >= 1000): Nur an Admins
+    if ($bezug >= 1000) {
+        foreach ($adminEmails as $adminEmail) {
+            @mail($adminEmail, $subject, $message, $headers);
+        }
+        return;
+    }
+
     // Kandidaten-Frage: An Kandidat + BCC an Admins
     if ($bezug < 1000) {
         // Kandidaten-Email holen
@@ -259,13 +267,13 @@ function sendDiskussionsMail($bezug, $text, $autorName) {
 
         if ($kandidat && !empty($kandidat['email'])) {
             // Mail an Kandidaten
-            $kandidatSubject = "Neue Frage an Sie - Mensa Wahlinfo";
+            $kandidatSubject = "Neue Frage an Dich aus dem MinD Wahlinfo-Tool";
             $kandidatMessage = "Hallo " . $kandidat['vorname'] . " " . $kandidat['name'] . ",\n\n";
-            $kandidatMessage .= "es wurde eine neue Frage an Sie gestellt:\n\n";
+            $kandidatMessage .= "es wurde eine neue Frage an Dich gestellt:\n\n";
             $kandidatMessage .= "---\n";
             $kandidatMessage .= strip_tags(html_entity_decode($text, ENT_QUOTES, 'UTF-8')) . "\n";
             $kandidatMessage .= "---\n\n";
-            $kandidatMessage .= "Sie können die Frage hier beantworten: " . $diskussionUrl . "\n";
+            $kandidatMessage .= "Du kannst die Frage hier beantworten: " . $diskussionUrl . "\n";
 
             // BCC an Admins
             if (!empty($adminEmails)) {

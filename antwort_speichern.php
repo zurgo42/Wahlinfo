@@ -164,17 +164,15 @@ try {
         'web'
     ]);
 
-    // Mail-Benachrichtigung senden (nur bei Top-Level-Beiträgen, d.h. Bezug < 1000)
-    if ($bezug < 1000) {
-        $autorName = 'Unbekannt';
-        if ($teilnehmer) {
-            $autorName = trim(($teilnehmer['Vorname'] ?? '') . ' ' . ($teilnehmer['Name'] ?? ''));
-            if (empty(trim($autorName))) {
-                $autorName = 'Teilnehmer ' . $userMnr;
-            }
+    // Mail-Benachrichtigung senden
+    $autorName = 'Unbekannt';
+    if ($teilnehmer) {
+        $autorName = trim(($teilnehmer['Vorname'] ?? '') . ' ' . ($teilnehmer['Name'] ?? ''));
+        if (empty(trim($autorName))) {
+            $autorName = 'Teilnehmer ' . $userMnr;
         }
-        sendDiskussionsMail($bezug, $text, $autorName);
     }
+    sendDiskussionsMail($bezug, $text, $autorName);
 
     echo json_encode([
         'success' => true,
