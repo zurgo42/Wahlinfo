@@ -168,4 +168,117 @@ function buildUrl($path, $extraParams = []) {
 
     return $url;
 }
+
+/**
+ * Prüft ob der aktuelle Benutzer Admin ist
+ */
+function isAdmin() {
+    $userMnr = getUserMnr();
+    if (!$userMnr) {
+        return false;
+    }
+
+    // Admin-MNRs aus Datenbank laden (Fallback: Konstante)
+    $adminMnrs = defined('ADMIN_MNRS') ? ADMIN_MNRS : [];
+    $dbAdminsStr = getSetting('ADMIN_MNRS', '');
+    if (!empty(trim($dbAdminsStr))) {
+        $adminMnrs = array_map('trim', explode(',', $dbAdminsStr));
+    }
+
+    return in_array($userMnr, $adminMnrs);
+}
+
+/**
+ * Holt alle Admin-Email-Adressen
+ */
+function getAdminEmails() {
+    $adminMnrs = defined('ADMIN_MNRS') ? ADMIN_MNRS : [];
+    $dbAdminsStr = getSetting('ADMIN_MNRS', '');
+    if (!empty(trim($dbAdminsStr))) {
+        $adminMnrs = array_map('trim', explode(',', $dbAdminsStr));
+    }
+
+    if (empty($adminMnrs)) {
+        return [];
+    }
+
+    // Email-Adressen aus Kandidaten-Tabelle holen
+    $tables = getDiskussionTabellen();
+    $placeholders = implode(',', array_fill(0, count($adminMnrs), '?'));
+    $admins = dbFetchAll(
+        "SELECT email FROM " . $tables['kandidaten'] . " WHERE mnummer IN ($placeholders) AND email IS NOT NULL AND email != ''",
+        $adminMnrs
+    );
+
+    return array_column($admins, 'email');
+}
+
+/**
+ * Sendet Mail-Benachrichtigung für neuen Diskussionsbeitrag
+ *
+ * @param int $bezug Bezug-ID (< 1000 = Kandidat, >= 1000 = Kommentar, 97 = Allgemein)
+ * @param string $text Beitragstext
+ * @param string $autorName Name des Autors
+ */
+function sendDiskussionsMail($bezug, $text, $autorName) {
+    $tables = getDiskussionTabellen();
+    $adminEmails = getAdminEmails();
+
+    // Link zu diskussion.php
+    $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+    $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
+    $diskussionUrl = $baseUrl . $scriptPath . '/diskussion.php';
+
+    // Mail-Inhalt erstellen
+    $subject = "Neuer Diskussionsbeitrag - Mensa Wahlinfo";
+    $message = "Es wurde ein neuer Beitrag in der Diskussion zur Wahl erstellt:\n\n";
+    $message .= "Von: " . $autorName . "\n\n";
+    $message .= "---\n";
+    $message .= strip_tags(html_entity_decode($text, ENT_QUOTES, 'UTF-8')) . "\n";
+    $message .= "---\n\n";
+    $message .= "Link zur Diskussion: " . $diskussionUrl . "\n";
+
+    $headers = "From: noreply@mensa.de\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+    // Allgemeine Fragen (ID 97): Nur an Admins
+    if ($bezug == 97) {
+        foreach ($adminEmails as $adminEmail) {
+            @mail($adminEmail, $subject, $message, $headers);
+        }
+        return;
+    }
+
+    // Kandidaten-Frage: An Kandidat + BCC an Admins
+    if ($bezug < 1000) {
+        // Kandidaten-Email holen
+        $kandidat = dbFetchOne(
+            "SELECT email, vorname, name FROM " . $tables['kandidaten'] . " WHERE id = ?",
+            [$bezug]
+        );
+
+        if ($kandidat && !empty($kandidat['email'])) {
+            // Mail an Kandidaten
+            $kandidatSubject = "Neue Frage an Sie - Mensa Wahlinfo";
+            $kandidatMessage = "Hallo " . $kandidat['vorname'] . " " . $kandidat['name'] . ",\n\n";
+            $kandidatMessage .= "es wurde eine neue Frage an Sie gestellt:\n\n";
+            $kandidatMessage .= "---\n";
+            $kandidatMessage .= strip_tags(html_entity_decode($text, ENT_QUOTES, 'UTF-8')) . "\n";
+            $kandidatMessage .= "---\n\n";
+            $kandidatMessage .= "Sie können die Frage hier beantworten: " . $diskussionUrl . "\n";
+
+            // BCC an Admins
+            if (!empty($adminEmails)) {
+                $headers .= "Bcc: " . implode(', ', $adminEmails) . "\r\n";
+            }
+
+            @mail($kandidat['email'], $kandidatSubject, $kandidatMessage, $headers);
+        } else {
+            // Keine Kandidaten-Email: Nur an Admins
+            foreach ($adminEmails as $adminEmail) {
+                @mail($adminEmail, $subject, $message, $headers);
+            }
+        }
+    }
+}
 ?>

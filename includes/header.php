@@ -45,6 +45,9 @@
     <nav class="main-nav">
         <a href="<?php echo buildUrl('index.php'); ?>" class="nav-link">Kandidaten</a>
         <a href="<?php echo buildUrl('diskussion.php'); ?>" class="nav-link">Diskussion</a>
+        <?php if (isAdmin()): ?>
+        <a href="<?php echo buildUrl('admin.php'); ?>" class="nav-link">Admin</a>
+        <?php endif; ?>
         <?php
         $currentUserMnr = getUserMnr();
         if ($currentUserMnr) {
