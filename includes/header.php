@@ -93,6 +93,11 @@
     </div>
     <?php endif; ?>
 
+    <?php
+    // User-Zugriff in Teilnehmer-Tabelle tracken
+    trackUserAccess();
+    ?>
+
     <main class="container">
 
     <script>

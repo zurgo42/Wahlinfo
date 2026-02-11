@@ -189,6 +189,46 @@ function isAdmin() {
 }
 
 /**
+ * Trackt User-Zugriff in der Teilnehmer-Tabelle
+ * Wird automatisch beim Seitenaufruf aufgerufen
+ */
+function trackUserAccess() {
+    $userMnr = getUserMnr();
+    if (!$userMnr) {
+        return; // Nicht eingeloggt
+    }
+
+    try {
+        $tables = getDiskussionTabellen();
+        $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 32);
+
+        // Prüfen ob Benutzer bereits existiert
+        $teilnehmer = dbFetchOne(
+            "SELECT Mnr FROM " . $tables['teilnehmer'] . " WHERE Mnr = ?",
+            [$userMnr]
+        );
+
+        if (!$teilnehmer) {
+            // Neuen Benutzer anlegen
+            dbExecute(
+                "INSERT INTO " . $tables['teilnehmer'] . " (Mnr, Vorname, Name, Erstzugriff, Letzter, IP)
+                 VALUES (?, ?, ?, NOW(), NOW(), ?)",
+                [$userMnr, 'Teilnehmer', $userMnr, $ip]
+            );
+        } else {
+            // Letzten Zugriff aktualisieren
+            dbExecute(
+                "UPDATE " . $tables['teilnehmer'] . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
+                [$ip, $userMnr]
+            );
+        }
+    } catch (Exception $e) {
+        // Fehler stillschweigend ignorieren (z.B. wenn Tabelle nicht existiert)
+        error_log("trackUserAccess failed: " . $e->getMessage());
+    }
+}
+
+/**
  * Holt alle Admin-Email-Adressen
  */
 function getAdminEmails() {
