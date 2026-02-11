@@ -189,6 +189,77 @@ function isAdmin() {
 }
 
 /**
+ * Holt Benutzerdaten aus LDAP (Vorname, Name, E-Mail)
+ *
+ * @param string $mnr Mitgliedsnummer (z.B. "0495018")
+ * @return array|null Array mit keys 'vorname', 'name', 'email' oder null bei Fehler
+ */
+function getLdapUserData($mnr) {
+    // LDAP-Config laden (falls vorhanden)
+    $ldapConfigFile = __DIR__ . '/ldap_config.php';
+    if (file_exists($ldapConfigFile)) {
+        require_once $ldapConfigFile;
+    }
+
+    // Fallback: LDAP deaktiviert
+    if (!defined('LDAP_ENABLED') || !LDAP_ENABLED) {
+        return null; // Keine LDAP-Daten verfügbar
+    }
+
+    try {
+        $ldapserver = LDAP_SERVER;
+        $ldapuser = LDAP_USER;
+        $ldappass = LDAP_PASS;
+        $dn = LDAP_BASE_DN;
+
+        // LDAP-Verbindung aufbauen
+        $ldapconn = @ldap_connect($ldapserver);
+        if (!$ldapconn) {
+            error_log("LDAP: Verbindung zu $ldapserver fehlgeschlagen");
+            return null;
+        }
+
+        ldap_set_option($ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        $ldaptree = "cn=aktive,ou=applications,dc=mensa,dc=de";
+        $ldapbind = @ldap_bind($ldapconn, $ldaptree, $ldappass);
+        if (!$ldapbind) {
+            error_log("LDAP: Bind fehlgeschlagen: " . ldap_error($ldapconn));
+            @ldap_close($ldapconn);
+            return null;
+        }
+
+        // Nach M-Nummer suchen
+        $filter = "(uid=$mnr)";
+        $justthese = array("uid", "sn", "givenName", "mail");
+        $sr = @ldap_search($ldapconn, $dn, $filter, $justthese);
+
+        if (!$sr) {
+            error_log("LDAP: Suche fehlgeschlagen: " . ldap_error($ldapconn));
+            @ldap_close($ldapconn);
+            return null;
+        }
+
+        $data = ldap_get_entries($ldapconn, $sr);
+        @ldap_close($ldapconn);
+
+        // Ergebnis auswerten
+        if ($data['count'] > 0) {
+            return [
+                'vorname' => $data[0]['givenname'][0] ?? '',
+                'name' => $data[0]['sn'][0] ?? '',
+                'email' => $data[0]['mail'][0] ?? ''
+            ];
+        }
+
+        return null; // Nicht gefunden
+    } catch (Exception $e) {
+        error_log("LDAP: Exception - " . $e->getMessage());
+        return null;
+    }
+}
+
+/**
  * Trackt User-Zugriff in der Teilnehmer-Tabelle
  * Wird automatisch beim Seitenaufruf aufgerufen
  */
@@ -202,25 +273,50 @@ function trackUserAccess() {
         $tables = getDiskussionTabellen();
         $ip = substr($_SERVER['REMOTE_ADDR'] ?? '', 0, 32);
 
+        // Benutzerdaten aus LDAP holen
+        $ldapData = getLdapUserData($userMnr);
+
+        // Fallback-Werte wenn LDAP nicht verfügbar
+        $vorname = 'Teilnehmer';
+        $name = $userMnr;
+        $email = null;
+
+        if ($ldapData) {
+            $vorname = $ldapData['vorname'] ?: 'Teilnehmer';
+            $name = $ldapData['name'] ?: $userMnr;
+            $email = $ldapData['email'] ?: null;
+        }
+
         // Prüfen ob Benutzer bereits existiert
         $teilnehmer = dbFetchOne(
-            "SELECT Mnr FROM " . $tables['teilnehmer'] . " WHERE Mnr = ?",
+            "SELECT Mnr, Vorname, Name, Email FROM " . $tables['teilnehmer'] . " WHERE Mnr = ?",
             [$userMnr]
         );
 
         if (!$teilnehmer) {
             // Neuen Benutzer anlegen
             dbExecute(
-                "INSERT INTO " . $tables['teilnehmer'] . " (Mnr, Vorname, Name, Erstzugriff, Letzter, IP)
-                 VALUES (?, ?, ?, NOW(), NOW(), ?)",
-                [$userMnr, 'Teilnehmer', $userMnr, $ip]
+                "INSERT INTO " . $tables['teilnehmer'] . " (Mnr, Vorname, Name, Email, Erstzugriff, Letzter, IP)
+                 VALUES (?, ?, ?, ?, NOW(), NOW(), ?)",
+                [$userMnr, $vorname, $name, $email, $ip]
             );
         } else {
-            // Letzten Zugriff aktualisieren
-            dbExecute(
-                "UPDATE " . $tables['teilnehmer'] . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
-                [$ip, $userMnr]
-            );
+            // Letzten Zugriff und ggf. Daten aktualisieren
+            // Name/Vorname/Email nur aktualisieren wenn LDAP-Daten verfügbar sind
+            if ($ldapData) {
+                dbExecute(
+                    "UPDATE " . $tables['teilnehmer'] . "
+                     SET Letzter = NOW(), IP = ?, Vorname = ?, Name = ?, Email = ?
+                     WHERE Mnr = ?",
+                    [$ip, $vorname, $name, $email, $userMnr]
+                );
+            } else {
+                // Nur Zugriff aktualisieren, Daten unverändert lassen
+                dbExecute(
+                    "UPDATE " . $tables['teilnehmer'] . " SET Letzter = NOW(), IP = ? WHERE Mnr = ?",
+                    [$ip, $userMnr]
+                );
+            }
         }
     } catch (Exception $e) {
         // Fehler stillschweigend ignorieren (z.B. wenn Tabelle nicht existiert)

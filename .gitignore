@@ -11,10 +11,16 @@
 .env
 .env.local
 
+# LDAP Configuration (contains credentials)
+/includes/ldap_config.php
+
+# Config files with credentials
+/includes/config.php
+
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-/img/ 
+/img/
