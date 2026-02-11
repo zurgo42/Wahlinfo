@@ -202,15 +202,15 @@ function getAdminEmails() {
         return [];
     }
 
-    // Email-Adressen aus Kandidaten-Tabelle holen
+    // Email-Adressen aus Teilnehmer-Tabelle holen
     $tables = getDiskussionTabellen();
     $placeholders = implode(',', array_fill(0, count($adminMnrs), '?'));
     $admins = dbFetchAll(
-        "SELECT email FROM " . $tables['kandidaten'] . " WHERE mnummer IN ($placeholders) AND email IS NOT NULL AND email != ''",
+        "SELECT Email FROM " . $tables['teilnehmer'] . " WHERE Mnr IN ($placeholders) AND Email IS NOT NULL AND Email != ''",
         $adminMnrs
     );
 
-    return array_column($admins, 'email');
+    return array_column($admins, 'Email');
 }
 
 /**
