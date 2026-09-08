@@ -80,17 +80,17 @@ html.font-xlarge {
     font-size: 22px;
 }
 
-/* Toggle Buttons */
+/* Toggle Buttons - Im Header-Stil */
 .font-size-toggle,
 .dark-mode-toggle {
-    background: none;
-    border: 2px solid var(--mensa-dunkelblau);
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 20px;
-    padding: 5px 12px;
+    padding: 6px 14px;
     cursor: pointer;
-    font-size: 1rem;
-    color: var(--mensa-dunkelblau);
-    transition: var(--transition);
+    font-size: 12px;
+    color: white;
+    transition: all 0.3s;
     flex-shrink: 0;
 }
 
@@ -101,38 +101,48 @@ html.font-xlarge {
 
 .font-size-toggle:hover,
 .dark-mode-toggle:hover {
-    background: var(--mensa-dunkelblau);
-    color: white;
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
 }
 
+/* Dark Mode: Toggle Buttons bleiben im Header-Stil */
 body.dark-mode .font-size-toggle,
 body.dark-mode .dark-mode-toggle {
-    border-color: var(--mensa-hellgelb);
-    color: var(--mensa-hellgelb);
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
+    color: white;
 }
 
 body.dark-mode .font-size-toggle:hover,
 body.dark-mode .dark-mode-toggle:hover {
-    background: var(--mensa-hellgelb);
-    color: var(--bg-secondary);
+    background: rgba(255,255,255,0.25);
 }
 
-/* Header */
+/* Header - Einheitlich mit Sitzungsverwaltung */
 .header {
-    background: var(--bg-secondary);
-    border-bottom: 4px solid var(--mensa-hellgelb);
-    color: var(--mensa-dunkelblau);
-    padding: var(--spacing-md);
+    background: linear-gradient(135deg, var(--mensa-dunkelblau) 0%, #003d6b 100%);
+    color: white;
+    padding: 0;
+    border-radius: 8px 8px 0 0;
+    border-left: 1px solid var(--mensa-dunkelblau);
+    border-right: 1px solid var(--mensa-dunkelblau);
+    margin-bottom: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px 30px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    box-shadow: var(--shadow-md);
-    position: relative;
+    align-items: center;
 }
 
 .header-logo {
-    height: 60px;
+    height: 50px;
     width: auto;
+    filter: brightness(0) invert(1); /* Logo weiß machen für dunklen Hintergrund */
 }
 
 .header-center {
@@ -141,47 +151,73 @@ body.dark-mode .dark-mode-toggle:hover {
 }
 
 .header h1 {
-    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-size: 22px;
     font-weight: 600;
     margin: 0;
+    color: white;
 }
 
-/* Navigation */
+/* Navigation - Einheitlich mit Sitzungsverwaltung */
 .main-nav {
-    background: var(--mensa-dunkelblau);
-    padding: var(--spacing-xs) var(--spacing-md);
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .nav-link {
-    color: white;
+    padding: 8px 14px;
+    background: var(--mensa-grau);
+    color: #333;
     text-decoration: none;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    transition: var(--transition);
+    border-radius: 5px;
+    transition: all 0.3s;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .nav-link:hover {
-    background: var(--mensa-hellblau);
-    color: var(--mensa-dunkelblau);
+    background: var(--mensa-heller);
+    color: #333;
+}
+
+.nav-link.active {
+    background: var(--mensa-dunkelblau);
+    color: white;
 }
 
 .nav-user {
-    color: white;
-    font-size: 0.85rem;
+    font-size: 14px;
     margin-left: auto;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    opacity: 0.9;
+    padding: 8px 14px;
+    color: #666;
+    background: var(--mensa-grau);
+    border-radius: 5px;
 }
 
-/* Container */
+/* Container - Einheitlich mit Sitzungsverwaltung */
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: var(--spacing-md);
+    padding: 20px;
+}
+
+/* Content Box - für Cards und Formulare */
+.content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 1400px;
+    margin: 0 auto;
+    border-left: 1px solid var(--mensa-dunkelblau);
+    border-right: 1px solid var(--mensa-dunkelblau);
 }
 
 /* Info Banner */
@@ -334,22 +370,27 @@ body.dark-mode .dark-mode-toggle:hover {
     opacity: 0.9;
 }
 
-/* Footer */
+/* Footer - Einheitlich mit Sitzungsverwaltung */
 .footer {
     width: 100%;
-    padding: 1em 0;
-    background: #204060;
-    color: #fff;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--mensa-dunkelblau) 0%, #003d6b 100%);
+    color: white;
     text-align: center;
-    font-size: 0.97em;
-    border-top: 3px solid #FFDE2C;
-    margin-top: 3em;
+    font-size: 12px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    margin-top: auto;
 }
 
 .footer a {
-    color: #FFDE2C;
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer a:hover {
     text-decoration: underline;
-    margin: 0 1em;
 }
 
 /* Buttons */
@@ -405,19 +446,48 @@ body.dark-mode .dark-mode-toggle:hover {
         gap: var(--spacing-sm);
     }
 
+    /* Header - Mobile */
     .header {
-        padding: var(--spacing-md);
+        border-radius: 0;
+    }
+
+    .header-inner {
+        padding: 10px 15px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
 
     .header-logo {
-        position: absolute;
-        left: 5px;
-        top: 10px;
         height: 40px;
     }
 
     .header h1 {
-        padding-top: 25px;
+        font-size: 18px;
+        margin: 8px 0;
+    }
+
+    .header-center {
+        order: -1;
+    }
+
+    .font-size-toggle,
+    .dark-mode-toggle {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    /* Navigation - Mobile */
+    .main-nav {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 15px;
+        margin-top: 0;
+    }
+
+    .main-nav .nav-link {
+        text-align: center;
+        padding: 12px;
     }
 
     .container {
@@ -1843,6 +1913,37 @@ body.dark-mode .musterseite-btn:hover {
 }
 
 /* Dark Mode Anpassungen */
+body.dark-mode .header {
+    background: linear-gradient(135deg, #1a3a5a 0%, #0f2640 100%);
+}
+
+body.dark-mode .footer {
+    background: linear-gradient(135deg, #1a3a5a 0%, #0f2640 100%);
+}
+
+body.dark-mode .main-nav {
+    background: var(--bg-secondary);
+}
+
+body.dark-mode .nav-link {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+body.dark-mode .nav-link:hover {
+    background: var(--hover-bg);
+}
+
+body.dark-mode .nav-link.active {
+    background: var(--mensa-hellblau);
+    color: var(--bg-primary);
+}
+
+body.dark-mode .nav-user {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
 body.dark-mode .dokumente-container {
     background: #2a2a2a;
     border-top-color: var(--mensa-hellgelb);

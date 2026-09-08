@@ -29,16 +29,20 @@
     </script>
 
     <header class="header">
-        <img src="<?php echo escape(getSetting('LOGO_DATEI', '../logo_mensa.png')); ?>" alt="Logo" class="header-logo">
-        <div class="header-center">
-            <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Ergänzende Wahlinformation'; ?></h1>
+        <div class="header-inner">
+            <img src="<?php echo escape(getSetting('LOGO_DATEI', '../logo_mensa.png')); ?>" alt="Logo" class="header-logo">
+            <div class="header-center">
+                <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Ergänzende Wahlinformation'; ?></h1>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
+                    <span class="font-icon">A</span>
+                </button>
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
+                    <span class="toggle-icon">🌙</span>
+                </button>
+            </div>
         </div>
-        <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
-            <span class="font-icon">A</span>
-        </button>
-        <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
-            <span class="toggle-icon">🌙</span>
-        </button>
     </header>
 
     <!-- Navigation -->
