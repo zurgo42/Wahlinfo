@@ -138,19 +138,13 @@ function getUserMnr() {
 
     // 1. SESSION: Hat höchste Priorität (Demo-Login via welcome.php)
     if (isset($_SESSION['member_id'])) {
-        $member = dbFetchOne("SELECT member_id, email, username FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
+        $member = dbFetchOne("SELECT member_id, email FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
         if ($member) {
             // M-Nummer aus Email extrahieren (Format: m0123456@mensa.de -> 0123456)
             if (!empty($member['email']) && preg_match('/m([0-9]{7,8})@/i', $member['email'], $matches)) {
                 return $matches[1];
             }
-            // Fallback: Aus username extrahieren (falls Format m0123456 oder 0123456)
-            if (!empty($member['username'])) {
-                if (preg_match('/^m?([0-9]{7,8})$/i', $member['username'], $matches)) {
-                    return $matches[1];
-                }
-            }
-            // Letzter Fallback für Demo-Modus: Pseudo-M-Nummer aus member_id
+            // Fallback für Demo-Modus: Pseudo-M-Nummer aus member_id
             // Format: 9 + member_id (6-stellig aufgefüllt) = 9000001, 9000002, etc.
             return '9' . str_pad($member['member_id'], 6, '0', STR_PAD_LEFT);
         }
