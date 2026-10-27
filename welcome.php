@@ -90,23 +90,106 @@ if (isset($_GET['demo_member'])) {
     </script>
 
     <header class="header">
-        <div class="header-inner">
-            <img src="<?php echo escape(getSetting('LOGO_DATEI', KAND_ORG_LOGO)); ?>" alt="Logo" class="header-logo">
-            <div class="header-center">
-                <h1><?php echo escape(getSetting('ORG_NAME', KAND_ORG_NAME)); ?> KAND</h1>
+        <div class="header-inner header-dreiteilig">
+            <!-- Links: Logo + Organisation + App-Name -->
+            <div class="header-brand">
+                <img src="<?php echo escape(getSetting('LOGO_DATEI', KAND_ORG_LOGO)); ?>" alt="Logo" class="header-logo">
+                <div>
+                    <div class="org-name"><?php echo escape(getSetting('ORG_NAME', KAND_ORG_NAME)); ?></div>
+                    <div class="app-name">KAND - Kandidaten-Information</div>
+                </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
+
+            <!-- Mitte: Seitentitel -->
+            <div class="header-mitte">
+                <h1>Demo</h1>
+            </div>
+
+            <!-- Rechts: Toggles -->
+            <div class="header-rechts">
                 <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
                     <span class="font-icon">A</span>
                 </button>
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
                     <span class="toggle-icon">🌙</span>
                 </button>
+                <span class="demo-modus-label">Demo-Modus</span>
             </div>
         </div>
     </header>
 
+    <!-- Gelbes Testsystem-Banner -->
+    <div class="container" style="margin-top: 10px;">
+        <div class="testsystem-banner">
+            <strong>Testsystem</strong> – alle Daten sind erfunden. Bitte keine echten personenbezogenen Daten eingeben.
+        </div>
+    </div>
+
 <style>
+    /* Header 3-spaltig wie MISS */
+    .header-dreiteilig {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-brand .org-name {
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .header-brand .app-name {
+        font-size: 12px;
+        opacity: 0.9;
+        line-height: 1.2;
+    }
+
+    .header-mitte {
+        text-align: center;
+    }
+
+    .header-mitte h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .header-rechts {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .demo-modus-label {
+        background: rgba(255,255,255,0.2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+    }
+
+    /* Testsystem-Banner (gelb) */
+    .testsystem-banner {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #856404;
+    }
+
+    .testsystem-banner strong {
+        font-weight: 600;
+    }
+
     .welcome-content {
         max-width: 1024px;
         margin: 20px auto;
@@ -189,32 +272,50 @@ if (isset($_GET['demo_member'])) {
     }
 
     .demo-btn {
-        background: #f5f5f5;
-        padding: 10px 12px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
+        background: white;
+        padding: 16px 12px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
         text-decoration: none;
         color: #333;
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
         transition: all 0.2s;
-        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
     .demo-btn:hover {
         border-color: var(--mensa-dunkelblau);
-        background: var(--mensa-heller);
-        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+
+    .demo-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8ECAF6 0%, #005596 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+        flex-shrink: 0;
     }
 
     .demo-btn strong {
-        display: block;
         font-size: 0.95em;
-        margin-bottom: 3px;
+        text-align: center;
+        line-height: 1.3;
     }
 
     .demo-btn small {
         color: #666;
-        font-size: 0.85em;
+        font-size: 0.82em;
+        text-align: center;
     }
 
     .info-box {
@@ -321,8 +422,12 @@ if (isset($_GET['demo_member'])) {
 
         <?php if (!empty($demo_members)): ?>
             <div class="demo-grid">
-                <?php foreach ($demo_members as $member): ?>
+                <?php foreach ($demo_members as $member):
+                    // Initialen für Avatar
+                    $initials = strtoupper(substr($member['first_name'], 0, 1) . substr($member['last_name'], 0, 1));
+                ?>
                     <a href="?demo_member=<?php echo $member['member_id']; ?>" class="demo-btn">
+                        <div class="demo-avatar"><?php echo $initials; ?></div>
                         <strong><?php echo htmlspecialchars($member['first_name'] . ' ' . $member['last_name']); ?></strong>
                         <small><?php echo htmlspecialchars($member['role'] ?? 'Member'); ?></small>
                     </a>
