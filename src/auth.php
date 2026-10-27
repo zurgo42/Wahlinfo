@@ -23,13 +23,35 @@ function ka_session_key(): string
     return KA_DEMO_MODE ? 'ka_member_id' : KA_SESSION_KEY;
 }
 
-/** Angemeldetes Mitglied (Zeile aus svmembers) oder null. */
-function ka_current_member(): ?array
+/** Wie kommt die angemeldete Person zu KAND? 'session' (Sitzung von MISS/Sitzungsverwaltung, Standard) oder 'remote_user' (Mitgliedsnummer vom Webserver, nur mit LDAP). */
+function ka_login_mode(): string
+{
+    return KA_MEMBERS !== 'svmembers' && defined('KA_LOGIN_MODE') && KA_LOGIN_MODE === 'remote_user' ? 'remote_user' : 'session';
+}
+
+/** Mitgliedsnummer vom Webserver (Basic-Auth/SSO); auf localhost zur Entwicklung die Testnummer KA_TEST_MNR. */
+function ka_remote_user_number(): ?string
+{
+    $u = (string)($_SERVER['REMOTE_USER'] ?? $_SERVER['REDIRECT_REMOTE_USER'] ?? '');
+    if (preg_match('/^[0-9]{7,8}$/', $u)) return $u;
+    $host = (string)($_SERVER['HTTP_HOST'] ?? '');
+    if (defined('KA_TEST_MNR') && (strpos($host, 'localhost') === 0 || strpos($host, '127.0.0.1') === 0)) return (string)KA_TEST_MNR;
+    return null;
+}
+
+/** Angemeldetes Mitglied (Zeile aus svmembers bzw. ka_members) oder null. */
+function ka_current_member(bool $refresh = false): ?array
 {
     static $m = false;
+    if ($refresh) $m = false;
     if ($m !== false) return $m;
-    $id = $_SESSION[ka_session_key()] ?? null;
-    $m = $id ? ka_one('SELECT * FROM svmembers WHERE member_id = ?', [(int)$id]) : null;
+    if (ka_login_mode() === 'remote_user') {
+        $nr = ka_remote_user_number();
+        $m = $nr ? ka_member_by_number($nr) : null;
+    } else {
+        $id = $_SESSION[ka_session_key()] ?? null;
+        $m = $id ? ka_one('SELECT * FROM svmembers WHERE member_id = ?', [(int)$id]) : null;
+    }
     if ($m && (int)($m['is_active'] ?? 1) === 0) $m = null;
     return $m;
 }
@@ -39,6 +61,10 @@ function ka_require_login(): array
 {
     ka_require_schema();
     $m = ka_current_member();
+    if (!$m && ka_login_mode() === 'remote_user') {
+        http_response_code(401);
+        exit('Anmeldung nicht möglich: Der Webserver hat keine gültige Mitgliedsnummer übergeben (REMOTE_USER) oder das Mitglied wurde im LDAP nicht gefunden.');
+    }
     if (!$m) {
         header('Location: ' . (KA_DEMO_MODE || KA_LOGIN_URL === '' ? ka_url('login.php') : KA_LOGIN_URL));
         exit;
@@ -83,7 +109,7 @@ function ka_login_start(int $member): void
 
 function ka_logout(): void
 {
-    unset($_SESSION[ka_session_key()], $_SESSION['ka_csrf']);
+    unset($_SESSION[ka_session_key()], $_SESSION['ka_csrf']);   // bei remote_user bleibt die Anmeldung beim Webserver
     if (session_status() === PHP_SESSION_ACTIVE) session_regenerate_id(true);
 }
 

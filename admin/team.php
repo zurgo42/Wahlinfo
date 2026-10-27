@@ -31,8 +31,7 @@ echo '</tbody></table></section>';
 $q = trim((string)($_GET['q'] ?? ''));
 echo '<section class="card"><h2>Person hinzufügen</h2><form method="get" class="search"><input name="q" value="' . h($q) . '" placeholder="Name oder Mitgliedsnummer" required><button>Suchen</button></form>';
 if ($q !== '') {
-    $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-    $hits = ka_q("SELECT * FROM svmembers WHERE (first_name LIKE ? OR last_name LIKE ? OR membership_number LIKE ?) AND COALESCE(is_active, 1) <> 0 ORDER BY last_name, first_name LIMIT 30", [$like, $like, $like]);
+    $hits = ka_members_search($q);
     if (!$hits) echo '<p class="muted">Kein Mitglied gefunden.</p>';
     else {
         echo '<form method="post">' . ka_csrf_field() . '<input type="hidden" name="action" value="add"><label class="block">Treffer<select name="member_id">';

@@ -40,6 +40,7 @@ function ka_header(string $title, ?array $me = null, string $active = '', ?strin
     }
     echo '<main class="content">';
     if (KA_DEMO_MODE && $me) echo '<div class="demo">Demo-Modus mit erfundenen Daten.</div>';
+    elseif (defined('KA_TEST_INSTANCE') && KA_TEST_INSTANCE) echo '<div class="demo"><strong>Testsystem</strong> – alle Daten sind erfunden. Bitte keine echten personenbezogenen Daten eingeben.</div>';
 }
 
 /** Reiter der Verwaltung (zweite Leiste unter den Hauptreitern). */

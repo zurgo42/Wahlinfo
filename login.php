@@ -7,6 +7,12 @@ if (!KA_DEMO_MODE) {
     http_response_code(403);
     exit('Bitte über MISS oder die Sitzungsverwaltung anmelden. KA_LOGIN_URL ist nicht eingestellt.');
 }
+if (isset($_GET['mnr']) && KA_MEMBERS !== 'svmembers') {   // Demo mit LDAP-Testdaten
+    $m = ka_member_by_number((string)$_GET['mnr'], 0);
+    if ($m) ka_login_start((int)$m['member_id']);
+    header('Location: ' . ka_url('index.php'));
+    exit;
+}
 if (isset($_GET['as'])) {
     $m = ka_one('SELECT member_id FROM svmembers WHERE member_id = ?', [(int)$_GET['as']]);
     if ($m) ka_login_start((int)$m['member_id']);
@@ -14,7 +20,7 @@ if (isset($_GET['as'])) {
     exit;
 }
 $e = ka_current_election();
-$roles = ['DEMO0004' => 'Adminteam der Wahl'];
+$roles = ['DEMO0011' => 'Adminteam der Wahl', 'DEMO0005' => 'Adminteam der Wahl'];
 $cands = $e ? ka_candidates((int)$e['election_id']) : [];
 ka_header('Demo', null);
 echo '<div class="welcome-content"><div class="features-box"><h2>' . KA_APP_NAME . ' – ' . KA_APP_TAG . '</h2>'
@@ -28,17 +34,22 @@ foreach ([['🗳️', 'Kandidatenvorstellungen', 'Foto, Vorstellungstext, Links,
 }
 echo '</div></div><div class="demo-box"><h2>🎭 Demo-Zugang – Person auswählen:</h2><div class="demo-grid">';
 $cards = [];
+if (KA_MEMBERS !== 'svmembers') {
+    foreach (defined('KA_LDAP_TEST_DATA') ? KA_LDAP_TEST_DATA : [] as $nr => $t) $cards[] = [['member_id' => 0, 'membership_number' => (string)$nr, 'first_name' => $t[0], 'last_name' => $t[1]], in_array((string)$nr, (array)KA_ADMINS, true) ? 'Adminteam der Wahl' : 'Mitglied'];
+    $roles = [];
+    $cands = [];
+}
 foreach ($roles as $nr => $label) {
     $m = ka_one('SELECT * FROM svmembers WHERE membership_number = ?', [$nr]);
     if ($m) $cards[] = [$m, $label];
 }
 foreach ($cands as $c) $cards[] = [ka_member_by_id((int)$c['member_id']), 'Kandidat/in' . ($c['photo_file'] ? '' : '')];
-foreach (ka_q("SELECT * FROM svmembers WHERE membership_number LIKE 'DEMO%' ORDER BY member_id LIMIT 40") as $m) {
+foreach (KA_MEMBERS === 'svmembers' ? ka_q("SELECT * FROM svmembers WHERE membership_number LIKE 'DEMO%' ORDER BY member_id LIMIT 40") : [] as $m) {
     if (count($cards) >= 14) break;
     if (!array_filter($cards, fn($x) => (int)$x[0]['member_id'] === (int)$m['member_id'])) $cards[] = [$m, 'Mitglied'];
 }
 foreach ($cards as [$m, $label]) {
-    echo '<a class="demo-btn" href="login.php?as=' . (int)$m['member_id'] . '"><span class="avatar">' . h(mb_strtoupper(mb_substr($m['first_name'], 0, 1) . mb_substr($m['last_name'], 0, 1))) . '</span><span><strong>' . h(ka_member_name($m)) . '</strong><small>' . h($label) . '</small></span></a>';
+    echo '<a class="demo-btn" href="login.php?' . ($m['member_id'] ? 'as=' . (int)$m['member_id'] : 'mnr=' . urlencode((string)$m['membership_number'])) . '"><span class="avatar">' . h(mb_strtoupper(mb_substr($m['first_name'], 0, 1) . mb_substr($m['last_name'], 0, 1))) . '</span><span><strong>' . h(ka_member_name($m)) . '</strong><small>' . h($label) . '</small></span></a>';
 }
 echo '</div><p class="demo-hint">Das Adminteam stellt unter Verwaltung die Phase ein (Bearbeitungsphase oder Diskussion) und pflegt die Kandidaten. Jedes Mitglied sieht in der Diskussionsphase alle Vorstellungen, auch ohne aktiven Status.</p></div></div>';
 ka_footer();

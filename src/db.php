@@ -31,16 +31,22 @@ function ka_run_sql_file(PDO $pdo, string $file): void
     }
 }
 
+/** Mitgliedertabelle: svmembers (gemeinsam mit MISS/Sitzungsverwaltung) oder bei LDAP-Betrieb die eigene Tabelle ka_members. */
+function ka_sql(string $sql): string
+{
+    return KA_MEMBERS === 'svmembers' ? $sql : str_replace('svmembers', KA_MEMBERS, $sql);
+}
+
 function ka_q(string $sql, array $params = []): array
 {
-    $st = ka_db()->prepare($sql);
+    $st = ka_db()->prepare(ka_sql($sql));
     $st->execute($params);
     return $st->fetchAll();
 }
 
 function ka_one(string $sql, array $params = []): ?array
 {
-    $st = ka_db()->prepare($sql);
+    $st = ka_db()->prepare(ka_sql($sql));
     $st->execute($params);
     $row = $st->fetch();
     return $row === false ? null : $row;
@@ -48,7 +54,7 @@ function ka_one(string $sql, array $params = []): ?array
 
 function ka_exec(string $sql, array $params = []): int
 {
-    $st = ka_db()->prepare($sql);
+    $st = ka_db()->prepare(ka_sql($sql));
     $st->execute($params);
     return $st->rowCount();
 }

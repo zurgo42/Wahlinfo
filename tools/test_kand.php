@@ -5,7 +5,7 @@
  */
 if (PHP_SAPI !== 'cli') exit;
 require_once dirname(__DIR__) . '/src/bootstrap.php';
-if (!KA_DEMO_MODE) exit("nur mit Demo-Daten\n");
+if (!KA_DEMO_MODE && !(defined('KA_TEST_INSTANCE') && KA_TEST_INSTANCE)) exit("nur mit Demo-Daten (KA_DEMO_MODE oder KA_TEST_INSTANCE)\n");
 $fail = 0;
 $check = function (string $name, $got, $want) use (&$fail) {
     $ok = $got === $want;
@@ -20,7 +20,8 @@ $setEdit = function (?string $editUntil, ?string $discUntil = null) use ($eid) {
     ka_exec('UPDATE ka_elections SET edit_until = ?, discussion_until = ? WHERE election_id = ?', [$editUntil, $discUntil, $eid]);
     return ka_election($eid);
 };
-$admin = $by('DEMO0004'); $team = $by('DEMO0005'); $max = $by('DEMO0001'); $sabine = $by('DEMO0006'); $anna = $by('DEMO0008');
+// Adminteam der Demo: Mia Technik und Thomas Winter (KA_ADMINS); Petra Nord kommt hier zusätzlich in die Tabelle ka_admins
+$admin = $by('DEMO0011'); $team = $by('DEMO0009'); $max = $by('DEMO0001'); $sabine = $by('DEMO0006'); $anna = $by('DEMO0008');
 $maxCand = ka_candidate_of_member($eid, (int)$max['member_id']);
 
 echo "-- Phasen\n";
@@ -32,6 +33,8 @@ $check('nach dem Ende der Diskussion: nur lesen', ka_phase(['edit_until' => date
 $check('Datum aus dem Formular (deutsch und ISO)', [ka_parse_datetime('15.02.2026 18:30'), ka_parse_datetime('2026-02-15T18:30'), ka_parse_datetime('15.02.2026'), ka_parse_datetime('')], ['2026-02-15 18:30:00', '2026-02-15 18:30:00', '2026-02-15 23:59:00', null]);
 
 echo "-- Adminteam\n";
+ka_exec('INSERT INTO ka_admins (member_id, added_at, added_by) VALUES (?,?,?)', [$team['member_id'], ka_now(), $admin['member_id']]);
+$check('Thomas Winter steht ebenfalls in KA_ADMINS', ka_is_admin($by('DEMO0005')), true);
 $check('Mitgliedsnummer aus der config.php', ka_is_admin($admin), true);
 $check('weitere Personen aus ka_admins', ka_is_admin($team), true);
 $check('normale Mitglieder und Kandidaten nicht', [ka_is_admin($sabine), ka_is_admin($max)], [false, false]);
@@ -45,8 +48,8 @@ $check('Bearbeitungsphase: Bearbeiten nur Person selbst und Adminteam', [ka_can_
 $check('Bearbeitungsphase: Diskussion zu', ka_discussion_open($e), false);
 $e = $setEdit(date('Y-m-d H:i:s', $now - 60));
 $check('Diskussionsphase: jedes Mitglied sieht die Seite (auch nicht aktive)', ka_can_view_candidate($sabine, $maxCand, $e), true);
-ka_exec('UPDATE svmembers SET role = ? WHERE member_id = ?', ['passiv', $sabine['member_id']]);
-$check('auch bei nicht aktivem Status', ka_can_view_candidate(ka_member_by_id((int)$sabine['member_id']) ?? $sabine, $maxCand, $e), true);
+$passiv = $sabine; $passiv['role'] = 'passiv'; $passiv['aktiv'] = 0;
+$check('auch bei nicht aktivem Status (KAND wertet Rolle und Status nicht aus)', ka_can_view_candidate($passiv, $maxCand, $e), true);
 $check('Diskussionsphase: die Person darf nicht mehr bearbeiten, das Adminteam schon', [ka_can_edit_candidate($max, $maxCand, $e), ka_can_edit_candidate($admin, $maxCand, $e)], [false, true]);
 $check('Diskussionsphase: Diskussion offen', ka_discussion_open($e), true);
 
@@ -140,7 +143,7 @@ $sent = array_values(array_diff(glob(KA_STORAGE_DIR . '/mail/*.eml') ?: [], $bef
 $mailRow = ka_one("SELECT * FROM ka_mail_outbox WHERE kind = 'invite' ORDER BY mail_id DESC LIMIT 1");
 $check('im Ausgang und als Datei, Zeitpunkt vermerkt', [$mailRow['status'], count($sent), (bool)ka_candidate($other)['invited_at']], ['sent', 1, true]);
 foreach ($sent as $f) unlink($f);
-ka_exec('UPDATE svmembers SET email = NULL WHERE member_id = ?', [$max['member_id']]);
+ka_exec("UPDATE svmembers SET email = '' WHERE member_id = ?", [$max['member_id']]);
 $check('ohne E-Mail-Adresse Fehler', ka_mail_candidate(ka_candidate($other), $e, 'remind', 5), 'E-Mail-Adresse fehlt oder ist ungültig.');
 
 echo "-- Löschen\n";

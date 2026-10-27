@@ -13,6 +13,9 @@ const KA_APP_NAME = 'KAND';
 const KA_APP_TAG = 'Kandidatentool';
 const KA_APP_LONG = 'Kandidatentool für Wahlen im Verein';
 
+// Mitgliederquelle: 'svmembers' (Standard: Tabelle der Sitzungsverwaltung/MISS) oder 'ldap' (Mitglieder aus dem LDAP des Vereins, lokal zwischengespeichert in ka_members)
+define('KA_MEMBERS', defined('KA_MEMBER_SOURCE') && KA_MEMBER_SOURCE === 'ldap' ? 'ka_members' : 'svmembers');
+
 date_default_timezone_set('Europe/Berlin');
 mb_internal_encoding('UTF-8');
 
@@ -60,6 +63,7 @@ if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/ldap.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/election.php';
 require_once __DIR__ . '/candidates.php';

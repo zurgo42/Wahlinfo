@@ -47,9 +47,7 @@ $phase = ka_phase($e);
 $q = trim((string)($_GET['q'] ?? ''));
 echo '<section class="card"><h2>Kandidat oder Kandidatin eintragen</h2><form method="get" class="search"><input name="q" value="' . h($q) . '" placeholder="Name oder Mitgliedsnummer des Mitglieds" required><button>Suchen</button></form>';
 if ($q !== '') {
-    $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-    $hits = ka_q("SELECT * FROM svmembers WHERE (first_name LIKE ? OR last_name LIKE ? OR membership_number LIKE ? OR (first_name || ' ' || last_name) LIKE ?) AND COALESCE(is_active, 1) <> 0 ORDER BY last_name, first_name LIMIT 30", [$like, $like, $like, $like]);
-    if (KA_DB_DRIVER === 'mysql') $hits = ka_q("SELECT * FROM svmembers WHERE (first_name LIKE ? OR last_name LIKE ? OR membership_number LIKE ? OR CONCAT(first_name, ' ', last_name) LIKE ?) AND COALESCE(is_active, 1) <> 0 ORDER BY last_name, first_name LIMIT 30", [$like, $like, $like, $like]);
+    $hits = ka_members_search($q);
     $have = array_map(fn($c) => (int)$c['member_id'], $cands);
     $hits = array_values(array_filter($hits, fn($m) => !in_array((int)$m['member_id'], $have, true)));
     if (!$hits) echo '<p class="muted">Kein passendes Mitglied gefunden (oder schon eingetragen).</p>';

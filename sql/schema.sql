@@ -1,6 +1,20 @@
 -- KAND: Tabellen mit Präfix ka_. Die Mitglieder kommen aus svmembers (gemeinsame Datenbank mit MISS und der Sitzungsverwaltung).
 -- Portables DDL (MySQL/MariaDB und SQLite): keine Fremdschlüssel auf svmembers, keine Indizes außer UNIQUE/PRIMARY KEY.
 
+-- 0. Mitglieder bei LDAP-Betrieb (KA_MEMBER_SOURCE 'ldap'): lokaler Zwischenspeicher der Daten aus dem LDAP; sonst unbenutzt
+CREATE TABLE IF NOT EXISTS ka_members (
+    member_id INT PRIMARY KEY AUTO_INCREMENT,
+    membership_number VARCHAR(20) NOT NULL,
+    first_name VARCHAR(100) DEFAULT NULL,
+    last_name VARCHAR(100) DEFAULT NULL,
+    email VARCHAR(190) DEFAULT NULL,
+    role VARCHAR(20) DEFAULT NULL,
+    is_admin TINYINT NOT NULL DEFAULT 0,
+    is_active TINYINT NOT NULL DEFAULT 1,
+    synced_at DATETIME DEFAULT NULL,
+    UNIQUE (membership_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 1. Einstellungen
 CREATE TABLE IF NOT EXISTS ka_settings (
     setting_key VARCHAR(60) PRIMARY KEY,

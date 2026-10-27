@@ -15,13 +15,30 @@ function ka_demo_create_members(): void
     }
 }
 
+/** Sind die Demo-Mitglieder (DEMO0001 bis DEMO0020) in der Mitgliedertabelle? Gibt fehlende Nummern zurück. */
+function ka_demo_missing_members(): array
+{
+    $missing = [];
+    for ($i = 1; $i <= 20; $i++) {
+        $nr = sprintf('DEMO%04d', $i);
+        if (!ka_one('SELECT 1 FROM svmembers WHERE membership_number = ?', [$nr])) $missing[] = $nr;
+    }
+    return $missing;
+}
+
+/** Löscht alle Daten von KAND (Wahlen, Kandidaten, Beiträge, Listen, Mailausgang, Protokoll) und die Demo-Fotos; die Mitgliedertabelle bleibt unberührt. */
+function ka_demo_reset(): void
+{
+    foreach (['ka_votes', 'ka_posts', 'ka_team_prefs', 'ka_answers', 'ka_candidacies', 'ka_candidates', 'ka_documents', 'ka_elections', 'ka_offices', 'ka_departments', 'ka_requirements', 'ka_admins', 'ka_log', 'ka_mail_outbox'] as $t) ka_exec("DELETE FROM $t");
+    foreach (glob(KA_STORAGE_DIR . '/photos/*') ?: [] as $f) if (is_file($f) && !str_ends_with($f, '.gitkeep')) @unlink($f);
+}
+
 /** Demo-Wahl mit Kandidaten und Diskussion. $editPhase: true = noch in der Bearbeitungsphase, sonst Diskussionsphase. */
 function ka_demo_fill(bool $editPhase = false): void
 {
     ka_seed_defaults();
     $by = fn(string $nr) => (int)ka_one('SELECT member_id FROM svmembers WHERE membership_number = ?', [$nr])['member_id'];
-    ka_exec('INSERT OR IGNORE INTO ka_admins (member_id, added_at, added_by) VALUES (?,?,?)', [$by('DEMO0005'), ka_now(), $by('DEMO0004')]);
-    $eid = ka_create_election('Vorstandswahl 2026', 2026, date('Y-m-d H:i:00', strtotime($editPhase ? '+10 days' : '-2 days')), $by('DEMO0004'));
+    $eid = ka_create_election('Vorstandswahl 2026', 2026, date('Y-m-d H:i:00', strtotime($editPhase ? '+10 days' : '-2 days')), $by('DEMO0011'));
     ka_exec('UPDATE ka_elections SET discussion_until = ? WHERE election_id = ?', [null, $eid]);
     $off = [];
     foreach (ka_offices() as $o) $off[$o['name']] = (int)$o['office_id'];
@@ -43,7 +60,7 @@ function ka_demo_fill(bool $editPhase = false): void
             ['Recht und Satzung' => [5, ''], 'Digitales und Technik' => [4, 'Schnittstelle zu MISS und den Vereinswerkzeugen.']], [2, 2, 5, 3, 2, 4, 3], 0],
         ['DEMO0007', ['Vorstandsmitglied'], 5, 'Ich leite seit drei Jahren eine Regionalgruppe und kenne die Sorgen der Basis. Im Vorstand will ich dafür sorgen, dass die Gruppen mehr Gehör finden.', null, null,
             ['Regionalgruppen' => [5, ''], 'Öffentlichkeitsarbeit' => [3, '']], [4, 2, 2, 3, 4, 2, 4], 1],
-        ['DEMO0011', ['Vorstandsmitglied'], 6, '', null, null, [], [], 0],
+        ['DEMO0013', ['Vorstandsmitglied'], 6, '', null, null, [], [], 0],
         ['DEMO0010', ['Rechnungsprüfung'], 7, 'Ich bin Steuerberater im Ruhestand und prüfe gern genau. Transparenz bei den Finanzen ist mir wichtig.', null, null, [], [], 0],
         ['DEMO0008', ['Rechnungsprüfung'], 8, 'Ich bin Buchhalterin und freue mich darauf, die Kasse einmal von der anderen Seite zu sehen.', null, null, [], [], 0],
     ];
@@ -95,7 +112,7 @@ function ka_demo_fill(bool $editPhase = false): void
     $p1 = $post('DEMO0001', null, 'DEMO0006', 'Welche Rolle sollen die Regionalgruppen bei den Finanzentscheidungen künftig spielen?', '-30 hours');
     $p2 = $post('DEMO0001', $p1, 'DEMO0001', 'Ich würde ihnen ein eigenes Budget mit einfacher Abrechnung geben und einmal im Jahr gemeinsam über die Verteilung sprechen.', '-26 hours');
     $post('DEMO0001', $p2, 'DEMO0006', 'Das klingt gut. Gibt es dazu schon einen konkreten Vorschlag für die Höhe?', '-20 hours');
-    $p4 = $post('DEMO0002', null, 'DEMO0013', 'Wie willst du Neumitglieder besser einbinden, ohne die Ehrenamtlichen noch mehr zu belasten?', '-28 hours');
+    $p4 = $post('DEMO0002', null, 'DEMO0018', 'Wie willst du Neumitglieder besser einbinden, ohne die Ehrenamtlichen noch mehr zu belasten?', '-28 hours');
     $post('DEMO0002', $p4, 'DEMO0002', 'Mit Patenschaften und einer Willkommens-Mail-Reihe. Beides lässt sich weitgehend automatisieren (MISS bietet dafür schon die Grundlagen).', '-25 hours');
     $p6 = $post('DEMO0009', null, 'DEMO0014', 'Wie siehst du das Verhältnis von Datenschutz und einem Mitgliederverzeichnis, das alle nutzen sollen?', '-22 hours');
     $post('DEMO0009', $p6, 'DEMO0009', 'Jedes Mitglied entscheidet selbst, was andere sehen dürfen. Das ist der richtige Weg, und er funktioniert schon in MISS.', '-18 hours');
@@ -103,7 +120,7 @@ function ka_demo_fill(bool $editPhase = false): void
     $post(null, $p8, 'DEMO0003', 'Das hängt vom Vorstand ab; ich würde es befürworten und ein Hybridformat ausprobieren.', '-6 hours');
     $p10 = $post('DEMO0003', null, 'DEMO0016', 'Wie viele Jahrestreffen hast du selbst organisiert, und was würdest du anders machen?', '-5 hours');
     $post('DEMO0007', null, 'DEMO0017', 'Was ist dein wichtigstes Anliegen für die Regionalgruppen in den ersten hundert Tagen?', '-3 hours');
-    foreach ([[$p1, 'DEMO0013', 1], [$p1, 'DEMO0014', 1], [$p4, 'DEMO0006', 1], [$p6, 'DEMO0016', 1], [$p8, 'DEMO0002', 1], [$p8, 'DEMO0001', 1], [$p10, 'DEMO0017', -1]] as [$pid, $nr, $v]) {
+    foreach ([[$p1, 'DEMO0018', 1], [$p1, 'DEMO0014', 1], [$p4, 'DEMO0006', 1], [$p6, 'DEMO0016', 1], [$p8, 'DEMO0002', 1], [$p8, 'DEMO0001', 1], [$p10, 'DEMO0017', -1]] as [$pid, $nr, $v]) {
         ka_exec('INSERT INTO ka_votes (post_id, member_id, vote) VALUES (?,?,?)', [$pid, $by($nr), $v]);
     }
 }
