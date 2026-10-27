@@ -213,58 +213,13 @@ include 'includes/header.php';
 </style>
 
 <div class="welcome-content">
-    <!-- Features -->
+    <!-- Info -->
     <div class="features-box">
         <h2>Mensa KAND – Kandidaten-Information</h2>
         <p class="app-lead">
-            KAND unterstützt demokratische Wahlen innerhalb der Organisation
-            durch transparente Kandidatendarstellung und strukturierte Diskussion.
-            Die Anwendung gehört zur Softwarefamilie mit Sitzungsverwaltung,
-            Mitgliederverwaltung und Mitgliederversammlung.
+            Informationsplattform für demokratische Wahlen mit Kandidatenvorstellung,
+            Diskussionsforum und transparenter Dokumentation.
         </p>
-
-        <h3 class="app-sub">Was KAND leistet:</h3>
-        <div class="features-grid">
-            <div class="feature-item">
-                <span class="icon">👤</span>
-                <span class="text"><strong>Kandidatenprofile:</strong> Übersichtliche Darstellung aller Kandidierenden mit Foto, Steckbrief, Motivation und Antworten auf zentrale Fragen</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">📝</span>
-                <span class="text"><strong>Fragebogen-System:</strong> Strukturierte Fragen an alle Kandidierenden zur besseren Vergleichbarkeit und fundierten Wahlentscheidung</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">💬</span>
-                <span class="text"><strong>Diskussionsforum:</strong> Möglichkeit für Wahlberechtigte, direkte Fragen an Kandidierende zu stellen und öffentlich zu diskutieren</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">🏢</span>
-                <span class="text"><strong>Ämterübersicht:</strong> Klare Darstellung der zu wählenden Ämter mit Aufgabenbeschreibungen und Verantwortlichkeiten</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">📄</span>
-                <span class="text"><strong>Dokumentenverwaltung:</strong> Zentrale Ablage für Wahlunterlagen, Satzungen, Wahlordnung und weitere wichtige Dokumente</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">🔐</span>
-                <span class="text"><strong>Zugriffskontrolle:</strong> Sichere Authentifizierung über gemeinsame Mitgliederdatenbank</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">📱</span>
-                <span class="text"><strong>Responsive Design:</strong> Optimiert für Desktop und mobile Endgeräte, Dark Mode für angenehmes Lesen</span>
-            </div>
-
-            <div class="feature-item">
-                <span class="icon">♿</span>
-                <span class="text"><strong>Barrierefreiheit:</strong> Verstellbare Schriftgröße, klare Kontraste, semantisches HTML für Screenreader</span>
-            </div>
-        </div>
     </div>
 
     <!-- Demo Login -->
