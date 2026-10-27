@@ -18,6 +18,12 @@ function ka_require_schema(): void
     }
 }
 
+/** Testsystem für externe Tester (KA_TEST_INSTANCE, nicht die lokale Demo): hier darf man ohne Passwort zwischen Demo-Personen wechseln. */
+function ka_test_instance(): bool
+{
+    return !KA_DEMO_MODE && defined('KA_TEST_INSTANCE') && KA_TEST_INSTANCE;
+}
+
 function ka_session_key(): string
 {
     return KA_DEMO_MODE ? 'ka_member_id' : KA_SESSION_KEY;

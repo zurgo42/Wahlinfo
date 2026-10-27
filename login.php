@@ -2,11 +2,12 @@
 // Anmeldung: In Produktion kommt die Person aus der Sitzung von MISS/der Sitzungsverwaltung (KA_LOGIN_URL); nur die Demo hat eine eigene Figurenauswahl.
 require_once __DIR__ . '/src/bootstrap.php';
 ka_require_schema();
-if (!KA_DEMO_MODE) {
+if (!KA_DEMO_MODE && !ka_test_instance()) {
     if (KA_LOGIN_URL !== '') { header('Location: ' . KA_LOGIN_URL); exit; }
     http_response_code(403);
     exit('Bitte über MISS oder die Sitzungsverwaltung anmelden. KA_LOGIN_URL ist nicht eingestellt.');
 }
+// Ab hier: lokale Demo oder Testsystem. Auf dem Testsystem lassen sich nur Demo-Personen ohne Passwort wählen (zum Wechseln der Rolle).
 if (isset($_GET['mnr']) && KA_MEMBERS !== 'svmembers') {   // Demo mit LDAP-Testdaten
     $m = ka_member_by_number((string)$_GET['mnr'], 0);
     if ($m) ka_login_start((int)$m['member_id']);
@@ -14,7 +15,7 @@ if (isset($_GET['mnr']) && KA_MEMBERS !== 'svmembers') {   // Demo mit LDAP-Test
     exit;
 }
 if (isset($_GET['as'])) {
-    $m = ka_one('SELECT member_id FROM svmembers WHERE member_id = ?', [(int)$_GET['as']]);
+    $m = ka_one('SELECT member_id FROM svmembers WHERE member_id = ?' . (KA_DEMO_MODE ? '' : " AND membership_number LIKE 'DEMO%'"), [(int)$_GET['as']]);
     if ($m) ka_login_start((int)$m['member_id']);
     header('Location: ' . ka_url('index.php'));
     exit;
@@ -51,5 +52,5 @@ foreach (KA_MEMBERS === 'svmembers' ? ka_q("SELECT * FROM svmembers WHERE member
 foreach ($cards as [$m, $label]) {
     echo '<a class="demo-btn" href="login.php?' . ($m['member_id'] ? 'as=' . (int)$m['member_id'] : 'mnr=' . urlencode((string)$m['membership_number'])) . '"><span class="avatar">' . h(mb_strtoupper(mb_substr($m['first_name'], 0, 1) . mb_substr($m['last_name'], 0, 1))) . '</span><span><strong>' . h(ka_member_name($m)) . '</strong><small>' . h($label) . '</small></span></a>';
 }
-echo '</div><p class="demo-hint">Das Adminteam stellt unter Verwaltung die Phase ein (Bearbeitungsphase oder Diskussion) und pflegt die Kandidaten. Jedes Mitglied sieht in der Diskussionsphase alle Vorstellungen, auch ohne aktiven Status.</p></div></div>';
+echo '</div>' . (ka_test_instance() && KA_LOGIN_URL !== '' ? '<p class="demo-hint"><a href="' . h(KA_LOGIN_URL) . '">Mit Passwort anmelden (MISS)</a></p>' : '') . '<p class="demo-hint">Das Adminteam stellt unter Verwaltung die Phase ein (Bearbeitungsphase oder Diskussion) und pflegt die Kandidaten. Jedes Mitglied sieht in der Diskussionsphase alle Vorstellungen, auch ohne aktiven Status.</p></div></div>';
 ka_footer();

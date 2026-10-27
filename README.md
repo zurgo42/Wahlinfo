@@ -52,7 +52,7 @@ Für externe Tester, gemeinsame Datenbank mit MISS (dessen Testsystem liefert di
 2. In der `config.php`: `KA_DB_*` wie bei MISS, `KA_DEMO_MODE` **false**, `KA_TEST_INSTANCE` **true**, `KA_LOGIN_URL` auf die Anmeldeseite von MISS (z. B. `'/MISS/login.php'`), `KA_ADMINS` `['DEMO0011', 'DEMO0005']` (Mia Technik, Thomas Winter), `KA_SETUP_TOKEN` (zufällig, mindestens 20 Zeichen).
 3. `…/KAND/setup.php?token=<KA_SETUP_TOKEN>` aufrufen: *Demo-Wahl laden* (legt die Tabellen `ka_*` an und lädt Kandidaten, Antworten und Beispieldiskussion; *Von vorn beginnen* löscht nur Daten von KAND). Ohne Browser: `php tools/demo_load.php [--reset] [--edit-phase]`.
 4. **`setup.php` danach löschen** (Knopf auf der Seite).
-5. Anmelden über MISS (z. B. als Mia Technik), dann `…/KAND/` öffnen. Die Sitzung von MISS gilt auch für KAND (gleiche Domain, `session.cookie_path = /`).
+5. Anmelden über MISS (oder über **Abmelden** auf die Seite zum Wechseln der Person: Auf dem Testsystem lassen sich nur Demo-Personen ohne Passwort auswählen, so spielt man die Rollen Adminteam, Kandidat und Mitglied durch. Das gilt nur mit `KA_TEST_INSTANCE`; auf einem echten System gibt es weder den Knopf noch die Auswahl) (z. B. als Mia Technik), dann `…/KAND/` öffnen. Die Sitzung von MISS gilt auch für KAND (gleiche Domain, `session.cookie_path = /`).
 
 Die Demo steht in der Diskussionsphase; mit „Bearbeitungsphase“ beim Laden (oder in der Verwaltung → *Wahl und Termine* → „Wieder öffnen“) lässt sich die Phase der Kandidaten testen.
 

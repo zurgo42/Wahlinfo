@@ -30,8 +30,9 @@ function ka_header(string $title, ?array $me = null, string $active = '', ?strin
     echo '<div class="header-mitte"><h1>' . h($area ?? $title) . '</h1></div><div class="user-info"><div class="user-name">';
     if ($me) {
         echo '<span class="user-id"><span>' . h(ka_member_name($me)) . '</span>' . (ka_is_admin($me) ? '<span class="role-badge">Adminteam</span>' : '') . '</span>';
-        echo '<span class="user-links">' . (KA_DEMO_MODE ? '<a class="logout-btn" href="logout.php">Abmelden</a>' : '') . '</span>';
+        echo '<span class="user-links">' . (KA_DEMO_MODE || ka_test_instance() ? '<a class="logout-btn" href="logout.php">Abmelden</a>' : '') . '</span>';
     } elseif (KA_DEMO_MODE) echo '<span>Demo-Modus</span>';
+    elseif (ka_test_instance()) echo '<span>Testsystem</span>';
     echo '</div><button type="button" class="dark-mode-toggle" id="darkModeToggle" title="Dunkelmodus umschalten"><span class="icon">' . ($dark ? '☀️' : '🌙') . '</span></button></div></div></div>';
     if ($nav) {
         echo '<nav class="tabs">';
