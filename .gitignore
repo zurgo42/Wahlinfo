@@ -11,6 +11,9 @@
 .env
 .env.local
 
+# Lokale Konfiguration (Credentials)
+includes/config_local.php
+
 # IDE
 .vscode/
 .idea/
