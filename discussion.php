@@ -48,11 +48,13 @@ else echo '<p class="muted">Stelle Fragen an die Kandidatinnen und Kandidaten un
 
 $sections = [[0, 'Allgemeine Fragen und Diskussion', null]];
 foreach ($cands as $c) $sections[] = [(int)$c['candidate_id'], ka_member_name($c), $c];
+$officeNames = [];
+foreach ($cands as $c) $officeNames[(int)$c['candidate_id']] = implode(', ', array_map(fn($o) => $o['name'], ka_candidate_offices((int)$c['candidate_id'])));
 foreach ($sections as [$cid, $title, $cand]) {
     $n = $tree['count'][$cid] ?? 0;
     $hasNew = false;
     foreach ($tree['threads'][$cid] ?? [] as $t) $hasNew = $hasNew || ka_thread_has($t, $newest);
-    echo '<details class="acc" id="k' . $cid . '"' . ($n ? ' open' : '') . '><summary>' . ($cand ? ka_photo_html($cand, 'mini') : '<span class="avatar mini">👥</span>') . ' <span class="t">' . h($title) . '</span>'
+    echo '<details class="acc" id="k' . $cid . '"' . ($n ? ' open' : '') . '><summary>' . ($cand ? ka_photo_html($cand, 'mini') : '<span class="avatar mini">👥</span>') . ' <span class="t">' . h($title) . '</span>' . ($cand && $officeNames[$cid] !== '' ? ' <span class="office">kandidiert für ' . h($officeNames[$cid]) . '</span>' : '')
         . '<span class="sum">' . $n . ' ' . ($n === 1 ? 'Beitrag' : 'Beiträge') . ($hasNew ? ' <span class="chip warn">neu</span>' : '') . '</span></summary><div class="accbody">';
     foreach ($tree['threads'][$cid] ?? [] as $t) echo ka_render_post($t, $e, $mid, $admin, $open, $newest, 0);
     if (!($tree['threads'][$cid] ?? [])) echo '<p class="muted">Noch keine Beiträge.</p>';

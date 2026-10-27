@@ -71,7 +71,7 @@ if ($board) {
     echo '<section class="card"><h2>Ressort-Präferenzen</h2>';
     if ($prefs) {
         echo '<p class="muted">Für diese Ressorts würde sich ' . h($c['first_name']) . ' im Falle der Wahl interessieren (Priorität 5 ist die höchste).</p><div class="qa-list">';
-        foreach ($prefs as [$prio, $n, $t]) echo '<div class="qa"><div class="q"><span class="prio">Prio ' . (int)$prio . '</span> ' . h($n) . '</div>' . ($t !== '' ? '<div class="a">' . nl2br(h($t)) . '</div>' : '') . '</div>';
+        foreach ($prefs as [$prio, $n, $t]) echo '<div class="qa"><div class="q"><span class="prio rate rate-' . (int)$prio . '">Prio ' . (int)$prio . '</span> ' . h($n) . '</div>' . ($t !== '' ? '<div class="a">' . nl2br(h($t)) . '</div>' : '') . '</div>';
         echo '</div>';
     } else echo '<p class="muted">Keine bevorzugten Ressorts angegeben.</p>';
     echo '</section>';
@@ -94,7 +94,7 @@ foreach (KA_REQ_GROUPS as $g => $gname) {
         if (!$a || ($a['answer'] === '' && !$a['rating'])) continue;
         $any = true;
         echo '<div class="qa"><div class="q">' . ($r['nr'] ? '<span class="nr">' . h($r['nr']) . '</span> ' : '') . h($r['question']) . '</div><div class="a">'
-            . ($a['rating'] ? '<span class="chip ok">' . h(KA_SCALE[$a['rating']] ?? (string)$a['rating']) . '</span> ' : '') . nl2br(h($a['answer'])) . '</div></div>';
+            . ($a['rating'] ? '<span class="chip rate rate-' . (int)$a['rating'] . '" title="' . (int)$a['rating'] . ' von 5">' . h(KA_SCALE[$a['rating']] ?? (string)$a['rating']) . '</span> ' : '') . nl2br(h($a['answer'])) . '</div></div>';
     }
     echo '</div>' . ($any ? '' : '<p class="muted">Dazu liegen keine Antworten vor.</p>') . '</section>';
 }

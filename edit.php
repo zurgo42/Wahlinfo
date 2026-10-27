@@ -85,7 +85,7 @@ foreach (KA_REQ_GROUPS as $g => $gname) {
         $a = $ans['req'][$rid] ?? ['rating' => null, 'answer' => ''];
         echo '<div class="qa-edit"><div class="q">' . ($r['nr'] ? '<span class="nr">' . h($r['nr']) . '</span> ' : '') . h($r['question']) . '</div>';
         if ($r['kind'] === 'scale') {
-            echo '<label class="inline">Einschätzung <select name="req_rating[' . $rid . ']"><option value="0">–</option>';
+            echo '<label class="inline">Einschätzung <select name="req_rating[' . $rid . ']" data-rate><option value="0">–</option>';
             foreach (KA_SCALE as $v => $lbl) echo '<option value="' . $v . '"' . ((int)$a['rating'] === $v ? ' selected' : '') . '>' . $v . ' – ' . h($lbl) . '</option>';
             echo '</select></label>';
         }
@@ -100,7 +100,7 @@ if ($board) {
     foreach (ka_departments() as $d) {
         $did = (int)$d['dept_id'];
         $a = $ans['dept'][$did] ?? ['rating' => null, 'answer' => ''];
-        echo '<div class="qa-edit"><div class="q">' . h($d['name']) . '</div><label class="inline">Priorität <select name="dept_rating[' . $did . ']"><option value="0">–</option>';
+        echo '<div class="qa-edit"><div class="q">' . h($d['name']) . '</div><label class="inline">Priorität <select name="dept_rating[' . $did . ']" data-rate><option value="0">–</option>';
         for ($p = 1; $p <= 5; $p++) echo '<option value="' . $p . '"' . ((int)$a['rating'] === $p ? ' selected' : '') . '>' . $p . '</option>';
         echo '</select></label><input name="dept_text[' . $did . ']" value="' . h($a['answer']) . '" maxlength="500" placeholder="Begründung (optional)"></div>';
     }
