@@ -18,8 +18,9 @@ if (empty($zeige)) {
 // Prüfen ob Detailansicht erlaubt ist
 // Vor dem Editier-Stichtag: nur eigene Daten (Kandidat selbst)
 // Nach dem Editier-Stichtag: für alle öffentlich
+// Im Musterseite-Modus: immer erlaubt (für Demo/Test)
 $userMnr = getUserMnr();
-if (!isDetailViewPublic() && $userMnr !== $zeige) {
+if (!isMusterseite() && !isDetailViewPublic() && $userMnr !== $zeige) {
     $pageTitle = 'Noch nicht verfügbar';
     include 'includes/header.php';
     echo '<div class="alert alert-warning">Die Kandidatenprofile sind noch nicht öffentlich zugänglich.</div>';
