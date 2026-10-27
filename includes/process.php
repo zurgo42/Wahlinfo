@@ -45,8 +45,13 @@ function showRealKandidaten() {
 
 /**
  * Prüft ob Editieren noch erlaubt ist
+ * Im Musterseite-Modus immer erlaubt (für Demo/Test)
  */
 function isEditingAllowed() {
+    // Im Musterseite-Modus immer erlaubt
+    if (isMusterseite()) {
+        return true;
+    }
     $deadline = getSetting('DEADLINE_EDITIEREN', DEADLINE_EDITIEREN);
     return time() <= strtotime($deadline);
 }
