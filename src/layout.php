@@ -22,6 +22,8 @@ function ka_header(string $title, ?array $me = null, string $active = '', ?strin
         if (ka_candidate_of_member((int)$election['election_id'], (int)$me['member_id'])) $nav['mine'] = ['edit.php', 'Meine Kandidatenseite'];
     }
     if ($me && ka_is_admin($me)) $nav['admin'] = ['admin/index.php', 'Verwaltung'];
+    // Zurück zum Einstieg (MISS oder die Landingpage des Vereins), wenn KA_PORTAL_URL gesetzt ist
+    if ($me && defined('KA_PORTAL_URL') && trim((string)KA_PORTAL_URL) !== '') $nav['portal'] = [trim((string)KA_PORTAL_URL), '← ' . (defined('KA_PORTAL_NAME') && trim((string)KA_PORTAL_NAME) !== '' ? trim((string)KA_PORTAL_NAME) : 'MISS')];
     echo '<!DOCTYPE html><html lang="de"' . ($dark ? ' class="dark-mode"' : '') . '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><base href="' . h(ka_url()) . '">';
     echo '<script>(function(){if(document.cookie.indexOf("darkMode=")<0){try{if(localStorage.getItem("darkMode")==="enabled"){document.documentElement.className="dark-mode";document.cookie="darkMode=enabled;path=/;max-age=31536000";}}catch(e){}}})();</script>';
     echo '<title>' . h($title) . ' – ' . KA_APP_NAME . ' ' . h($orgName) . '</title><link rel="stylesheet" href="assets/ka.css?v=' . (int)@filemtime(__DIR__ . '/../assets/ka.css') . '"></head><body' . ($dark ? ' class="dark-mode"' : '') . '>';

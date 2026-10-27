@@ -24,6 +24,12 @@ function ka_test_instance(): bool
     return !KA_DEMO_MODE && defined('KA_TEST_INSTANCE') && KA_TEST_INSTANCE;
 }
 
+/** Was steht in der Sitzungsvariable: die member_id (Standard, wie bei MISS) oder die Mitgliedsnummer (wie die Variable MNr bei KONA im Adapterbetrieb, KA_SESSION_BY 'number')? */
+function ka_session_by(): string
+{
+    return defined('KA_SESSION_BY') && KA_SESSION_BY === 'number' ? 'number' : 'id';
+}
+
 function ka_session_key(): string
 {
     return KA_DEMO_MODE ? 'ka_member_id' : KA_SESSION_KEY;
@@ -55,8 +61,10 @@ function ka_current_member(bool $refresh = false): ?array
         $nr = ka_remote_user_number();
         $m = $nr ? ka_member_by_number($nr) : null;
     } else {
-        $id = $_SESSION[ka_session_key()] ?? null;
-        $m = $id ? ka_one('SELECT * FROM svmembers WHERE member_id = ?', [(int)$id]) : null;
+        $v = $_SESSION[ka_session_key()] ?? null;
+        if ($v === null || $v === '' || $v === 0) $m = null;
+        elseif (ka_session_by() === 'number') $m = ka_member_by_number((string)$v);
+        else $m = ka_one('SELECT * FROM svmembers WHERE member_id = ?', [(int)$v]);
     }
     if ($m && (int)($m['is_active'] ?? 1) === 0) $m = null;
     return $m;
@@ -110,7 +118,12 @@ function ka_require_admin(): array
 function ka_login_start(int $member): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) session_regenerate_id(true);
-    $_SESSION[ka_session_key()] = $member;
+    if (ka_session_by() === 'number') {
+        $m = ka_member_by_id($member);
+        $_SESSION[ka_session_key()] = $m ? (string)$m['membership_number'] : null;
+    } else {
+        $_SESSION[ka_session_key()] = $member;
+    }
 }
 
 function ka_logout(): void

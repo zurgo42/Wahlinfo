@@ -63,3 +63,12 @@ define('KA_TEST_INSTANCE', false);
 // define('KA_LDAP_ATTR_FIRST', 'givenName'); define('KA_LDAP_ATTR_LAST', 'sn'); define('KA_LDAP_ATTR_MAIL', 'mail');
 // Ausprobieren ohne LDAP-Server: Testdaten statt Abfrage
 // define('KA_LDAP_TEST_DATA', ['0495011' => ['Mia', 'Technik', 'mia@example.com'], '0495005' => ['Thomas', 'Winter', 'thomas@example.com']]);
+
+// Einstieg: Adresse von MISS oder der Landingpage des Vereins; in der Navigation erscheint ein Rückweg dorthin ("← MISS").
+// define('KA_PORTAL_URL', '/MISS/');
+// define('KA_PORTAL_NAME', 'MISS');
+// Anmeldung aus der Sitzung: KA_SESSION_KEY ist die Sitzungsvariable (Standard 'member_id'). Enthält sie die Mitgliedsnummer statt der member_id
+// (z. B. 'MNr' wie bei KONA im Adapterbetrieb oder die Landingpage eines Vereins ohne MISS), dann KA_SESSION_BY 'number'.
+// define('KA_SESSION_BY', 'number');
+// Laufzeit der Anmeldung in Tagen (gemeinsam mit MISS, KONA und VERA; Standard 15). Cookie und Sitzung gelten für die ganze Domain.
+// define('KA_SESSION_DAYS', 15);

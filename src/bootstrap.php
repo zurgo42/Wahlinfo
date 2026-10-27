@@ -58,7 +58,12 @@ function h(?string $s): string
 }
 
 if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
+    // Sitzung wie in MISS und der Sitzungsverwaltung (KONA): Cookie für die ganze Domain, gleiche Laufzeit (KA_SESSION_DAYS, Standard 15 Tage).
+    // So bleibt die Anmeldung vom Einstieg (MISS oder einer Landingpage) erhalten und keine Anwendung räumt die Sitzungen der anderen früher ab.
+    $ka_days = defined('KA_SESSION_DAYS') ? max(1, (int)KA_SESSION_DAYS) : 15;
+    ini_set('session.gc_maxlifetime', (string)($ka_days * 86400));
+    session_set_cookie_params(['lifetime' => $ka_days * 86400, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax',
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')]);
     session_start();
 }
 
