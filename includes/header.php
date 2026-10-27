@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mensa Wahlinfo - Ergänzende Wahlinformation">
-    <title><?php echo isset($pageTitle) ? escape($pageTitle) . ' - ' : ''; ?>Mensa Wahlinfo</title>
+    <meta name="description" content="Mensa KAND - Kandidaten-Information">
+    <title><?php echo isset($pageTitle) ? escape($pageTitle) . ' - ' : ''; ?>Mensa KAND</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
         <div class="header-inner">
             <img src="<?php echo escape(getSetting('LOGO_DATEI', '../logo_mensa.png')); ?>" alt="Logo" class="header-logo">
             <div class="header-center">
-                <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Ergänzende Wahlinformation'; ?></h1>
+                <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Kandidaten-Information'; ?></h1>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
                 <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">

@@ -1,6 +1,6 @@
 <?php
 /**
- * welcome.php - Willkommens- und Info-Seite für Wahlinfo
+ * welcome.php - Willkommens- und Info-Seite für KAND
  */
 
 require_once 'includes/config.php';
@@ -114,15 +114,15 @@ include 'includes/header.php';
 <div class="welcome-content">
     <!-- Features -->
     <div class="features-box">
-        <h2>Mensa Wahlinfo – Ergänzende Wahlinformation</h2>
+        <h2>Mensa KAND – Kandidaten-Information</h2>
         <p class="app-lead">
-            Das Wahlinfo-Tool unterstützt demokratische Wahlen innerhalb der Organisation
+            KAND unterstützt demokratische Wahlen innerhalb der Organisation
             durch transparente Kandidatendarstellung und strukturierte Diskussion.
             Die Anwendung gehört zur Softwarefamilie mit Sitzungsverwaltung,
             Mitgliederverwaltung und Mitgliederversammlung.
         </p>
 
-        <h3 class="app-sub">Was Wahlinfo leistet:</h3>
+        <h3 class="app-sub">Was KAND leistet:</h3>
         <div class="features-grid">
             <div class="feature-item">
                 <span class="icon">👤</span>
@@ -166,7 +166,7 @@ include 'includes/header.php';
         </div>
 
         <div class="info-box">
-            ℹ️ <strong>Hinweis:</strong> Diese Seite zeigt die Funktionen des Wahlinfo-Tools.
+            ℹ️ <strong>Hinweis:</strong> Diese Seite zeigt die Funktionen von KAND.
             Für den Zugriff auf Kandidatenprofile und Diskussionen bitte über das
             Single-Sign-On (SSO) Ihrer Organisation einloggen.
         </div>
