@@ -69,30 +69,6 @@
         ?>
     </nav>
 
-    <?php if (isMusterseite()): ?>
-    <!-- Musterseiten-Hinweis mit Rollenliste -->
-    <div class="container" style="margin-top: 10px; margin-bottom: 10px;">
-        <div style="background: #fff3cd; padding: 10px 15px; border-radius: var(--radius-sm); border: 1px solid #ffc107;">
-            <h4 style="margin: 0 0 5px 0; font-size: 0.9em;">Musterseite – Verschiedene Rollen testen</h4>
-            <p style="font-size: 0.75em; margin: 0 0 8px 0;">Wähle eine Testperson um das Diskussionstool auszuprobieren:</p>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                <a href="?mnr=04932012" class="musterseite-btn">Albert Einstein</a>
-                <a href="?mnr=04932011" class="musterseite-btn">Werner Heisenberg</a>
-                <a href="?mnr=04932010" class="musterseite-btn">Super MachtAllesToll</a>
-                <a href="?mnr=04932002" class="musterseite-btn">Marie Curie</a>
-                <a href="?mnr=04932009" class="musterseite-btn">Max Planck</a>
-                <a href="?mnr=04932007" class="musterseite-btn">Hans Asperger</a>
-                <a href="?mnr=04932001" class="musterseite-btn">Konrad Röntgen</a>
-                <a href="?mnr=04932004" class="musterseite-btn">Anita Augspurg</a>
-                <a href="?mnr=04932003" class="musterseite-btn">Emil Kraepelin</a>
-                <a href="?mnr=04932006" class="musterseite-btn">Selma Lagerlöf</a>
-                <a href="?mnr=04932008" class="musterseite-btn">Mileva Maric</a>
-                <a href="?mnr=04932005" class="musterseite-btn">Mutter Teresa</a>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 
     <main class="container">
 
