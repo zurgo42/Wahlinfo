@@ -1,126 +1,67 @@
 <?php
-/**
- * Wahlinfo - Kandidaten-Übersicht
- * Modernisierte Version mit Card-Layout (PDO)
- */
-
-require_once 'includes/config.php';
-
-$pageTitle = 'Ergänzende Wahlinformation';
-
-// Eingeloggte M-Nr (SSO oder Simulation)
-$userMnr = getUserMnr();
-
-// Header einbinden
-include 'includes/header.php';
-
-// Tabelle wählen basierend auf Stichtag
-$kandidatenTable = getKandidatenTable();
-
-// Alle Ämter abrufen (nur id >= 1, da amt0 nicht existiert)
-$aemter = dbFetchAll("SELECT * FROM " . TABLE_AEMTER . " WHERE id >= 1 ORDER BY id");
-
-if (empty($aemter)) {
-    echo '<div class="alert alert-warning">Fehler beim Laden der Ämter.</div>';
-    include 'includes/footer.php';
+require_once __DIR__ . '/src/bootstrap.php';
+$me = ka_require_login();
+$e = ka_current_election();
+$admin = ka_is_admin($me);
+ka_header('Kandidaten', $me, 'candidates', $e ? $e['title'] : 'Kandidaten');
+ka_show_flash();
+if (!$e) {
+    echo '<section class="card"><h1>Kandidaten</h1><p>Zurzeit ist keine Wahl angelegt.</p>' . ($admin ? '<p><a class="btn" href="admin/index.php">Wahl anlegen</a></p>' : '') . '</section>';
+    ka_footer();
     exit;
 }
+$phase = ka_phase($e);
+$mine = ka_candidate_of_member((int)$e['election_id'], (int)$me['member_id']);
+echo '<h1>' . h($e['title']) . '</h1>';
+if ($phase === 'edit') {
+    echo '<div class="flash warn">Die Kandidatenvorstellungen werden am <strong>' . h(ka_fmt_datetime($e['edit_until'])) . '</strong> für alle Mitglieder freigeschaltet. Bis dahin sehen nur das Adminteam der Wahl und die Kandidierenden die Seiten.</div>';
+    if (!$e['edit_until']) echo '<p class="muted">Der Stichtag ist noch nicht festgelegt.</p>';
+} elseif ($phase === 'closed') {
+    echo '<div class="flash">Die Diskussion ist beendet; die Vorstellungen bleiben lesbar.</div>';
+} else {
+    echo '<p class="muted">Hier findest du alle Kandidatinnen und Kandidaten. Ein Klick öffnet die Vorstellung. In der <a href="discussion.php">Diskussion</a> kannst du Fragen stellen.' . ($e['discussion_until'] ? ' Die Diskussion ist offen bis ' . h(ka_fmt_datetime($e['discussion_until'])) . '.' : '') . '</p>';
+}
+if ($mine && $phase === 'edit') {
+    [$d, $a] = ka_completeness($mine);
+    echo '<section class="card"><h2>Deine Kandidatenseite</h2><p>Du bist als Kandidat bzw. Kandidatin eingetragen. Bitte stelle dich bis zum <strong>' . h(ka_fmt_datetime($e['edit_until'])) . '</strong> vor (ausgefüllt: ' . $d . ' von ' . $a . ' Angaben).</p><p><a class="btn" href="edit.php">Meine Seite bearbeiten</a> <a class="btn secondary" href="candidate.php?id=' . (int)$mine['candidate_id'] . '">Vorschau</a></p></section>';
+} elseif ($mine) {
+    echo '<p><a class="btn secondary small" href="candidate.php?id=' . (int)$mine['candidate_id'] . '">Meine Vorstellung ansehen</a></p>';
+}
+$docs = ka_q('SELECT * FROM ka_documents ORDER BY sort_no, doc_id');
+if ($docs && ($phase !== 'edit' || $admin)) {
+    echo '<section class="card"><h2>Unterlagen</h2><ul class="plain">';
+    foreach ($docs as $d) echo '<li><a href="' . h($d['link']) . '" target="_blank" rel="noopener">' . h($d['title']) . '</a>' . ($d['description'] ? ' <span class="muted">– ' . h($d['description']) . '</span>' : '') . '</li>';
+    echo '</ul></section>';
+}
+if ($phase === 'edit' && !$admin) {
+    ka_footer();
+    exit;
+}
+if ($admin && $phase === 'edit') echo '<div class="flash">Du siehst die Seiten als Adminteam, für alle anderen sind sie noch gesperrt.</div>';
+$cands = ka_candidates((int)$e['election_id']);
+if (!$cands) {
+    echo '<p class="muted">Noch keine Kandidaten eingetragen.' . ($admin ? ' <a href="admin/candidates.php">Kandidaten eintragen</a>' : '') . '</p>';
+    ka_footer();
+    exit;
+}
+$shown = [];
+foreach (ka_offices() as $o) {
+    $list = array_values(array_filter($cands, fn($c) => isset(ka_candidate_offices((int)$c['candidate_id'])[(int)$o['office_id']])));
+    if (!$list) continue;
+    foreach ($list as $c) $shown[(int)$c['candidate_id']] = true;
+    echo '<h2 class="amt">' . h($o['name']) . ' <span class="muted">(' . (int)$o['positions'] . ' ' . ((int)$o['positions'] === 1 ? 'Position' : 'Positionen') . ')</span></h2><div class="cand-grid">';
+    foreach ($list as $c) echo ka_candidate_card($c);
+    echo '</div>';
+}
+$rest = array_filter($cands, fn($c) => empty($shown[(int)$c['candidate_id']]));
+if ($rest) {
+    echo '<h2 class="amt">Ohne Amtszuordnung</h2><div class="cand-grid">';
+    foreach ($rest as $c) echo ka_candidate_card($c);
+    echo '</div>';
+}
+ka_footer();
 
-?>
-
-<div class="info-banner">
-    <p>Willkommen zur ergänzenden Wahlinformation. Hier findest du Informationen zu allen Kandidatinnen und Kandidaten.</p>
-    <p>Klicke auf eine Karte, um mehr über die jeweilige Person zu erfahren.</p>
-</div>
-
-<?php
-
-// Durch alle Ämter iterieren
-foreach ($aemter as $amt) {
-    $amtId = (int)$amt['id'];
-    $amtName = escape($amt['amt']);
-    $anzPos = isset($amt['anzpos']) ? (int)$amt['anzpos'] : 1;
-
-    // Kandidaten für dieses Amt abrufen
-    $kandidaten = dbFetchAll(
-        "SELECT vorname, name, mnummer, bildfile, text
-         FROM $kandidatenTable
-         WHERE amt$amtId = 1
-         ORDER BY name ASC"
-    );
-
-    if (empty($kandidaten)) {
-        continue; // Keine Kandidaten für dieses Amt
-    }
-
-    // Amt-Header ausgeben
-    $positionText = $anzPos === 1 ? '1 Position' : $anzPos . ' Positionen';
-    ?>
-
-    <div class="amt-header">
-        <?php echo $amtName; ?>
-        <span class="positions">(<?php echo $positionText; ?>)</span>
-    </div>
-
-    <div class="candidate-grid">
-        <?php foreach ($kandidaten as $kandidat):
-            $vorname = escape($kandidat['vorname']);
-            $name = escape($kandidat['name']);
-            $mnummer = escape($kandidat['mnummer']);
-            $bildfile = $kandidat['bildfile'];
-
-            // M-Nummer für Anzeige kürzen (nur letzte Ziffern)
-            $mnummerKurz = substr($mnummer, 3);
-        ?>
-
-        <article class="candidate-card">
-            <?php
-            // Link-Logik:
-            // - Musterseite + Editieren erlaubt: Jede Karte -> eingabe.php mit Kandidaten-M-Nr
-            // - Produktion + eigene Karte + Editieren erlaubt: eingabe.php mit eigener M-Nr
-            // - Sonst: einzeln.php mit aktueller User-M-Nr
-
-            if (isEditingAllowed()) {
-                if (isMusterseite()) {
-                    // Spielwiese: Man kann als jede Testperson editieren
-                    $link = "eingabe.php?mnr=" . urlencode($mnummer);
-                } elseif ($userMnr && $userMnr === $kandidat['mnummer']) {
-                    // Produktion: Nur eigene Karte editierbar
-                    $link = "eingabe.php?mnr=" . urlencode($userMnr);
-                } else {
-                    // Andere Kandidaten -> einzeln
-                    $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId . ($userMnr ? "&amp;mnr=" . urlencode($userMnr) : '');
-                }
-            } else {
-                // Editieren nicht erlaubt -> nur einzeln
-                $link = "einzeln.php?zeige=" . urlencode($mnummer) . "&amp;amt=" . $amtId . ($userMnr ? "&amp;mnr=" . urlencode($userMnr) : '');
-            }
-            ?>
-            <a href="<?php echo $link; ?>">
-                <div class="card-image">
-                    <?php if (!empty($bildfile)): ?>
-                        <img src="img/<?php echo escape($bildfile); ?>" alt="Foto von <?php echo $vorname . ' ' . $name; ?>">
-                    <?php else: ?>
-                        <img src="img/leer.jpg" alt="Kein Foto vorhanden">
-                    <?php endif; ?>
-                </div>
-                <div class="card-content">
-                    <h3 class="card-title"><?php echo $vorname . ' ' . $name; ?></h3>
-                    <p class="card-subtitle">M-Nr. <?php echo $mnummerKurz; ?></p>
-                </div>
-            </a>
-        </article>
-
-        <?php endforeach; ?>
-    </div>
-
-<?php } ?>
-
-<div style="text-align: center; margin-top: var(--spacing-xl);">
-    <a href="../index.php" class="btn">Zurück zur Startseite</a>
-</div>
-
-<?php
-// Footer einbinden
-include 'includes/footer.php';
-?>
+function ka_candidate_card(array $c): string
+{
+    return '<a class="cand-card" href="candidate.php?id=' . (int)$c['candidate_id'] . '">' . ka_photo_html($c, 'cand-photo') . '<span class="cand-name">' . h(ka_member_name($c)) . '</span></a>';
+}

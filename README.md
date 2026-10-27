@@ -1,316 +1,57 @@
-# Wahlinfo - Mensa Vorstandswahl Informationssystem
+# KAND – Kandidatentool
 
-Modernisiertes Wahlinfo-System für die ergänzende Wahlinformation bei Vorstandswahlen.
+KAND gehört zur Familie **MISS** (Mitglieder), **KONA** (Sitzungen, Anträge), **VERA** (Versammlung) und **KAND** (Wahlen): gleiche Mitglieder (`svmembers`), gleiche Anmeldung, gleiche Optik.
 
-## 🎯 Features
+Kandidatinnen und Kandidaten stellen sich vor, die Mitglieder lesen die Vorstellungen und diskutieren mit ihnen. (Das Tool geht aus dem früheren „Wahlinfo“ hervor; der alte Stand liegt unter `alt/`.)
 
-- **Kandidatenprofile**: Umfassende Selbstdarstellung mit Fotos, Links, Ämterpräferenzen
-- **Anforderungsprofile**: 28 Fragen zu Kompetenzen (Fach-, Personal-, Sozialkompetenzen)
-- **Ressort-Präferenzen**: Bis zu 30 Ressorts priorisierbar mit Begründungen
-- **Team-Präferenzen**: Wunsch-Teams angeben
-- **Diskussionsforum**: Fragen an Kandidaten, Antworten, Voting
-- **Admin-Bereich**: Umfassende Verwaltung, JSON Backup & Restore
-- **Spielwiese**: Testumgebung für Jahr 2000
-- **Responsive Design**: Optimiert für Desktop, Tablet, Smartphone
-- **Dark Mode**: Automatische Erkennung und manuelles Toggle
-- **Barrierefreiheit**: Schriftgrößenanpassung
+## Ablauf
 
-## 📋 Systemanforderungen
+1. **Vorbereitung:** Das Adminteam legt unter *Verwaltung → Wahl und Termine* die Wahl an und setzt das Ende der Bearbeitungsphase.
+2. **Kandidaten eintragen:** *Verwaltung → Kandidaten*: Mitglied suchen, Ämter zuordnen, per E-Mail einladen (mit Link und Frist); Erinnerungen an alle mit unvollständiger Seite.
+3. **Bearbeitungsphase** (bis zum Stichtag): Die Kandidaten pflegen ihre Seite (Foto, Vorstellung, Links, Antworten auf Fragen, Selbsteinschätzung, Ressort-Wünsche, Wunschteam). **Sehen kann die Seiten nur das Adminteam und jede Person ihre eigene – sonst niemand.**
+4. **Diskussionsphase** (ab dem Stichtag): Die Seiten sind für **alle Mitglieder** sichtbar (auch nicht aktive und solche ohne Zustimmung zu den Nutzungsbedingungen), die Kandidaten können nicht mehr ändern. Die Diskussion ist geöffnet: Fragen an Kandidaten und allgemeine Fragen, Antworten, Zustimmung/Ablehnung, Ändern des eigenen Beitrags 3 Minuten lang, Verbergen durch das Adminteam. Optional endet die Diskussion zu einem eingestellten Zeitpunkt (dann nur noch lesen).
 
-- PHP 8.0+ (funktioniert ab 7.4)
-- MySQL 5.7+ / MariaDB 10.3+
-- Webserver (Apache/nginx)
-- Optional: SSO-Integration für Authentifizierung
+Das Adminteam kann die Vorstellungen jederzeit vorzeitig freigeben, die Bearbeitungsphase wieder öffnen und die Diskussion beenden. Alles steht im Protokoll.
 
-## 🚀 Schnellstart
+## Einrichtung
 
-### 1. Repository klonen
-
-```bash
-git clone https://github.com/zurgo42/Wahlinfo.git
-cd Wahlinfo
-```
-
-### 2. Datenbank initialisieren
-
-```bash
-mysql -u root -p < database/init-db.sql
-```
-
-Das Script erstellt automatisch:
-- Datenbank `wahl`
-- Alle benötigten Tabellen (leer, außer wahleinstellungen)
-- Grundeinstellungen
-
-### 3. Konfiguration anpassen
-
-Datei: `includes/config.php`
-
-```php
-// Datenbank-Zugangsdaten
-define('DB_HOST', 'localhost');
-define('DB_USER', 'wahl');
-define('DB_PASS', 'IHR_PASSWORT');
-define('DB_NAME', 'wahl');
-
-// Admin M-Nummern (für Fallback)
-define('ADMIN_MNRS', ['0495018']);
-
-// Test M-Nr (nur für SSO-Entwicklung auf localhost)
-define('TEST_MNR', '0495018');
-```
-
-### 4. Stammdaten importieren
-
-1. JSON-Export mit Stammdaten besorgen (wahlaemter, wahlressorts, wahlanforderungen, etc.)
-2. Admin-Bereich aufrufen: `admin.php?firstuser=1`
-3. Tab "Archivierung" → "JSON Backup & Restore"
-4. JSON-Datei hochladen und importieren
-
-### 5. Admin konfigurieren
-
-1. In Einstellungen: Admin-M-Nummern hinterlegen
-2. Zugangsmethode wählen (GET/POST/SSO)
-3. Wahljahr prüfen (2000 = Spielwiese, >2000 = echte Wahl)
-
-## 🔐 Authentifizierung
-
-Das System unterstützt drei Authentifizierungsmodi (konfigurierbar in Einstellungen):
-
-### GET-Modus (Standard)
-- M-Nummer wird als URL-Parameter übergeben: `?mnr=04932001`
-- Einfach für Entwicklung und Tests
-- Parameter wird automatisch durch Navigation weitergegeben
-
-### POST-Modus
-- M-Nummer wird per POST-Formular übermittelt
-- Fallback auf GET-Parameter (für AJAX)
-- Sicherer als GET
-
-### SSO-Modus
-- M-Nummer aus `$_SERVER['REMOTE_USER']` (Webserver-Authentifizierung)
-- Produktivmodus für SSO-Integration
-- Localhost-Fallback auf `TEST_MNR`
-
-## 📁 Datenbankstruktur
-
-### Zeitlose Tabellen (Stammdaten)
-
-| Tabelle | Beschreibung |
-|---------|--------------|
-| `wahleinstellungen` | Systemkonfiguration (Wahljahr, Deadlines, etc.) |
-| `wahlressorts` | Ressort-Definitionen |
-| `wahlaemter` | Ämter-Definitionen |
-| `wahlanforderungen` | 28 Fragen/Kompetenzen |
-| `wahladressen` | Zugriffsprotokolle |
-| `wahlbemerkungen` | Antwort-Texte (referenziert) |
-| `wahlaenderungslog` | Änderungshistorie |
-
-### Jahresabhängige Tabellen
-
-Pro Wahljahr gibt es 4 Tabellen mit Jahr-Prefix:
-
-| Tabelle | Beschreibung |
-|---------|--------------|
-| `wahl2025kandidaten` | Kandidatendaten |
-| `wahl2025kommentare` | Diskussionsbeiträge |
-| `wahl2025teilnehmer` | Diskussionsteilnehmer |
-| `wahl2025votes` | Voting-Daten |
-
-**Spezialfall Jahr 2000:** Testumgebung/Spielwiese
-- `wahl2000kandidaten`, `wahl2000kommentare`, etc.
-- Für Tests und Entwicklung
-
-## 🎮 Spielwiese (Testmodus)
-
-Die Spielwiese ermöglicht risikofreies Testen:
-
-1. Wahljahr auf `2000` setzen (Admin → Einstellungen)
-2. Testdaten importieren (JSON mit wahl2000*-Tabellen)
-3. Im GET-Modus: Verschiedene Testpersonen wählen
-4. Als jede Testperson editieren und testen
-
-## 💾 Backup & Restore
-
-### JSON-Export
-
-Admin → Archivierung → JSON Backup & Restore
-
-- **Export:** Alle Tabellen (außer laufendes Jahr) → JSON-Download
-- **Import:** JSON hochladen → Alle Tabellen ersetzen
-
-**⚠️ WARNUNG:** Import löscht alle bestehenden Daten!
-
-### Workflow
-
-```bash
-# 1. Backup erstellen
-#    Admin → Archivierung → "JSON-Export erstellen"
-#    → Speichert nach /exports/ und startet Download
-
-# 2. Backup wiederherstellen
-#    Admin → Archivierung → JSON-Datei auswählen → "JSON importieren"
-#    → Löscht und befüllt alle Tabellen aus JSON
-```
-
-## 🛠️ Entwicklung
-
-### Verzeichnisstruktur
+**Demo (SQLite, ohne MySQL):**
 
 ```
-Wahlinfo/
-├── css/
-│   └── style.css              # Haupt-Stylesheet
-├── database/
-│   └── init-db.sql            # Datenbank-Initialisierung
-├── exports/                   # JSON-Exports (nicht in Git)
-├── img/                       # Bilder, Kandidatenfotos
-├── includes/
-│   ├── config.php             # Konfiguration
-│   ├── functions.php          # DB-Hilfsfunktionen
-│   ├── process.php            # Business-Logik
-│   ├── header.php             # HTML-Header
-│   └── footer.php             # HTML-Footer
-├── index.php                  # Kandidatenübersicht
-├── einzeln.php                # Kandidaten-Detail
-├── eingabe.php                # Kandidaten-Eingabe
-├── diskussion.php             # Diskussionsforum
-├── admin.php                  # Admin-Bereich
-├── antwort_speichern.php      # AJAX: Kommentar speichern
-└── vote_speichern.php         # AJAX: Vote speichern
+php tools/demo_setup.php               # Diskussionsphase mit Beispieldiskussion
+php tools/demo_setup.php --edit-phase  # Bearbeitungsphase
+php -S 127.0.0.1:8000
 ```
+Dann `http://127.0.0.1:8000/login.php` und eine Person wählen (`DEMO0004` Julia Sommer ist im Adminteam, `DEMO0001` Max Mustermann ist Kandidat).
 
-### Wichtige Funktionen
+**Server (gleiche MySQL-Datenbank wie die Sitzungsverwaltung und MISS):**
 
-#### Authentifizierung (`process.php`)
-```php
-getUserMnr()              // Aktuelle M-Nr (GET/POST/SSO)
-isAdmin()                 // Ist User Admin?
-isMusterseite()           // Ist Spielwiese aktiv?
-```
+1. Verzeichnis `KAND` neben `MISS` und `Sitzungsverwaltung` anlegen und die Dateien hochladen.
+2. `config.example.php` nach `config.php` kopieren: `KA_DB_DRIVER` `'mysql'`, Zugangsdaten wie in der Sitzungsverwaltung, `KA_DEMO_MODE` **false**, `KA_LOGIN_URL` (z. B. `'/MISS/login.php'`), `KA_ORG_NAME`, `KA_ORG_LOGO`, `KA_ADMINS` (Mitgliedsnummern des Adminteams), Mailabsender.
+3. `php tools/install.php --check`, dann `php tools/install.php` (legt nur `ka_*`-Tabellen an, trägt Standardlisten ein; `svmembers` bleibt unverändert).
+4. Anmeldung: KAND liest das angemeldete Mitglied aus der Sitzung (`$_SESSION['member_id']`, `KA_SESSION_KEY`) von MISS bzw. der Sitzungsverwaltung. Beide Anwendungen müssen auf derselben Domain laufen und dieselbe Sitzung teilen. Nicht angemeldete Besucher gehen zu `KA_LOGIN_URL`.
+5. In der Verwaltung die Wahl anlegen, Ämter, Ressorts und Fragen prüfen (*Ämter, Ressorts, Fragen*), Unterlagen verlinken und das Adminteam ergänzen.
 
-#### Datenbank (`functions.php`)
-```php
-dbFetchAll($sql, $params)   // SELECT mehrere Zeilen
-dbFetchOne($sql, $params)   // SELECT eine Zeile
-dbExecute($sql, $params)    // INSERT/UPDATE/DELETE
-buildUrl($path)             // URL mit M-Nr-Parameter
-```
+`config.php` steht in `.gitignore`. Das Verzeichnis `storage/` (Fotos, Mails, Demo-Datenbank) ist per `.htaccess` gesperrt und sollte besser außerhalb des Web-Roots liegen (`KA_STORAGE_DIR`).
 
-#### Tabellen (`process.php`)
-```php
-getKandidatenTable()        // wahl{JAHR}kandidaten
-getKommentareTable()        // wahl{JAHR}kommentare
-getTeilnehmerTable()        // wahl{JAHR}teilnehmer
-getVotesTable()             // wahl{JAHR}votes
-getDiskussionTabellen()     // Alle 4 Tabellen als Array
-```
+## Rechte im Überblick
 
-#### Stichtage (`process.php`)
-```php
-isEditingAllowed()          // Editieren noch möglich?
-isDetailViewPublic()        // Einzelansicht öffentlich?
-getDeadlineEditieren()      // Editier-Deadline
-```
+| Wer | Bearbeitungsphase | Diskussionsphase |
+|---|---|---|
+| Adminteam (`KA_ADMINS`, *Verwaltung → Adminteam*) | sieht und bearbeitet alle Seiten, trägt Kandidaten ein, lädt ein, moderiert | wie vorher, außerdem Moderation der Diskussion |
+| Kandidat/in | sieht und bearbeitet nur die eigene Seite | sieht alle Seiten, kann diskutieren, nicht mehr bearbeiten |
+| anderes Mitglied | sieht nichts (Hinweis mit dem Stichtag) | sieht alle Vorstellungen und diskutiert (auch nicht aktive, auch ohne Zustimmung zu den Nutzungsbedingungen) |
 
-## 📱 Mobile Optimierung
+Gesperrte Zugänge (`is_active = 0`) kommen nicht herein.
 
-- **Responsive Grid:** Passt sich an Bildschirmgröße an
-- **Touch-optimiert:** Große Buttons, angenehme Abstände
-- **Breakpoints:** 1200px, 768px, 480px
-- **Smartphone-Ansicht:** Vereinfachte Navigation, gestapelte Layouts
+## Technik
 
-## 🎨 Design
+PHP 8, PDO (MySQL/MariaDB oder SQLite für die Demo), keine Abhängigkeiten. Tabellen mit Präfix `ka_` (`sql/schema.sql`); die Mitglieder stehen in `svmembers`. Fotos werden beim Hochladen auf höchstens 900 px verkleinert und neu kodiert (entfernt GPS-Daten). E-Mails: `KA_MAIL_TRANSPORT` `'log'` (Demo: `.eml`-Dateien in `storage/mail`) oder `'mail'`.
 
-- **CSS-Variablen:** Zentrale Farbverwaltung
-- **Dark Mode:** Automatische Erkennung + manuelles Toggle
-- **Schriftgrößen:** 3 Stufen (Normal, Groß, Extra Groß)
-- **Modern & Clean:** Source Sans Pro Font, Kartendesign
+Prüfung: `php tools/test_kand.php` (an der Demo, in einer Transaktion, rollt zurück).
 
-## 🔒 Sicherheit
+## Noch offen
 
-- **Prepared Statements:** Schutz vor SQL-Injection
-- **XSS-Schutz:** Alle Ausgaben escaped (`escape()`)
-- **CSRF:** Form-Tokens (falls aktiviert)
-- **Admin-Zugriff:** M-Nr-basiert, konfigurierbar
-- **Input-Validierung:** Strenge Prüfung aller Eingaben
-
-## 📖 Admin-Funktionen
-
-### Kandidaten-Verwaltung
-- Kandidaten anlegen, bearbeiten, löschen
-- Initial-/Erinnerungs-Mails versenden
-- Manuelle Kandidatendaten-Verwaltung
-
-### Stammdaten
-- Ressorts verwalten
-- Ämter verwalten
-- Anforderungen verwalten (28 Fragen)
-
-### Systemeinstellungen
-- Wahljahr festlegen
-- Deadlines konfigurieren
-- Authentifizierungsmodus
-- Features aktivieren/deaktivieren
-- Admin-M-Nummern
-
-### Archivierung
-- Jahrestabellen archivieren
-- JSON-Export aller Tabellen
-- JSON-Import (Restore)
-
-### Moderation
-- Diskussionsbeiträge moderieren
-- Beiträge ersetzen (mit Hinweis)
-- Moderationsprotokoll
-
-## 🐛 Fehlerbehebung
-
-### Admin-Zugriff verweigert
-- **GET-Modus:** URL benötigt `?mnr=IHRE_MNUMMER`
-- **Erster Zugriff:** `admin.php?firstuser=1` nutzen
-- **M-Nr nicht berechtigt:** Admin-M-Nummern in Einstellungen prüfen
-
-### Kandidaten nicht sichtbar
-- Wahljahr in Einstellungen prüfen
-- JSON-Import durchgeführt?
-- Kandidaten-Tabelle leer?
-
-### Diskussion funktioniert nicht
-- GET-Modus: M-Nr-Parameter fehlt?
-- Browser-Console auf JavaScript-Fehler prüfen
-- Netzwerk-Tab: AJAX-Requests erfolgreich?
-
-## 📚 Weitere Dokumentation
-
-- `ADMIN-DOKUMENTATION.md` - Detaillierte Admin-Anleitung
-- `BENUTZER-HANDBUCH.md` - Anleitung für Kandidaten
-- `MIGRATION.md` - Migration von Altsystem
-
-## 🔄 Updates & Versionierung
-
-Das System verwendet Git für Versionskontrolle. Wichtige Branches:
-
-- `main` - Stabile Produktivversion
-- `development` - Entwicklungsversion
-- `feature/*` - Feature-Branches
-
-## 🤝 Beitragen
-
-Pull Requests sind willkommen! Bitte:
-1. Feature-Branch erstellen (`git checkout -b feature/AmazingFeature`)
-2. Änderungen committen (`git commit -m 'Add AmazingFeature'`)
-3. Branch pushen (`git push origin feature/AmazingFeature`)
-4. Pull Request öffnen
-
-## 📄 Lizenz
-
-Proprietär - Nur für interne Nutzung
-
-## 👥 Kontakt
-
-Bei Fragen: Entwicklungsteam kontaktieren
-
----
-
-**Viel Erfolg bei der Wahl! 🗳️**
+- Übernahme der Daten aus dem alten Wahlinfo (Tabellen `wahl2025*`, `wahl2026*`, siehe `alt/database/init-db.sql`).
+- Mensa-LDAP als Mitgliederquelle (im alten Stand: `alt/includes/ldap_config_example.php`).
+- Demo mit MySQL (bisher nur SQLite).

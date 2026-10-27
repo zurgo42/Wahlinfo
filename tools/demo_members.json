@@ -1,0 +1,722 @@
+[
+{
+"member_id": 1,
+"membership_number": "DEMO0001",
+"first_name": "Max",
+"last_name": "Mustermann",
+"email": "max@example.com",
+"role": "vorstand",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 2,
+"membership_number": "DEMO0002",
+"first_name": "Erika",
+"last_name": "Musterfrau",
+"email": "erika@example.com",
+"role": "vorstand",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 3,
+"membership_number": "DEMO0003",
+"first_name": "Lukas",
+"last_name": "Beispiel",
+"email": "lukas@example.com",
+"role": "vorstand",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 4,
+"membership_number": "DEMO0004",
+"first_name": "Julia",
+"last_name": "Sommer",
+"email": "julia@example.com",
+"role": "gf",
+"is_admin": 1,
+"is_active": 1
+},
+{
+"member_id": 5,
+"membership_number": "DEMO0005",
+"first_name": "Thomas",
+"last_name": "Winter",
+"email": "thomas@example.com",
+"role": "assistenz",
+"is_admin": 1,
+"is_active": 1
+},
+{
+"member_id": 6,
+"membership_number": "DEMO0006",
+"first_name": "Sabine",
+"last_name": "Herbst",
+"email": "sabine@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 7,
+"membership_number": "DEMO0007",
+"first_name": "Hans",
+"last_name": "Lehmann",
+"email": "hans@example.com",
+"role": "fuehrungsteam",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 8,
+"membership_number": "DEMO0008",
+"first_name": "Anna",
+"last_name": "Frühling",
+"email": "anna@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 9,
+"membership_number": "DEMO0009",
+"first_name": "Petra",
+"last_name": "Nord",
+"email": "petra@example.com",
+"role": "fuehrungsteam",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 10,
+"membership_number": "DEMO0010",
+"first_name": "Karl",
+"last_name": "Prüfer",
+"email": "karl@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 11,
+"membership_number": "DEMO0011",
+"first_name": "Mia",
+"last_name": "Technik",
+"email": "mia@example.com",
+"role": "Mitglied",
+"is_admin": 1,
+"is_active": 1
+},
+{
+"member_id": 12,
+"membership_number": "DEMO0012",
+"first_name": "Rolf",
+"last_name": "Ehemals",
+"email": "rolf@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 0
+},
+{
+"member_id": 13,
+"membership_number": "DEMO0013",
+"first_name": "Anja",
+"last_name": "Ahrens",
+"email": "anja.ahrens@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 14,
+"membership_number": "DEMO0014",
+"first_name": "Achim",
+"last_name": "Bauer",
+"email": "achim.bauer@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 15,
+"membership_number": "DEMO0015",
+"first_name": "Birgit",
+"last_name": "Conrad",
+"email": "birgit.conrad@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 16,
+"membership_number": "DEMO0016",
+"first_name": "Bernd",
+"last_name": "Dietrich",
+"email": "bernd.dietrich@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 17,
+"membership_number": "DEMO0017",
+"first_name": "Carla",
+"last_name": "Engel",
+"email": "carla.engel@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 18,
+"membership_number": "DEMO0018",
+"first_name": "Christian",
+"last_name": "Fischer",
+"email": "christian.fischer@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 19,
+"membership_number": "DEMO0019",
+"first_name": "Dagmar",
+"last_name": "Graf",
+"email": "dagmar.graf@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 20,
+"membership_number": "DEMO0020",
+"first_name": "Dieter",
+"last_name": "Hartmann",
+"email": "dieter.hartmann@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 21,
+"membership_number": "DEMO0021",
+"first_name": "Elke",
+"last_name": "Imhof",
+"email": "elke.imhof@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 22,
+"membership_number": "DEMO0022",
+"first_name": "Emil",
+"last_name": "Jäger",
+"email": "emil.jaeger@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 23,
+"membership_number": "DEMO0023",
+"first_name": "Franziska",
+"last_name": "Keller",
+"email": "franziska.keller@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 24,
+"membership_number": "DEMO0024",
+"first_name": "Felix",
+"last_name": "Lorenz",
+"email": "felix.lorenz@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 25,
+"membership_number": "DEMO0025",
+"first_name": "Gudrun",
+"last_name": "Möller",
+"email": "gudrun.moeller@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 26,
+"membership_number": "DEMO0026",
+"first_name": "Georg",
+"last_name": "Neumann",
+"email": "georg.neumann@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 27,
+"membership_number": "DEMO0027",
+"first_name": "Heike",
+"last_name": "Ostermann",
+"email": "heike.ostermann@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 28,
+"membership_number": "DEMO0028",
+"first_name": "Holger",
+"last_name": "Pohl",
+"email": "holger.pohl@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 29,
+"membership_number": "DEMO0029",
+"first_name": "Ines",
+"last_name": "Quast",
+"email": "ines.quast@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 30,
+"membership_number": "DEMO0030",
+"first_name": "Ingo",
+"last_name": "Richter",
+"email": "ingo.richter@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 31,
+"membership_number": "DEMO0031",
+"first_name": "Jana",
+"last_name": "Schäfer",
+"email": "jana.schaefer@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 32,
+"membership_number": "DEMO0032",
+"first_name": "Jan",
+"last_name": "Thiel",
+"email": "jan.thiel@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 33,
+"membership_number": "DEMO0033",
+"first_name": "Katrin",
+"last_name": "Ulrich",
+"email": "katrin.ulrich@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 34,
+"membership_number": "DEMO0034",
+"first_name": "Klaus",
+"last_name": "Vogt",
+"email": "klaus.vogt@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 35,
+"membership_number": "DEMO0035",
+"first_name": "Lena",
+"last_name": "Weber",
+"email": "lena.weber@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 36,
+"membership_number": "DEMO0036",
+"first_name": "Lars",
+"last_name": "Zimmer",
+"email": "lars.zimmer@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 37,
+"membership_number": "DEMO0037",
+"first_name": "Marta",
+"last_name": "Albrecht",
+"email": "marta.albrecht@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 38,
+"membership_number": "DEMO0038",
+"first_name": "Markus",
+"last_name": "Brandt",
+"email": "markus.brandt@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 39,
+"membership_number": "DEMO0039",
+"first_name": "Nadine",
+"last_name": "Claasen",
+"email": "nadine.claasen@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 40,
+"membership_number": "DEMO0040",
+"first_name": "Norbert",
+"last_name": "Dahl",
+"email": "norbert.dahl@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 41,
+"membership_number": "DEMO0041",
+"first_name": "Olga",
+"last_name": "Ehlers",
+"email": "olga.ehlers@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 42,
+"membership_number": "DEMO0042",
+"first_name": "Oliver",
+"last_name": "Förster",
+"email": "oliver.foerster@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 43,
+"membership_number": "DEMO0043",
+"first_name": "Paula",
+"last_name": "Gerber",
+"email": "paula.gerber@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 44,
+"membership_number": "DEMO0044",
+"first_name": "Peter",
+"last_name": "Haas",
+"email": "peter.haas@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 45,
+"membership_number": "DEMO0045",
+"first_name": "Renate",
+"last_name": "Iversen",
+"email": "renate.iversen@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 46,
+"membership_number": "DEMO0046",
+"first_name": "Rainer",
+"last_name": "Jahn",
+"email": "rainer.jahn@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 47,
+"membership_number": "DEMO0047",
+"first_name": "Silke",
+"last_name": "Kraus",
+"email": "silke.kraus@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 48,
+"membership_number": "DEMO0048",
+"first_name": "Stefan",
+"last_name": "Lange",
+"email": "stefan.lange@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 49,
+"membership_number": "DEMO0049",
+"first_name": "Tanja",
+"last_name": "Mertens",
+"email": "tanja.mertens@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 50,
+"membership_number": "DEMO0050",
+"first_name": "Thorsten",
+"last_name": "Nolte",
+"email": "thorsten.nolte@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 51,
+"membership_number": "DEMO0051",
+"first_name": "Ursula",
+"last_name": "Otto",
+"email": "ursula.otto@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 52,
+"membership_number": "DEMO0052",
+"first_name": "Uwe",
+"last_name": "Peters",
+"email": "uwe.peters@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 53,
+"membership_number": "DEMO0053",
+"first_name": "Vera",
+"last_name": "Roth",
+"email": "vera.roth@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 54,
+"membership_number": "DEMO0054",
+"first_name": "Volker",
+"last_name": "Sander",
+"email": "volker.sander@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 55,
+"membership_number": "DEMO0055",
+"first_name": "Waltraud",
+"last_name": "Tietz",
+"email": "waltraud.tietz@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 56,
+"membership_number": "DEMO0056",
+"first_name": "Werner",
+"last_name": "Unger",
+"email": "werner.unger@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 57,
+"membership_number": "DEMO0057",
+"first_name": "Yvonne",
+"last_name": "Voss",
+"email": "yvonne.voss@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 58,
+"membership_number": "DEMO0058",
+"first_name": "Jonas",
+"last_name": "Wagner",
+"email": "jonas.wagner@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 59,
+"membership_number": "DEMO0059",
+"first_name": "Zoe",
+"last_name": "Yilmaz",
+"email": "zoe.yilmaz@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 60,
+"membership_number": "DEMO0060",
+"first_name": "Ralf",
+"last_name": "Ziegler",
+"email": "ralf.ziegler@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 61,
+"membership_number": "DEMO0061",
+"first_name": "Ilse",
+"last_name": "Arndt",
+"email": "ilse.arndt@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 62,
+"membership_number": "DEMO0062",
+"first_name": "Bruno",
+"last_name": "Becker",
+"email": "bruno.becker@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 63,
+"membership_number": "DEMO0063",
+"first_name": "Monika",
+"last_name": "Cordes",
+"email": "monika.cordes@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 64,
+"membership_number": "DEMO0064",
+"first_name": "Heinz",
+"last_name": "Decker",
+"email": "heinz.decker@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 65,
+"membership_number": "DEMO0065",
+"first_name": "Sonja",
+"last_name": "Eberle",
+"email": "sonja.eberle@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 66,
+"membership_number": "DEMO0066",
+"first_name": "Kurt",
+"last_name": "Funke",
+"email": "kurt.funke@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 67,
+"membership_number": "DEMO0067",
+"first_name": "Eva",
+"last_name": "Götz",
+"email": "eva.goetz@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 68,
+"membership_number": "DEMO0068",
+"first_name": "Leon",
+"last_name": "Heine",
+"email": "leon.heine@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 69,
+"membership_number": "DEMO0069",
+"first_name": "Clara",
+"last_name": "Jordan",
+"email": "clara.jordan@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 70,
+"membership_number": "DEMO0070",
+"first_name": "Martin",
+"last_name": "Kunze",
+"email": "martin.kunze@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 71,
+"membership_number": "DEMO0071",
+"first_name": "Hanna",
+"last_name": "Lindner",
+"email": "hanna.lindner@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+},
+{
+"member_id": 72,
+"membership_number": "DEMO0072",
+"first_name": "Tobias",
+"last_name": "Maurer",
+"email": "tobias.maurer@example.com",
+"role": "Mitglied",
+"is_admin": 0,
+"is_active": 1
+}
+]
