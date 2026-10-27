@@ -73,11 +73,12 @@ function getDeadlineEditieren() {
 
 /**
  * Gibt die Kandidaten-Tabelle zurück: wahl[JAHR]kandidaten
- * Jahr 2000 = Spielwiese
+ * Jahr 2000 = Spielwiese (wird bei MUSTERSEITE=1 automatisch verwendet)
  * Jahr > 2000 = Echte Wahl
  */
 function getKandidatenTable() {
-    $jahr = getSetting('WAHLJAHR', WAHLJAHR);
+    // Bei aktivierter Musterseite immer Jahr 2000 (Demo-Kandidaten)
+    $jahr = isMusterseite() ? '2000' : getSetting('WAHLJAHR', WAHLJAHR);
     return 'wahl' . $jahr . 'kandidaten';
 }
 
@@ -85,7 +86,8 @@ function getKandidatenTable() {
  * Gibt die Kommentare-Tabelle zurück: wahl[JAHR]kommentare
  */
 function getKommentareTable() {
-    $jahr = getSetting('WAHLJAHR', WAHLJAHR);
+    // Bei aktivierter Musterseite immer Jahr 2000 (Demo-Daten)
+    $jahr = isMusterseite() ? '2000' : getSetting('WAHLJAHR', WAHLJAHR);
     return 'wahl' . $jahr . 'kommentare';
 }
 
@@ -93,7 +95,8 @@ function getKommentareTable() {
  * Gibt die Teilnehmer-Tabelle zurück: wahl[JAHR]teilnehmer
  */
 function getTeilnehmerTable() {
-    $jahr = getSetting('WAHLJAHR', WAHLJAHR);
+    // Bei aktivierter Musterseite immer Jahr 2000 (Demo-Daten)
+    $jahr = isMusterseite() ? '2000' : getSetting('WAHLJAHR', WAHLJAHR);
     return 'wahl' . $jahr . 'teilnehmer';
 }
 
@@ -101,7 +104,8 @@ function getTeilnehmerTable() {
  * Gibt die Votes-Tabelle zurück: wahl[JAHR]votes
  */
 function getVotesTable() {
-    $jahr = getSetting('WAHLJAHR', WAHLJAHR);
+    // Bei aktivierter Musterseite immer Jahr 2000 (Demo-Daten)
+    $jahr = isMusterseite() ? '2000' : getSetting('WAHLJAHR', WAHLJAHR);
     return 'wahl' . $jahr . 'votes';
 }
 
@@ -129,12 +133,21 @@ function getUserMnr() {
 
     // 1. SESSION: Hat höchste Priorität (Demo-Login via welcome.php)
     if (isset($_SESSION['member_id'])) {
-        $member = dbFetchOne("SELECT email FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
-        if ($member && !empty($member['email'])) {
+        $member = dbFetchOne("SELECT member_id, email, username FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
+        if ($member) {
             // M-Nummer aus Email extrahieren (Format: m0123456@mensa.de -> 0123456)
-            if (preg_match('/m([0-9]{7,8})@/i', $member['email'], $matches)) {
+            if (!empty($member['email']) && preg_match('/m([0-9]{7,8})@/i', $member['email'], $matches)) {
                 return $matches[1];
             }
+            // Fallback: Aus username extrahieren (falls Format m0123456 oder 0123456)
+            if (!empty($member['username'])) {
+                if (preg_match('/^m?([0-9]{7,8})$/i', $member['username'], $matches)) {
+                    return $matches[1];
+                }
+            }
+            // Letzter Fallback für Demo-Modus: Pseudo-M-Nummer aus member_id
+            // Format: 9 + member_id (6-stellig aufgefüllt) = 9000001, 9000002, etc.
+            return '9' . str_pad($member['member_id'], 6, '0', STR_PAD_LEFT);
         }
     }
 

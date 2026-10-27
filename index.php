@@ -15,9 +15,11 @@ $userMnr = getUserMnr();
 include 'includes/header.php';
 
 // Demo-Kandidaten für Musterseite (Spielwiese)
+// Verwendet automatisch wahl2000kandidaten wenn MUSTERSEITE=1
 $demoKandidaten = [];
 if (isMusterseite()) {
-    $demoKandidaten = dbFetchAll("SELECT id, vorname, name FROM wahl2000kandidaten ORDER BY id LIMIT 12");
+    $kandidatenTable = getKandidatenTable(); // gibt wahl2000kandidaten zurück bei MUSTERSEITE=1
+    $demoKandidaten = dbFetchAll("SELECT id, vorname, name, mnummer FROM $kandidatenTable ORDER BY id LIMIT 12");
 }
 
 // Tabelle wählen basierend auf Stichtag
@@ -43,7 +45,7 @@ if (empty($aemter)) {
 
         <div style="display: flex; flex-wrap: wrap; gap: 5px;">
             <?php foreach ($demoKandidaten as $kandidat): ?>
-                <a href="einzeln.php?id=<?php echo $kandidat['id']; ?>" class="musterseite-btn">
+                <a href="einzeln.php?zeige=<?php echo urlencode($kandidat['mnummer']); ?>" class="musterseite-btn">
                     <?php echo escape($kandidat['vorname'] . ' ' . $kandidat['name']); ?>
                 </a>
             <?php endforeach; ?>
