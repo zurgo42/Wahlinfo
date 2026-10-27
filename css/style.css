@@ -131,7 +131,7 @@ body.dark-mode .dark-mode-toggle:hover {
 }
 
 .header-inner {
-    max-width: 1400px;
+    max-width: 1024px;
     margin: 0 auto;
     padding: 15px 30px;
     display: flex;
@@ -166,9 +166,11 @@ body.dark-mode .dark-mode-toggle:hover {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    max-width: 1400px;
+    max-width: 1024px;
     margin-left: auto;
     margin-right: auto;
+    border-left: 1px solid var(--mensa-dunkelblau);
+    border-right: 1px solid var(--mensa-dunkelblau);
 }
 
 .nav-link {
@@ -203,7 +205,7 @@ body.dark-mode .dark-mode-toggle:hover {
 
 /* Container - Einheitlich mit Sitzungsverwaltung */
 .container {
-    max-width: 1400px;
+    max-width: 1024px;
     margin: 0 auto;
     padding: 20px;
 }
