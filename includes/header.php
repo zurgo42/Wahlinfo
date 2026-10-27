@@ -28,22 +28,55 @@
         }
     </script>
 
+    <?php
+    // Organisation aus Einstellungen
+    $orgName = getSetting('ORG_NAME', KAND_ORG_NAME);
+    $orgLogo = getSetting('LOGO_DATEI', KAND_ORG_LOGO);
+    $hasLogo = !empty($orgLogo) && file_exists($orgLogo);
+    ?>
+
     <header class="header">
-        <div class="header-inner">
-            <img src="<?php echo escape(getSetting('LOGO_DATEI', '../logo_mensa.png')); ?>" alt="Logo" class="header-logo">
-            <div class="header-center">
-                <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'Kandidaten-Information'; ?></h1>
+        <div class="header-inner header-dreiteilig">
+            <!-- Links: Logo + Organisation + App-Name -->
+            <div class="header-brand">
+                <?php if ($hasLogo): ?>
+                    <img src="<?php echo escape($orgLogo); ?>" alt="Logo" class="header-logo">
+                <?php else:
+                    // Kreis-Logo mit Initial wie MISS
+                    $initial = strtoupper(substr($orgName, 0, 1));
+                ?>
+                    <div class="logo-circle"><?php echo $initial; ?></div>
+                <?php endif; ?>
+                <div>
+                    <div class="org-name"><?php echo escape($orgName); ?></div>
+                    <div class="app-name">KAND - Kandidaten-Information</div>
+                </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
+
+            <!-- Mitte: Seitentitel -->
+            <div class="header-mitte">
+                <h1><?php echo isset($pageTitle) ? escape($pageTitle) : 'KAND'; ?></h1>
+            </div>
+
+            <!-- Rechts: Toggles + Logout -->
+            <div class="header-rechts">
                 <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
                     <span class="font-icon">A</span>
                 </button>
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
                     <span class="toggle-icon">🌙</span>
                 </button>
+                <a href="logout.php" class="logout-btn">Abmelden</a>
             </div>
         </div>
     </header>
+
+    <!-- Gelbes Testsystem-Banner -->
+    <div class="container" style="margin-top: 10px;">
+        <div class="testsystem-banner">
+            <strong>Testsystem</strong> – alle Daten sind erfunden. Bitte keine echten personenbezogenen Daten eingeben.
+        </div>
+    </div>
 
     <!-- Navigation -->
     <nav class="main-nav">

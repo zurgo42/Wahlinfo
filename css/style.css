@@ -157,6 +157,93 @@ body.dark-mode .dark-mode-toggle:hover {
     color: white;
 }
 
+/* Header 3-spaltig wie MISS */
+.header-dreiteilig {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-brand .org-name {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.header-brand .app-name {
+    font-size: 12px;
+    opacity: 0.9;
+    line-height: 1.2;
+}
+
+.logo-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.header-mitte {
+    text-align: center;
+}
+
+.header-mitte h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-rechts {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* Testsystem-Banner (gelb) */
+.testsystem-banner {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.testsystem-banner strong {
+    font-weight: 600;
+}
+
 /* Navigation - Einheitlich mit Sitzungsverwaltung */
 .main-nav {
     background: white;
