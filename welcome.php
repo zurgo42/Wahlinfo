@@ -87,7 +87,7 @@ if (isset($_GET['demo_member'])) {
                 <?php if ($hasLogo): ?>
                     <img src="<?php echo escape($orgLogo); ?>" alt="Logo" class="header-logo">
                 <?php else: ?>
-                    <div class="logo-circle">🗳️</div>
+                    <div class="logo-circle">🏛️</div>
                 <?php endif; ?>
                 <div>
                     <div class="org-name"><?php echo escape($orgName); ?></div>
