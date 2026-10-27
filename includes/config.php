@@ -8,18 +8,19 @@
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
 
 // =============================================================================
-// Datenbank-Konfiguration (Defaults - können via config_local.php überschrieben werden)
+// Datenbank-Konfiguration
 // =============================================================================
 
+// Lokale Konfiguration laden (falls vorhanden) - hat Vorrang!
+if (file_exists(__DIR__ . '/config_local.php')) {
+    require_once __DIR__ . '/config_local.php';
+}
+
+// Defaults (nur wenn nicht in config_local.php definiert)
 if (!defined('DB_HOST'))    define('DB_HOST', 'localhost');
 if (!defined('DB_USER'))    define('DB_USER', 'root');           // Für XAMPP lokal
 if (!defined('DB_PASS'))    define('DB_PASS', '');                // Für XAMPP lokal leer
 if (!defined('DB_NAME'))    define('DB_NAME', 'k126904_div');    // Gemeinsame Datenbank
-
-// Lokale Konfiguration laden (falls vorhanden) - überschreibt obige Defaults
-if (file_exists(__DIR__ . '/config_local.php')) {
-    require_once __DIR__ . '/config_local.php';
-}
 
 // =============================================================================
 // Wahljahr und Stichtage
