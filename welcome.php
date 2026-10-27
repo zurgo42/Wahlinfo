@@ -14,34 +14,25 @@ if (isset($_SESSION['member_id'])) {
 
 $pdo = getPdo();
 
-// Demo-Mitglieder laden (9 zufällige + Demo0001 als Admin)
+// Demo-Mitglieder laden (5 User total)
 $demo_members = [];
 try {
-    // Demo0001 (Admin) immer dabei
-    $stmt = $pdo->prepare("
-        SELECT member_id, first_name, last_name, role, email
-        FROM " . TABLE_MEMBERS . "
-        WHERE email LIKE '%demo0001%' AND is_active = 1
-        LIMIT 1
-    ");
-    $stmt->execute();
-    $demo_admin = $stmt->fetchAll();
-
-    // 9 weitere zufällige aktive Members
     $stmt = $pdo->query("
         SELECT member_id, first_name, last_name, role, email
         FROM " . TABLE_MEMBERS . "
-        WHERE is_active = 1 AND email NOT LIKE '%demo0001%'
+        WHERE is_active = 1
         ORDER BY RAND()
-        LIMIT 9
+        LIMIT 5
     ");
-    $demo_others = $stmt->fetchAll();
-
-    // Demo0001 als letzter (10.)
-    $demo_members = array_merge($demo_others, $demo_admin);
+    $demo_members = $stmt->fetchAll();
 } catch (PDOException $e) {
     // Fehler ignorieren - falls svmembers noch keine Demo-Daten hat
 }
+
+// Organisation aus Einstellungen
+$orgName = getSetting('ORG_NAME', KAND_ORG_NAME);
+$orgLogo = getSetting('LOGO_DATEI', KAND_ORG_LOGO);
+$hasLogo = !empty($orgLogo) && file_exists($orgLogo);
 
 // Direkt-Login verarbeiten
 if (isset($_GET['demo_member'])) {
@@ -93,9 +84,16 @@ if (isset($_GET['demo_member'])) {
         <div class="header-inner header-dreiteilig">
             <!-- Links: Logo + Organisation + App-Name -->
             <div class="header-brand">
-                <img src="<?php echo escape(getSetting('LOGO_DATEI', KAND_ORG_LOGO)); ?>" alt="Logo" class="header-logo">
+                <?php if ($hasLogo): ?>
+                    <img src="<?php echo escape($orgLogo); ?>" alt="Logo" class="header-logo">
+                <?php else:
+                    // Kreis-Logo mit Initial wie MISS
+                    $initial = strtoupper(substr($orgName, 0, 1));
+                ?>
+                    <div class="logo-circle"><?php echo $initial; ?></div>
+                <?php endif; ?>
                 <div>
-                    <div class="org-name"><?php echo escape(getSetting('ORG_NAME', KAND_ORG_NAME)); ?></div>
+                    <div class="org-name"><?php echo escape($orgName); ?></div>
                     <div class="app-name">KAND - Kandidaten-Information</div>
                 </div>
             </div>
@@ -105,7 +103,7 @@ if (isset($_GET['demo_member'])) {
                 <h1>Demo</h1>
             </div>
 
-            <!-- Rechts: Toggles -->
+            <!-- Rechts: Toggles + Logout -->
             <div class="header-rechts">
                 <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
                     <span class="font-icon">A</span>
@@ -113,7 +111,7 @@ if (isset($_GET['demo_member'])) {
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Dark Mode umschalten">
                     <span class="toggle-icon">🌙</span>
                 </button>
-                <span class="demo-modus-label">Demo-Modus</span>
+                <a href="logout.php" class="logout-btn">Abmelden</a>
             </div>
         </div>
     </header>
@@ -150,6 +148,35 @@ if (isset($_GET['demo_member'])) {
         font-size: 12px;
         opacity: 0.9;
         line-height: 1.2;
+    }
+
+    .logo-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .logout-btn {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.2s;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .logout-btn:hover {
+        background: rgba(255,255,255,0.25);
     }
 
     .header-mitte {
