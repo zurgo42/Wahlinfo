@@ -86,11 +86,8 @@ if (isset($_GET['demo_member'])) {
             <div class="header-brand">
                 <?php if ($hasLogo): ?>
                     <img src="<?php echo escape($orgLogo); ?>" alt="Logo" class="header-logo">
-                <?php else:
-                    // Kreis-Logo mit Initial wie MISS
-                    $initial = strtoupper(substr($orgName, 0, 1));
-                ?>
-                    <div class="logo-circle"><?php echo $initial; ?></div>
+                <?php else: ?>
+                    <div class="logo-circle">🗳️</div>
                 <?php endif; ?>
                 <div>
                     <div class="org-name"><?php echo escape($orgName); ?></div>
