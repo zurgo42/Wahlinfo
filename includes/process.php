@@ -119,11 +119,26 @@ function isMusterseite() {
 
 /**
  * Holt die M-Nr des eingeloggten Users
- * Produktion: aus SSO-Variable
- * Entwicklung (localhost): automatisch Test-M-Nr
+ * Reihenfolge: SESSION > SSO > GET/POST (je nach Methode)
  */
 function getUserMnr() {
-    // Zugangs-Methode aus DB-Einstellungen
+    // Session-Modus aktivieren wenn nicht bereits gestartet
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // 1. SESSION: Hat höchste Priorität (Demo-Login via welcome.php)
+    if (isset($_SESSION['member_id'])) {
+        $member = dbFetchOne("SELECT email FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
+        if ($member && !empty($member['email'])) {
+            // M-Nummer aus Email extrahieren (Format: m0123456@mensa.de -> 0123456)
+            if (preg_match('/m([0-9]{7,8})@/i', $member['email'], $matches)) {
+                return $matches[1];
+            }
+        }
+    }
+
+    // 2. Zugangs-Methode aus DB-Einstellungen
     $zugangMethode = getSetting('ZUGANG_METHODE', 'GET');
 
     // SSO: M-Nr aus Server-Variable
@@ -144,14 +159,13 @@ function getUserMnr() {
         if (isset($_POST['mnr']) && preg_match('/^[0-9]{7,8}$/', $_POST['mnr'])) {
             return $_POST['mnr'];
         }
-        // Fallback auf GET-Parameter (für AJAX-Requests via URL)
         if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
             return $_GET['mnr'];
         }
         return null;
     }
 
-    // GET (Standard): M-Nr NUR aus GET-Parameter, keine Fallbacks
+    // GET: M-Nr aus GET-Parameter
     if ($zugangMethode === 'GET') {
         if (isset($_GET['mnr']) && preg_match('/^[0-9]{7,8}$/', $_GET['mnr'])) {
             return $_GET['mnr'];
@@ -160,6 +174,26 @@ function getUserMnr() {
     }
 
     return null;
+}
+
+/**
+ * Prüft ob User eingeloggt ist (Session-basiert)
+ */
+function isLoggedIn() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return isset($_SESSION['member_id']);
+}
+
+/**
+ * Holt Member-Daten aus svmembers
+ */
+function getCurrentMember() {
+    if (!isLoggedIn()) {
+        return null;
+    }
+    return dbFetchOne("SELECT * FROM " . TABLE_MEMBERS . " WHERE member_id = ? AND is_active = 1", [$_SESSION['member_id']]);
 }
 
 /**
