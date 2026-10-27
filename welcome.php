@@ -14,25 +14,31 @@ if (isset($_SESSION['member_id'])) {
 
 $pdo = getPdo();
 
-// Demo-Mitglieder laden (aktive aus svmembers)
+// Demo-Mitglieder laden (9 zufällige + Demo0001 als Admin)
 $demo_members = [];
 try {
+    // Demo0001 (Admin) immer dabei
+    $stmt = $pdo->prepare("
+        SELECT member_id, first_name, last_name, role, email
+        FROM " . TABLE_MEMBERS . "
+        WHERE email LIKE '%demo0001%' AND is_active = 1
+        LIMIT 1
+    ");
+    $stmt->execute();
+    $demo_admin = $stmt->fetchAll();
+
+    // 9 weitere zufällige aktive Members
     $stmt = $pdo->query("
         SELECT member_id, first_name, last_name, role, email
         FROM " . TABLE_MEMBERS . "
-        WHERE is_active = 1
-        ORDER BY
-            CASE role
-                WHEN 'vorstand' THEN 1
-                WHEN 'gf' THEN 2
-                WHEN 'assistenz' THEN 3
-                WHEN 'fuehrungsteam' THEN 4
-                ELSE 5
-            END,
-            last_name
-        LIMIT 16
+        WHERE is_active = 1 AND email NOT LIKE '%demo0001%'
+        ORDER BY RAND()
+        LIMIT 9
     ");
-    $demo_members = $stmt->fetchAll();
+    $demo_others = $stmt->fetchAll();
+
+    // Demo0001 als letzter (10.)
+    $demo_members = array_merge($demo_others, $demo_admin);
 } catch (PDOException $e) {
     // Fehler ignorieren - falls svmembers noch keine Demo-Daten hat
 }
@@ -85,9 +91,9 @@ if (isset($_GET['demo_member'])) {
 
     <header class="header">
         <div class="header-inner">
-            <img src="<?php echo escape(getSetting('LOGO_DATEI', 'img/logo.png')); ?>" alt="Logo" class="header-logo">
+            <img src="<?php echo escape(getSetting('LOGO_DATEI', KAND_ORG_LOGO)); ?>" alt="Logo" class="header-logo">
             <div class="header-center">
-                <h1>Willkommen bei KAND</h1>
+                <h1><?php echo escape(getSetting('ORG_NAME', KAND_ORG_NAME)); ?> KAND</h1>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
                 <button class="font-size-toggle" onclick="toggleFontSize()" title="Schriftgröße ändern">
@@ -257,7 +263,7 @@ if (isset($_GET['demo_member'])) {
 <div class="welcome-content">
     <!-- Features -->
     <div class="features-box">
-        <h2>Mensa KAND – Kandidaten-Information</h2>
+        <h2>KAND – Kandidaten-Information</h2>
         <p class="app-lead">
             KAND unterstützt demokratische Wahlen innerhalb der Organisation
             durch transparente Kandidatendarstellung und strukturierte Diskussion.

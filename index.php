@@ -14,6 +14,12 @@ $userMnr = getUserMnr();
 // Header einbinden
 include 'includes/header.php';
 
+// Demo-Kandidaten für Musterseite (Spielwiese)
+$demoKandidaten = [];
+if (isMusterseite()) {
+    $demoKandidaten = dbFetchAll("SELECT id, vorname, name FROM wahl2000kandidaten ORDER BY id LIMIT 12");
+}
+
 // Tabelle wählen basierend auf Stichtag
 $kandidatenTable = getKandidatenTable();
 
@@ -27,6 +33,24 @@ if (empty($aemter)) {
 }
 
 ?>
+
+<?php if (!empty($demoKandidaten)): ?>
+<!-- Demo-Kandidaten (Spielwiese) -->
+<div class="container" style="margin-top: 10px; margin-bottom: 10px;">
+    <div style="background: #fff3cd; padding: 10px 15px; border-radius: 8px; border: 1px solid #ffc107;">
+        <h4 style="margin: 0 0 5px 0; font-size: 0.9em;">🎭 Demo-Modus – Spielwiese mit Beispiel-Kandidaten</h4>
+        <p style="font-size: 0.75em; margin: 0 0 8px 0;">Wähle eine/n Kandidaten/in um die Einzelansicht zu testen:</p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+            <?php foreach ($demoKandidaten as $kandidat): ?>
+                <a href="einzeln.php?id=<?php echo $kandidat['id']; ?>" class="musterseite-btn">
+                    <?php echo escape($kandidat['vorname'] . ' ' . $kandidat['name']); ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="info-banner">
     <p>Willkommen zur ergänzenden Wahlinformation. Hier findest du Informationen zu allen Kandidatinnen und Kandidaten.</p>
@@ -117,7 +141,7 @@ foreach ($aemter as $amt) {
 <?php } ?>
 
 <div style="text-align: center; margin-top: var(--spacing-xl);">
-    <a href="../index.php" class="btn">Zurück zur Startseite</a>
+    <a href="index.php" class="btn">Zurück zur Startseite</a>
 </div>
 
 <?php

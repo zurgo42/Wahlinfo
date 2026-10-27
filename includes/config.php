@@ -23,6 +23,14 @@ if (!defined('DB_PASS'))    define('DB_PASS', '');                // Für XAMPP 
 if (!defined('DB_NAME'))    define('DB_NAME', 'k126904_div');    // Gemeinsame Datenbank
 
 // =============================================================================
+// Organisations-Branding
+// =============================================================================
+
+// Organisation (aus DB-Einstellungen, Fallback auf Konstante)
+if (!defined('KAND_ORG_NAME'))    define('KAND_ORG_NAME', 'Mensa');
+if (!defined('KAND_ORG_LOGO'))    define('KAND_ORG_LOGO', 'img/logo.png');
+
+// =============================================================================
 // Wahljahr und Stichtage
 // =============================================================================
 
