@@ -1,29 +1,26 @@
 -- =============================================================================
--- Wahlinfo - Datenbank-Initialisierung
+-- KAND - Datenbank-Initialisierung
 -- =============================================================================
--- Dieses Script erstellt die Datenbank und alle benötigten Tabellen.
+-- Dieses Script erstellt alle benötigten KAND-Tabellen in der gemeinsamen
+-- Datenbank k126904_div (wird mit Sitzungsverwaltung und Mitgliederverwaltung geteilt).
 --
--- NEUE STRUKTUR (2025):
--- - Datenbank "wahl" wird automatisch erstellt
+-- STRUKTUR (2025):
+-- - KEINE separate Datenbank - nutzt k126904_div
 -- - Alle Tabellen haben "wahl"-Prefix
 -- - Jahr 2000 = Spielwiese/Test (wahl2000*)
 -- - Jahr > 2000 = Echte Wahl (wahl2025*, wahl2026* etc.)
+-- - Authentication via svmembers-Tabelle (aus Mitgliederverwaltung)
 --
 -- DATEN-IMPORT:
 -- - Nur wahleinstellungen wird mit Grunddaten befüllt
--- - Alle anderen Tabellen sind leer und werden via JSON-Import befüllt
---   (Admin-Bereich → Archivierung → JSON Backup & Restore)
+-- - Alle anderen Tabellen sind leer und werden via Demo-Import befüllt
 --
 -- Verwendung:
--- mysql -u root -p < init-db.sql
+-- mysql -u root -p k126904_div < init-db.sql
 -- =============================================================================
 
--- Datenbank erstellen (falls nicht vorhanden)
-CREATE DATABASE IF NOT EXISTS wahl
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE wahl;
+-- Keine separate Datenbank - nutze bestehende gemeinsame DB
+-- USE k126904_div; -- Muss beim Import angegeben werden
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

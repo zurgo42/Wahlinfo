@@ -12,9 +12,9 @@ error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE);
 // =============================================================================
 
 define('DB_HOST', 'localhost');
-define('DB_USER', 'wahl');
-define('DB_PASS', 'Cho8odoo');
-define('DB_NAME', 'wahl');
+define('DB_USER', 'root');           // Für XAMPP lokal
+define('DB_PASS', '');                // Für XAMPP lokal leer
+define('DB_NAME', 'k126904_div');    // Gemeinsame Datenbank mit Sitzungsverwaltung
 
 // =============================================================================
 // Wahljahr und Stichtage
@@ -34,6 +34,9 @@ define('DEADLINE_EDITIEREN', '2025-12-31 23:59:59');
 // =============================================================================
 // Tabellennamen - ALLE mit Prefix "wahl"
 // =============================================================================
+
+// Gemeinsame Tabelle (aus Mitgliederverwaltung)
+define('TABLE_MEMBERS', 'svmembers');  // Für Authentication und Kandidaten
 
 // Zeitlose Tabellen
 define('TABLE_AEMTER', 'wahlaemter');
